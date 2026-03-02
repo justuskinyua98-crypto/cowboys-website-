@@ -485,7 +485,7 @@ function renderVideos() {
     const card = document.createElement("article");
     card.className = "video-card";
     card.innerHTML = `
-      ${v.src ? `<video controls preload="metadata" ${v.poster ? `poster="${v.poster}"` : ""}><source src="${v.src}"></video>` : ""}
+      ${v.src ? `<video controls muted playsinline preload="metadata" ${v.poster ? `poster="${v.poster}"` : ""}><source src="${v.src}"></video>` : ""}
       <div class="video-body">${v.title || "Untitled Video"}</div>
     `;
     el.videoGallery.appendChild(card);
