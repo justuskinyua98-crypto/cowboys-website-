@@ -688,6 +688,36 @@ a {
   color: var(--rust);
 }
 
+#app-toast {
+  position: fixed;
+  right: 1rem;
+  bottom: 1rem;
+  z-index: 1200;
+  max-width: min(420px, 92vw);
+  border-radius: 10px;
+  padding: 0.7rem 0.85rem;
+  color: #fff;
+  background: rgba(31, 41, 55, 0.95);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.18);
+  transform: translateY(12px);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.16s ease, transform 0.16s ease;
+}
+
+#app-toast.show {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+#app-toast.ok {
+  background: rgba(6, 95, 70, 0.95);
+}
+
+#app-toast.warn {
+  background: rgba(146, 64, 14, 0.96);
+}
+
 @media (min-width: 981px) {
   .team-row {
     grid-template-columns: 220px 1fr;

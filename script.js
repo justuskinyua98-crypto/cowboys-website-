@@ -141,6 +141,33 @@ function notify(msg) {
   alert(msg);
 }
 
+function isAdminMode() {
+  return Boolean(adminKey());
+}
+
+function adminOnly(html) {
+  return isAdminMode() ? html : "";
+}
+
+function toast(message, tone = "info") {
+  const id = "app-toast";
+  let node = document.getElementById(id);
+  if (!node) {
+    node = document.createElement("div");
+    node.id = id;
+    node.setAttribute("role", "status");
+    node.setAttribute("aria-live", "polite");
+    document.body.appendChild(node);
+  }
+  node.textContent = message;
+  node.className = `app-toast show ${tone}`;
+  window.clearTimeout(toast._timer);
+  toast._timer = window.setTimeout(() => {
+    const liveNode = document.getElementById(id);
+    if (liveNode) liveNode.classList.remove("show");
+  }, 2800);
+}
+
 function mediaSrc(path) {
   const raw = String(path || "").trim();
   if (!raw) return PLACEHOLDER_IMAGE;
@@ -390,7 +417,7 @@ function renderOutfits() {
           <p class="outfit-meta">${formatKes(item.price)} • ${item.description || ""}</p>
           <div class="outfit-actions">
             <button class="btn btn-primary add-to-cart" type="button" data-name="${item.name}" data-price="${item.price}">Add To Cart</button>
-            <button class="delete-outfit delete-outfit-item" type="button" data-id="${item.id}">Remove</button>
+            ${adminOnly(`<button class="delete-outfit delete-outfit-item" type="button" data-id="${item.id}">Remove</button>`)}
           </div>
         </div>
       `;
@@ -420,7 +447,7 @@ function renderEvents() {
       <p>Ticket: ${formatKes(item.ticket_kes)}</p>
       <div class="outfit-actions">
         <button class="btn btn-primary ticket-btn" type="button" data-event="${item.title}" data-price="${Number(item.ticket_kes || 0)}">Buy Ticket</button>
-        <button class="delete-outfit delete-event-item" type="button" data-id="${item.id}">Remove</button>
+        ${adminOnly(`<button class="delete-outfit delete-event-item" type="button" data-id="${item.id}">Remove</button>`)}
       </div>
     `;
     el.eventsGrid.appendChild(card);
@@ -448,7 +475,7 @@ function renderLivestock() {
       <p>Status: ${item.status}</p>
       <div class="outfit-actions">
         <button class="btn btn-ghost reserve-btn" type="button" data-item="${item.name}" data-price="${total}">Reserve Animal</button>
-        <button class="delete-outfit delete-livestock-item" type="button" data-id="${item.id}">Remove</button>
+        ${adminOnly(`<button class="delete-outfit delete-livestock-item" type="button" data-id="${item.id}">Remove</button>`)}
       </div>
     `;
     el.livestockGrid.appendChild(card);
@@ -474,7 +501,7 @@ function renderDecor() {
       <p>${item.description || ""}</p>
       <div class="outfit-actions">
         <button class="btn btn-ghost decor-inquiry" type="button" data-action="${item.name}">Request Item</button>
-        <button class="delete-outfit delete-decor-item" type="button" data-id="${item.id}">Remove</button>
+        ${adminOnly(`<button class="delete-outfit delete-decor-item" type="button" data-id="${item.id}">Remove</button>`)}
       </div>
     `;
     el.decorGrid.appendChild(card);
@@ -492,7 +519,7 @@ function renderVideos() {
     const card = document.createElement("article");
     card.className = "video-card";
     card.innerHTML = `
-      ${v.src ? `<video controls muted playsinline preload="metadata" ${v.poster ? `poster="${mediaSrc(v.poster)}"` : ""}><source src="${mediaSrc(v.src)}"></video>` : ""}
+      ${v.src ? `<video controls muted playsinline preload="none" ${v.poster ? `poster="${mediaSrc(v.poster)}"` : ""}><source src="${mediaSrc(v.src)}"></video>` : ""}
       <div class="video-body">${v.title || "Untitled Video"}</div>
     `;
     el.videoGallery.appendChild(card);
@@ -512,9 +539,7 @@ function renderTeam() {
     row.innerHTML = `
       ${p.photo ? `<img class="team-photo" src="${mediaSrc(p.photo)}" alt="${p.name}" loading="lazy" onerror="this.onerror=null;this.src='${mediaSrc(PLACEHOLDER_IMAGE)}'">` : ""}
       <strong>${p.name}</strong><br>${p.role || ""}<br>${p.bio || ""}
-      <div class="outfit-actions top-space">
-        <button class="delete-outfit delete-team-item" type="button" data-id="${p.id}">Remove</button>
-      </div>
+      ${adminOnly(`<div class="outfit-actions top-space"><button class="delete-outfit delete-team-item" type="button" data-id="${p.id}">Remove</button></div>`)}
     `;
     el.teamGrid.appendChild(row);
   });
@@ -532,9 +557,7 @@ function renderSocials() {
     row.className = "social-row";
     row.innerHTML = `
       <a class="social-link" href="${s.url || '#'}" target="_blank" rel="noreferrer noopener">${s.platform}${s.handle ? ` • ${s.handle}` : ""}</a>
-      <div class="outfit-actions top-space">
-        <button class="delete-outfit delete-social-item" type="button" data-id="${s.id}">Remove</button>
-      </div>
+      ${adminOnly(`<div class="outfit-actions top-space"><button class="delete-outfit delete-social-item" type="button" data-id="${s.id}">Remove</button></div>`)}
     `;
     el.socialsGrid.appendChild(row);
   });
@@ -549,7 +572,7 @@ function renderCommunity() {
       state.content.descriptions.forEach((d) => {
         const row = document.createElement("div");
         row.className = "team-row";
-        row.innerHTML = `<strong>${d.title}</strong><br>${d.text}<div class="outfit-actions top-space"><button class="delete-outfit delete-description-item" data-id="${d.id}">Remove</button></div>`;
+        row.innerHTML = `<strong>${d.title}</strong><br>${d.text}${adminOnly(`<div class="outfit-actions top-space"><button class="delete-outfit delete-description-item" data-id="${d.id}">Remove</button></div>`)}`;
         el.descriptionsGrid.appendChild(row);
       });
     }
@@ -563,7 +586,7 @@ function renderCommunity() {
       state.content.partners.forEach((p) => {
         const row = document.createElement("div");
         row.className = "team-row";
-        row.innerHTML = `<strong>${p.name}</strong><br>${p.description || ""}<br>${p.email || ""}<div class="outfit-actions top-space"><button class="delete-outfit delete-partner-item" data-id="${p.id}">Remove</button></div>`;
+        row.innerHTML = `<strong>${p.name}</strong><br>${p.description || ""}<br>${p.email || ""}${adminOnly(`<div class="outfit-actions top-space"><button class="delete-outfit delete-partner-item" data-id="${p.id}">Remove</button></div>`)}`;
         el.partnersGrid.appendChild(row);
       });
     }
@@ -577,7 +600,7 @@ function renderCommunity() {
       state.content.reviews.forEach((r) => {
         const row = document.createElement("div");
         row.className = "team-row";
-        row.innerHTML = `<strong>${r.name}</strong> (${r.rating}/5)<br>${r.text}<div class="outfit-actions top-space"><button class="delete-outfit delete-review-item" data-id="${r.id}">Remove</button></div>`;
+        row.innerHTML = `<strong>${r.name}</strong> (${r.rating}/5)<br>${r.text}${adminOnly(`<div class="outfit-actions top-space"><button class="delete-outfit delete-review-item" data-id="${r.id}">Remove</button></div>`)}`;
         el.reviewsGrid.appendChild(row);
       });
     }
@@ -598,6 +621,7 @@ function renderAll() {
 
 async function loadContent() {
   try {
+    toast("Loading site content...", "info");
     const response = await fetch("/api/content");
     if (!response.ok) throw new Error(String(response.status));
     const data = await response.json();
@@ -606,12 +630,14 @@ async function loadContent() {
       const local = localStorage.getItem(OUTFIT_KEY);
       if (local) state.content.outfits = JSON.parse(local);
     }
+    toast("Content loaded.", "ok");
   } catch {
     state.content = structuredClone(defaultContent);
     try {
       const local = localStorage.getItem(OUTFIT_KEY);
       if (local) state.content.outfits = JSON.parse(local);
     } catch {}
+    toast("Loaded fallback content (server unavailable).", "warn");
   }
 }
 
@@ -628,9 +654,9 @@ async function saveContent(scope) {
       body: JSON.stringify(state.content)
     });
     if (!response.ok) throw new Error(String(response.status));
-    notify(`${scope} saved to backend successfully.`);
+    toast(`${scope} saved successfully.`, "ok");
   } catch {
-    notify("Failed to save to backend. Check admin key and server status.");
+    toast("Save failed. Check admin key and server status.", "warn");
   }
 }
 
@@ -975,6 +1001,10 @@ function bindForms() {
 
     const del = e.target.closest(".delete-outfit");
     if (!del) return;
+    if (!isAdminMode()) {
+      toast("Enter admin key to remove items.", "warn");
+      return;
+    }
     const id = del.dataset.id;
     if (!id) return;
 
@@ -1009,6 +1039,7 @@ function bindForms() {
   el.saveDescriptionsBtn?.addEventListener("click", () => saveContent("Descriptions"));
   el.savePartnersBtn?.addEventListener("click", () => saveContent("Partners"));
   el.saveReviewsBtn?.addEventListener("click", () => saveContent("Reviews"));
+  el.adminKey?.addEventListener("input", () => renderAll());
 }
 
 function setupNav() {
