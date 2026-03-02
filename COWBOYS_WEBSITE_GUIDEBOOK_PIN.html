@@ -1,0 +1,179 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Cowboys Guidebook (PIN Protected)</title>
+    <style>
+      :root {
+        --ink: #1f2937;
+        --muted: #6b7280;
+        --line: #d1d5db;
+        --bg: #f9fafb;
+      }
+      body {
+        margin: 0;
+        font-family: Arial, sans-serif;
+        color: var(--ink);
+        background: var(--bg);
+      }
+      .shell {
+        min-height: 100vh;
+        display: grid;
+        place-items: center;
+        padding: 20px;
+      }
+      .card {
+        width: min(520px, 96vw);
+        background: #fff;
+        border: 1px solid var(--line);
+        border-radius: 12px;
+        padding: 18px;
+        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+      }
+      h1 {
+        margin: 0 0 10px;
+        font-size: 1.35rem;
+      }
+      p {
+        margin: 0 0 10px;
+        color: var(--muted);
+        line-height: 1.45;
+      }
+      label {
+        display: block;
+        font-weight: 700;
+        margin-top: 8px;
+      }
+      input {
+        width: 100%;
+        margin-top: 6px;
+        border: 1px solid var(--line);
+        border-radius: 10px;
+        padding: 10px 12px;
+        font-size: 1rem;
+      }
+      .row {
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+        margin-top: 12px;
+      }
+      button {
+        border: 0;
+        border-radius: 10px;
+        padding: 10px 14px;
+        font-weight: 700;
+        cursor: pointer;
+      }
+      .btn-primary {
+        background: #111827;
+        color: #fff;
+      }
+      .btn-ghost {
+        background: #e5e7eb;
+        color: #111827;
+      }
+      .warn {
+        color: #991b1b;
+        font-weight: 700;
+      }
+      #book-wrap {
+        display: none;
+        min-height: 100vh;
+      }
+      #book-frame {
+        width: 100%;
+        height: 100vh;
+        border: 0;
+        background: #fff;
+      }
+      @media print {
+        #lock-wrap,
+        .topbar {
+          display: none !important;
+        }
+        #book-wrap {
+          display: block !important;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div id="lock-wrap" class="shell">
+      <div class="card">
+        <h1>Guidebook PIN Access</h1>
+        <p>Enter PIN to open the printable guidebook.</p>
+        <p>This PIN expires after first successful open on this device.</p>
+        <label for="pin-input">PIN</label>
+        <input id="pin-input" type="password" inputmode="numeric" autocomplete="off" />
+        <p id="status" class="warn" aria-live="polite"></p>
+        <div class="row">
+          <button id="unlock-btn" class="btn-primary" type="button">Open Guidebook</button>
+          <button id="print-btn" class="btn-ghost" type="button" disabled>Print</button>
+        </div>
+      </div>
+    </div>
+
+    <div id="book-wrap">
+      <div class="topbar" style="padding:10px 12px; background:#111827; color:#fff; display:flex; gap:10px; align-items:center;">
+        <strong>Guidebook Opened</strong>
+        <button id="print-btn-2" class="btn-ghost" type="button">Print</button>
+      </div>
+      <iframe
+        id="book-frame"
+        src="COWBOYS_WEBSITE_GUIDEBOOK_PRINT.html"
+        title="Cowboys Website Guidebook Print Edition"
+      ></iframe>
+    </div>
+
+    <script>
+      // Change this PIN before sharing the file.
+      const GUIDEBOOK_PIN = "7391";
+      const USED_KEY = "cgh_guidebook_pin_used_v1";
+
+      const lockWrap = document.getElementById("lock-wrap");
+      const bookWrap = document.getElementById("book-wrap");
+      const pinInput = document.getElementById("pin-input");
+      const statusEl = document.getElementById("status");
+      const unlockBtn = document.getElementById("unlock-btn");
+      const printBtn = document.getElementById("print-btn");
+      const printBtn2 = document.getElementById("print-btn-2");
+
+      function showExpired() {
+        statusEl.textContent = "PIN expired for this device. Access already used.";
+        pinInput.disabled = true;
+        unlockBtn.disabled = true;
+        printBtn.disabled = true;
+      }
+
+      function openBook() {
+        lockWrap.style.display = "none";
+        bookWrap.style.display = "block";
+        printBtn.disabled = false;
+      }
+
+      if (localStorage.getItem(USED_KEY)) {
+        showExpired();
+      }
+
+      unlockBtn.addEventListener("click", () => {
+        const entered = String(pinInput.value || "").trim();
+        if (!entered) {
+          statusEl.textContent = "Enter PIN first.";
+          return;
+        }
+        if (entered !== GUIDEBOOK_PIN) {
+          statusEl.textContent = "Incorrect PIN.";
+          return;
+        }
+        localStorage.setItem(USED_KEY, String(Date.now()));
+        statusEl.textContent = "";
+        openBook();
+      });
+
+      printBtn.addEventListener("click", () => window.print());
+      if (printBtn2) printBtn2.addEventListener("click", () => window.print());
+    </script>
+  </body>
+</html>
