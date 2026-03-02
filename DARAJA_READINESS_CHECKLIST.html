@@ -1,0 +1,79 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Daraja Readiness Checklist | Cowboys Group Holdings</title>
+    <style>
+      body { font-family: Arial, sans-serif; margin: 0; background: #f8fafc; color: #111827; }
+      .wrap { max-width: 960px; margin: 0 auto; padding: 22px; }
+      .card { background: #fff; border: 1px solid #d1d5db; border-radius: 12px; padding: 16px; margin-bottom: 14px; }
+      h1, h2 { margin: 0 0 10px; }
+      ul { margin: 8px 0 0 20px; }
+      li { margin-bottom: 8px; line-height: 1.45; }
+      code { background: #eef2ff; padding: 2px 6px; border-radius: 6px; }
+      .ok { color: #065f46; font-weight: 700; }
+      .pending { color: #92400e; font-weight: 700; }
+      .note { background: #eff6ff; border: 1px solid #93c5fd; border-radius: 10px; padding: 10px; }
+    </style>
+  </head>
+  <body>
+    <div class="wrap">
+      <section class="card">
+        <h1>Daraja Readiness Checklist</h1>
+        <p>Use this before enabling M-Pesa STK push in production.</p>
+        <p class="pending">Current state: Daraja credentials not yet available.</p>
+      </section>
+
+      <section class="card">
+        <h2>1) Safaricom Setup</h2>
+        <ul>
+          <li>Create/confirm Daraja app and receive Consumer Key + Consumer Secret.</li>
+          <li>Confirm shortcode type and passkey.</li>
+          <li>Confirm your callback URL domain is public HTTPS.</li>
+          <li>Whitelisting/IP requirements checked (if needed by provider).</li>
+        </ul>
+      </section>
+
+      <section class="card">
+        <h2>2) Production Environment Variables</h2>
+        <ul>
+          <li><code>M_PESA_CONSUMER_KEY</code></li>
+          <li><code>M_PESA_CONSUMER_SECRET</code></li>
+          <li><code>M_PESA_SHORTCODE</code></li>
+          <li><code>M_PESA_PASSKEY</code></li>
+          <li><code>M_PESA_CALLBACK_URL</code></li>
+          <li><code>M_PESA_BASE_URL=https://api.safaricom.co.ke</code> (production)</li>
+        </ul>
+      </section>
+
+      <section class="card">
+        <h2>3) Callback & Payment Flow Tests</h2>
+        <ul>
+          <li>STK prompt appears on phone for valid Kenyan number.</li>
+          <li>Approved payment returns callback and order changes to <code>paid</code>.</li>
+          <li>Cancelled/failed payment returns <code>failed</code> status.</li>
+          <li>Amount and phone validation mismatch goes to <code>flagged</code>.</li>
+        </ul>
+      </section>
+
+      <section class="card">
+        <h2>4) Operations Checklist</h2>
+        <ul>
+          <li>Admin knows how to review orders from backend endpoint.</li>
+          <li>Support process defined for pending/failed orders.</li>
+          <li>Daily reconciliation process documented (payments vs orders).</li>
+          <li>Access to secrets limited to trusted admins only.</li>
+        </ul>
+      </section>
+
+      <section class="card">
+        <h2>5) Go-Live Gate</h2>
+        <p class="ok">Go live only when all checks above are complete.</p>
+        <div class="note">
+          Until Daraja is ready, continue using the manual payment flow and donation transfer flow already active on your website.
+        </div>
+      </section>
+    </div>
+  </body>
+</html>

@@ -123,6 +123,17 @@ const el = {
   uploadResult: document.getElementById("upload-result"),
   artistInquiry: document.getElementById("artist-inquiry"),
   donorForm: document.getElementById("partner-form")
+  ,
+  donationForm: document.getElementById("donation-form"),
+  donationMethod: document.getElementById("donation-method"),
+  donationName: document.getElementById("donation-name"),
+  donationEmail: document.getElementById("donation-email"),
+  donationPhone: document.getElementById("donation-phone"),
+  donationAmount: document.getElementById("donation-amount"),
+  donationMessage: document.getElementById("donation-message"),
+  donationStatus: document.getElementById("donation-status"),
+  donationPaymentDetails: document.getElementById("donation-payment-details"),
+  downloadDonationsBtn: document.getElementById("download-donations-btn")
 };
 
 function formatKes(value) {
@@ -187,6 +198,10 @@ function setPaymentStatus(msg) {
 
 function setPaymentHint(msg) {
   if (el.paymentHint) el.paymentHint.textContent = msg;
+}
+
+function setDonationStatus(msg) {
+  if (el.donationStatus) el.donationStatus.textContent = msg;
 }
 
 function laneFromKind(kind) {
@@ -815,6 +830,119 @@ async function loadPaymentConfig() {
   }
 }
 
+function renderDonationPaymentDetails(manual = {}) {
+  if (!el.donationPaymentDetails) return;
+  const rows = [];
+  if (manual.till_number) rows.push(`<div><strong>Till Number:</strong> ${manual.till_number}</div>`);
+  if (manual.paybill_number) rows.push(`<div><strong>Paybill:</strong> ${manual.paybill_number}</div>`);
+  if (manual.account_number) rows.push(`<div><strong>Account Number:</strong> ${manual.account_number}</div>`);
+  if (manual.bank_name) rows.push(`<div><strong>Bank:</strong> ${manual.bank_name}</div>`);
+  if (manual.bank_account_name) rows.push(`<div><strong>Bank Account Name:</strong> ${manual.bank_account_name}</div>`);
+  if (manual.bank_account_number) rows.push(`<div><strong>Bank Account Number:</strong> ${manual.bank_account_number}</div>`);
+  if (manual.bank_branch) rows.push(`<div><strong>Bank Branch:</strong> ${manual.bank_branch}</div>`);
+  if (manual.bank_swift) rows.push(`<div><strong>SWIFT:</strong> ${manual.bank_swift}</div>`);
+  if (!rows.length) rows.push("<div>No donation payment details configured yet.</div>");
+  el.donationPaymentDetails.innerHTML = rows.join("");
+}
+
+async function loadDonationConfig() {
+  try {
+    const response = await fetch("/api/donations/config");
+    if (!response.ok) throw new Error(String(response.status));
+    const cfg = await response.json();
+    const methods = Array.isArray(cfg.methods) ? cfg.methods : ["manual"];
+    if (el.donationMethod) {
+      el.donationMethod.innerHTML = "";
+      methods.forEach((m) => {
+        const opt = document.createElement("option");
+        opt.value = m;
+        opt.textContent = m === "manual" ? "Manual Transfer" : m;
+        el.donationMethod.appendChild(opt);
+      });
+    }
+    renderDonationPaymentDetails(cfg.manual || {});
+  } catch {
+    renderDonationPaymentDetails({});
+    setDonationStatus("Could not load donation config.");
+  }
+}
+
+async function submitDonationIntent() {
+  const name = String(el.donationName?.value || "").trim();
+  const email = String(el.donationEmail?.value || "").trim();
+  const phone = String(el.donationPhone?.value || "").trim();
+  const amountKes = Number(el.donationAmount?.value || 0);
+  const method = String(el.donationMethod?.value || "manual");
+  const message = String(el.donationMessage?.value || "").trim();
+
+  if (!name || !Number.isFinite(amountKes) || amountKes < 1) {
+    setDonationStatus("Enter valid donor name and donation amount.");
+    return;
+  }
+
+  setDonationStatus("Submitting donation intent...");
+  try {
+    const response = await fetch("/api/donations", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        name,
+        email,
+        phone,
+        amount_kes: amountKes,
+        method,
+        message
+      })
+    });
+    const data = await response.json();
+    if (!response.ok) {
+      setDonationStatus(`Donation failed: ${data.error || "Request failed."}`);
+      return;
+    }
+    setDonationStatus(`Donation recorded: ${data.donation_id}. Complete transfer and share reference with admin.`);
+    el.donationForm?.reset();
+  } catch {
+    setDonationStatus("Donation request failed. Check server and retry.");
+  }
+}
+
+function donationsToCsv(rows) {
+  const header = ["id", "name", "email", "phone", "amount_kes", "method", "status", "reference_code", "created_at", "confirmed_at", "message"];
+  const esc = (v) => {
+    const s = String(v ?? "");
+    if (/[\",\\n]/.test(s)) return `"${s.replace(/\"/g, "\"\"")}"`;
+    return s;
+  };
+  const lines = [header.join(",")];
+  rows.forEach((r) => {
+    const line = [
+      r.id, r.name, r.email, r.phone, r.amount_kes, r.method,
+      r.status, r.reference_code, r.created_at, r.confirmed_at, r.message
+    ].map(esc).join(",");
+    lines.push(line);
+  });
+  return lines.join("\\n");
+}
+
+async function downloadDonationsCsv() {
+  if (!requireAdminForEdit("download donor records")) return;
+  try {
+    const response = await fetch("/api/donations?limit=500", {
+      headers: { "x-admin-key": adminKey() }
+    });
+    const data = await response.json();
+    if (!response.ok) {
+      toast(data.error || "Could not load donations.", "warn");
+      return;
+    }
+    const csv = donationsToCsv(Array.isArray(data.donations) ? data.donations : []);
+    downloadTextFile(`donations-${new Date().toISOString().slice(0, 10)}.csv`, csv, "text/csv;charset=utf-8");
+    toast("Donations CSV downloaded.", "ok");
+  } catch {
+    toast("Failed to download donations CSV.", "warn");
+  }
+}
+
 function bindForms() {
   el.checkoutBtn?.addEventListener("click", () => {
     startCheckout();
@@ -985,6 +1113,14 @@ function bindForms() {
     el.donorForm.reset();
   });
 
+  el.donationForm?.addEventListener("submit", (e) => {
+    e.preventDefault();
+    submitDonationIntent();
+  });
+  el.downloadDonationsBtn?.addEventListener("click", () => {
+    downloadDonationsCsv();
+  });
+
   document.addEventListener("click", (e) => {
     const addCart = e.target.closest(".add-to-cart");
     if (addCart) {
@@ -1080,6 +1216,7 @@ function setupNav() {
   setupNav();
   await loadContent();
   await loadPaymentConfig();
+  await loadDonationConfig();
   bindForms();
   renderAll();
 })();

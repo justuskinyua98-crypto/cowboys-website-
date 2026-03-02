@@ -8,6 +8,7 @@ const dns = require('dns');
 const ROOT = process.cwd();
 const CONTENT_PATH = path.join(ROOT, 'data', 'content.json');
 const PAYMENTS_PATH = path.join(ROOT, 'data', 'payments.json');
+const DONATIONS_PATH = path.join(ROOT, 'data', 'donations.json');
 const ADMIN_KEY = process.env.ADMIN_KEY || 'change-me-admin-key';
 const PORT = Number(process.env.PORT || 8000);
 const HOST = process.env.HOST || '127.0.0.1';
@@ -31,6 +32,16 @@ const MANUAL_PAYMENT = {
   tillNumber: process.env.MANUAL_TILL_NUMBER || '',
   payeeName: process.env.MANUAL_PAYEE_NAME || 'Cowboys Group Holdings'
 };
+const FOUNDATION_PAYMENT = {
+  tillNumber: process.env.FOUNDATION_TILL_NUMBER || '',
+  paybillNumber: process.env.FOUNDATION_PAYBILL_NUMBER || '',
+  accountNumber: process.env.FOUNDATION_ACCOUNT_NUMBER || '',
+  bankName: process.env.FOUNDATION_BANK_NAME || '',
+  bankAccountName: process.env.FOUNDATION_BANK_ACCOUNT_NAME || '',
+  bankAccountNumber: process.env.FOUNDATION_BANK_ACCOUNT_NUMBER || '',
+  bankBranch: process.env.FOUNDATION_BANK_BRANCH || '',
+  bankSwift: process.env.FOUNDATION_BANK_SWIFT || ''
+};
 const PAYMENT_POLICY = {
   mpesaPendingTimeoutMin: Number(process.env.MPESA_PENDING_TIMEOUT_MIN || 20),
   manualPendingTimeoutHours: Number(process.env.MANUAL_PENDING_TIMEOUT_HOURS || 48)
@@ -39,7 +50,9 @@ const PAYMENT_POLICY = {
 const RATE_LIMIT_CONFIG = {
   checkout: { windowMs: 60_000, max: 20 },
   confirmManual: { windowMs: 60_000, max: 30 },
-  mediaUpload: { windowMs: 60_000, max: 40 }
+  mediaUpload: { windowMs: 60_000, max: 40 },
+  donationSubmit: { windowMs: 60_000, max: 30 },
+  donationAdmin: { windowMs: 60_000, max: 60 }
 };
 const RATE_LIMIT_STORE = new Map();
 
@@ -141,6 +154,21 @@ async function writePayments(payments) {
   await fsp.writeFile(PAYMENTS_PATH, JSON.stringify(payments, null, 2), 'utf8');
 }
 
+async function readDonations() {
+  try {
+    const raw = await fsp.readFile(DONATIONS_PATH, 'utf8');
+    const parsed = JSON.parse(raw);
+    if (!Array.isArray(parsed.donations)) return { donations: [] };
+    return parsed;
+  } catch {
+    return { donations: [] };
+  }
+}
+
+async function writeDonations(donations) {
+  await fsp.writeFile(DONATIONS_PATH, JSON.stringify(donations, null, 2), 'utf8');
+}
+
 function isAuthed(req) {
   return req.headers['x-admin-key'] === ADMIN_KEY;
 }
@@ -182,6 +210,14 @@ function cacheControlFor(filePath) {
   if (ext === '.html') return 'no-cache';
   if (ext === '.json') return 'no-store';
   return 'public, max-age=86400';
+}
+
+function sanitizeEmail(value) {
+  return String(value || '').trim().toLowerCase().slice(0, 200);
+}
+
+function sanitizePhone(value) {
+  return normalizeKenyanPhone(String(value || '').trim()).slice(0, 20);
 }
 
 function isMpesaConfigured() {
@@ -444,6 +480,128 @@ async function handleApi(req, res, urlObj) {
         payee_name: MANUAL_PAYMENT.payeeName
       }
     });
+  }
+
+  if (req.method === 'GET' && urlObj.pathname === '/api/donations/config') {
+    return sendJson(res, 200, {
+      methods: ['manual'],
+      manual: {
+        till_number: FOUNDATION_PAYMENT.tillNumber || MANUAL_PAYMENT.tillNumber,
+        paybill_number: FOUNDATION_PAYMENT.paybillNumber,
+        account_number: FOUNDATION_PAYMENT.accountNumber,
+        bank_name: FOUNDATION_PAYMENT.bankName,
+        bank_account_name: FOUNDATION_PAYMENT.bankAccountName,
+        bank_account_number: FOUNDATION_PAYMENT.bankAccountNumber,
+        bank_branch: FOUNDATION_PAYMENT.bankBranch,
+        bank_swift: FOUNDATION_PAYMENT.bankSwift
+      }
+    });
+  }
+
+  if (req.method === 'POST' && urlObj.pathname === '/api/donations') {
+    const rate = hitRateLimit(req, 'donation-submit', RATE_LIMIT_CONFIG.donationSubmit);
+    if (rate.limited) {
+      res.setHeader('Retry-After', String(rate.retryAfterSec));
+      return sendJson(res, 429, { error: 'Too many donation attempts. Please retry shortly.' });
+    }
+
+    try {
+      const raw = await readBody(req);
+      const payload = parseJson(raw);
+      if (!payload || typeof payload !== 'object') {
+        return sendJson(res, 400, { error: 'Invalid JSON body.' });
+      }
+
+      const amountKes = Math.round(Number(payload.amount_kes || 0));
+      const donorName = String(payload.name || '').trim().slice(0, 120);
+      const donorEmail = sanitizeEmail(payload.email);
+      const donorPhone = sanitizePhone(payload.phone);
+      const donorMessage = String(payload.message || '').trim().slice(0, 1200);
+      const method = String(payload.method || 'manual').trim().toLowerCase();
+
+      if (!donorName) return sendJson(res, 400, { error: 'Donor name is required.' });
+      if (!Number.isFinite(amountKes) || amountKes < 1) return sendJson(res, 400, { error: 'Amount must be at least KES 1.' });
+      if (donorEmail && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(donorEmail)) {
+        return sendJson(res, 400, { error: 'Invalid email format.' });
+      }
+      if (donorPhone && !/^254\d{9}$/.test(donorPhone)) {
+        return sendJson(res, 400, { error: 'Use a valid Kenyan phone format like 254712345678.' });
+      }
+      if (method !== 'manual') return sendJson(res, 400, { error: 'Invalid donation method.' });
+
+      const donations = await readDonations();
+      const donation = {
+        id: `donation-${Date.now()}`,
+        name: donorName,
+        email: donorEmail || null,
+        phone: donorPhone || null,
+        amount_kes: amountKes,
+        method,
+        status: 'awaiting_confirmation',
+        message: donorMessage || null,
+        created_at: new Date().toISOString(),
+        confirmed_at: null,
+        reference_code: null
+      };
+      donations.donations.unshift(donation);
+      await writeDonations(donations);
+
+      return sendJson(res, 200, {
+        ok: true,
+        donation_id: donation.id,
+        status: donation.status,
+        message: 'Donation pledge received. Complete payment using the foundation account details.'
+      });
+    } catch (err) {
+      return sendJson(res, 400, { error: 'Invalid donation payload', detail: err.message });
+    }
+  }
+
+  if (req.method === 'GET' && urlObj.pathname === '/api/donations') {
+    const rate = hitRateLimit(req, 'donation-admin', RATE_LIMIT_CONFIG.donationAdmin);
+    if (rate.limited) {
+      res.setHeader('Retry-After', String(rate.retryAfterSec));
+      return sendJson(res, 429, { error: 'Too many requests. Please retry shortly.' });
+    }
+    if (!isAuthed(req)) return sendJson(res, 401, { error: 'Unauthorized' });
+    const limit = Math.max(1, Math.min(500, Number(urlObj.searchParams.get('limit') || 100)));
+    const donations = await readDonations();
+    return sendJson(res, 200, {
+      ok: true,
+      count: donations.donations.length,
+      donations: donations.donations.slice(0, limit)
+    });
+  }
+
+  if (req.method === 'POST' && urlObj.pathname === '/api/donations/confirm') {
+    const rate = hitRateLimit(req, 'donation-admin', RATE_LIMIT_CONFIG.donationAdmin);
+    if (rate.limited) {
+      res.setHeader('Retry-After', String(rate.retryAfterSec));
+      return sendJson(res, 429, { error: 'Too many requests. Please retry shortly.' });
+    }
+    if (!isAuthed(req)) return sendJson(res, 401, { error: 'Unauthorized' });
+
+    try {
+      const raw = await readBody(req);
+      const payload = parseJson(raw || '{}', {});
+      const donationId = String(payload.donation_id || '').trim();
+      const referenceCode = String(payload.reference_code || '').trim().toUpperCase().slice(0, 80);
+      if (!donationId) return sendJson(res, 400, { error: 'donation_id is required.' });
+      if (!referenceCode) return sendJson(res, 400, { error: 'reference_code is required.' });
+
+      const donations = await readDonations();
+      const item = donations.donations.find((x) => x.id === donationId);
+      if (!item) return sendJson(res, 404, { error: 'Donation not found.' });
+      if (item.status === 'confirmed') return sendJson(res, 409, { error: 'Donation already confirmed.' });
+
+      item.status = 'confirmed';
+      item.confirmed_at = new Date().toISOString();
+      item.reference_code = referenceCode;
+      await writeDonations(donations);
+      return sendJson(res, 200, { ok: true, donation_id: item.id, status: item.status });
+    } catch (err) {
+      return sendJson(res, 400, { error: 'Invalid confirmation payload', detail: err.message });
+    }
   }
 
   if (req.method === 'POST' && urlObj.pathname === '/api/payments/checkout') {
@@ -830,6 +988,11 @@ server.listen(PORT, HOST, async () => {
     await fsp.access(PAYMENTS_PATH);
   } catch {
     await writePayments({ orders: [] });
+  }
+  try {
+    await fsp.access(DONATIONS_PATH);
+  } catch {
+    await writeDonations({ donations: [] });
   }
 
   console.log(`Server running at http://${HOST}:${PORT}`);

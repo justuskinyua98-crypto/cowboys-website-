@@ -78,6 +78,7 @@
         <a href="#events">Events</a>
         <a href="#media">Media</a>
         <a href="#foundation">Foundation</a>
+        <a href="DARAJA_READINESS_CHECKLIST.html">Daraja Checklist</a>
         <a href="STAFF_UPDATE_PLAYBOOK.html">Staff Guide</a>
         <a href="#contact">Contact</a>
       </nav>
@@ -809,6 +810,9 @@
               <span>Talent Scholarships</span>
               <span>Faith & Values Programs</span>
             </div>
+            <p class="top-space">
+              <a class="btn btn-ghost" href="DARAJA_READINESS_CHECKLIST.html">Open Daraja Readiness Checklist</a>
+            </p>
           </div>
           <form class="inquiry-form" id="partner-form">
             <h3>MOU / Donor Partnership Inquiry</h3>
@@ -818,6 +822,34 @@
             <label>Message <textarea rows="4"></textarea></label>
             <button class="btn btn-primary" type="submit">Submit Partnership Request</button>
           </form>
+        </div>
+        <div class="split top-space">
+          <article class="product-card">
+            <h3>Foundation Donation</h3>
+            <p>Submit donation intent, then complete transfer via Till/Paybill/Bank details below.</p>
+            <form id="donation-form" class="inquiry-form">
+              <label>Full Name <input id="donation-name" type="text" required /></label>
+              <label>Email <input id="donation-email" type="email" /></label>
+              <label>Phone (2547XXXXXXXX) <input id="donation-phone" type="text" placeholder="254712345678" /></label>
+              <label>Amount (KES) <input id="donation-amount" type="number" min="1" step="1" required /></label>
+              <label>Method
+                <select id="donation-method">
+                  <option value="manual">Manual Transfer</option>
+                </select>
+              </label>
+              <label>Message (Optional) <textarea id="donation-message" rows="3"></textarea></label>
+              <button class="btn btn-primary" type="submit">Submit Donation Intent</button>
+            </form>
+            <p id="donation-status" class="fine">Ready.</p>
+          </article>
+          <article class="product-card">
+            <h3>Foundation Payment Details</h3>
+            <div id="donation-payment-details" class="gallery-grid"></div>
+            <p class="fine">Admin can export donor records with Admin Key.</p>
+            <div class="outfit-actions">
+              <button id="download-donations-btn" class="btn btn-ghost" type="button">Download Donations CSV</button>
+            </div>
+          </article>
         </div>
       </section>
 
