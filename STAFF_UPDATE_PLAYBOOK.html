@@ -1,0 +1,99 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Staff Update Playbook | Cowboys Group Holdings</title>
+    <style>
+      body { font-family: Arial, sans-serif; margin: 0; background: #f8fafc; color: #1f2937; }
+      .wrap { max-width: 900px; margin: 0 auto; padding: 22px; }
+      .card { background: #fff; border: 1px solid #d1d5db; border-radius: 12px; padding: 16px; margin-bottom: 14px; }
+      h1, h2, h3 { margin: 0 0 10px; }
+      p, li { line-height: 1.5; }
+      code { background: #eef2ff; padding: 2px 6px; border-radius: 6px; }
+      .warn { background: #fff7ed; border: 1px solid #fdba74; border-radius: 10px; padding: 10px; }
+      .ok { background: #ecfdf5; border: 1px solid #86efac; border-radius: 10px; padding: 10px; }
+      .steps li { margin-bottom: 8px; }
+      .print { margin-bottom: 12px; }
+      button { border: 0; border-radius: 8px; padding: 9px 12px; font-weight: 700; cursor: pointer; }
+      .btn { background: #111827; color: #fff; }
+      @media print { .print { display: none; } .card { page-break-inside: avoid; } }
+    </style>
+  </head>
+  <body>
+    <div class="wrap">
+      <div class="print">
+        <button class="btn" onclick="window.print()">Print Playbook</button>
+      </div>
+
+      <section class="card">
+        <h1>Staff Update Playbook</h1>
+        <p>Use this guide to update posters and stock without editing code files.</p>
+        <div class="warn">
+          <strong>Rule:</strong> Never edit <code>index.html</code>, <code>script.js</code>, <code>styles.css</code>, or <code>server.js</code>.
+          Use only the website admin forms.
+        </div>
+      </section>
+
+      <section class="card">
+        <h2>Before You Start</h2>
+        <ol class="steps">
+          <li>Open the main site and scroll to admin sections.</li>
+          <li>Enter <strong>Admin Key</strong> in the admin key field.</li>
+          <li>Prepare images with clean names (example: <code>goat-premium.jpg</code>).</li>
+        </ol>
+      </section>
+
+      <section class="card">
+        <h2>How To Update Outfits</h2>
+        <ol class="steps">
+          <li>Go to <strong>Admin Photo Manager</strong>.</li>
+          <li>Upload image from <strong>Upload File To Server</strong> (folder: <code>outfits</code>).</li>
+          <li>Copy uploaded path from <strong>Uploaded Path</strong>.</li>
+          <li>Paste into <strong>Image Path or URL</strong>.</li>
+          <li>Fill name, price, collection, description.</li>
+          <li>Click <strong>Add Outfit</strong>.</li>
+          <li>Click <strong>Save Outfits To Backend</strong>.</li>
+        </ol>
+      </section>
+
+      <section class="card">
+        <h2>How To Update Event Posters</h2>
+        <ol class="steps">
+          <li>Upload event poster (folder: <code>events</code>).</li>
+          <li>Go to <strong>Admin Ticket Manager</strong>.</li>
+          <li>Paste uploaded path into <strong>Poster/Flyer Image Path</strong>.</li>
+          <li>Add title, date, venue, performers, ticket price.</li>
+          <li>Click <strong>Add Event</strong>.</li>
+          <li>Click <strong>Save Events To Backend</strong>.</li>
+        </ol>
+      </section>
+
+      <section class="card">
+        <h2>How To Update Livestock</h2>
+        <ol class="steps">
+          <li>Upload livestock image (folder: <code>livestock</code>).</li>
+          <li>Go to <strong>Admin Livestock Manager</strong>.</li>
+          <li>Paste path into <strong>Photo Path</strong>.</li>
+          <li>Fill animal name, weight, rate/kg, status.</li>
+          <li>Click <strong>Add Listing</strong>.</li>
+          <li>Click <strong>Save Livestock To Backend</strong>.</li>
+        </ol>
+      </section>
+
+      <section class="card">
+        <h2>Quality Checklist (Always)</h2>
+        <ul>
+          <li>Image appears correctly on card</li>
+          <li>Price is correct (KES)</li>
+          <li>No typing errors in names and dates</li>
+          <li>Saved to backend button clicked</li>
+          <li>Hard refresh page and re-check</li>
+        </ul>
+        <div class="ok">
+          If you can see the update after refresh, it is saved correctly.
+        </div>
+      </section>
+    </div>
+  </body>
+</html>

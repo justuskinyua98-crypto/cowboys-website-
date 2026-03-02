@@ -149,6 +149,12 @@ function adminOnly(html) {
   return isAdminMode() ? html : "";
 }
 
+function requireAdminForEdit(actionLabel = "edit content") {
+  if (isAdminMode()) return true;
+  toast(`Enter admin key to ${actionLabel}.`, "warn");
+  return false;
+}
+
 function toast(message, tone = "info") {
   const id = "app-toast";
   let node = document.getElementById(id);
@@ -830,6 +836,7 @@ function bindForms() {
 
   el.outfitForm?.addEventListener("submit", (e) => {
     e.preventDefault();
+    if (!requireAdminForEdit("add outfit stock")) return;
     const fd = new FormData(el.outfitForm);
     const collection = String(fd.get("outfit-collection") || document.getElementById("outfit-collection")?.value || "adults");
     const name = String(fd.get("outfit-name") || document.getElementById("outfit-name")?.value || "").trim();
@@ -844,6 +851,7 @@ function bindForms() {
   });
 
   el.resetOutfitsBtn?.addEventListener("click", () => {
+    if (!requireAdminForEdit("reset outfit demo data")) return;
     state.content.outfits = structuredClone(defaultContent.outfits);
     localStorage.setItem(OUTFIT_KEY, JSON.stringify(state.content.outfits));
     renderOutfits();
@@ -851,6 +859,7 @@ function bindForms() {
 
   el.eventForm?.addEventListener("submit", (e) => {
     e.preventDefault();
+    if (!requireAdminForEdit("add event")) return;
     const title = String(document.getElementById("event-title")?.value || "").trim();
     const date = String(document.getElementById("event-date")?.value || "");
     const venue = String(document.getElementById("event-venue")?.value || "").trim();
@@ -865,6 +874,7 @@ function bindForms() {
 
   el.livestockForm?.addEventListener("submit", (e) => {
     e.preventDefault();
+    if (!requireAdminForEdit("add livestock listing")) return;
     const name = String(document.getElementById("livestock-name")?.value || "").trim();
     const weight_kg = Number(document.getElementById("livestock-weight")?.value || 0);
     const rate_per_kg_kes = Number(document.getElementById("livestock-rate")?.value || 0);
@@ -878,6 +888,7 @@ function bindForms() {
 
   el.decorForm?.addEventListener("submit", (e) => {
     e.preventDefault();
+    if (!requireAdminForEdit("add decor item")) return;
     const name = String(document.getElementById("decor-name")?.value || "").trim();
     const category = String(document.getElementById("decor-category")?.value || "Service");
     const price_kes = Number(document.getElementById("decor-price")?.value || 0);
@@ -891,6 +902,7 @@ function bindForms() {
 
   el.teamForm?.addEventListener("submit", (e) => {
     e.preventDefault();
+    if (!requireAdminForEdit("add team profile")) return;
     const name = String(document.getElementById("team-name")?.value || "").trim();
     const role = String(document.getElementById("team-role")?.value || "").trim();
     const photo = String(document.getElementById("team-photo")?.value || "").trim() || PLACEHOLDER_IMAGE;
@@ -903,6 +915,7 @@ function bindForms() {
 
   el.socialForm?.addEventListener("submit", (e) => {
     e.preventDefault();
+    if (!requireAdminForEdit("add social link")) return;
     const platform = String(document.getElementById("social-platform")?.value || "").trim();
     const handle = String(document.getElementById("social-handle")?.value || "").trim();
     const url = String(document.getElementById("social-url")?.value || "").trim();
@@ -914,6 +927,7 @@ function bindForms() {
 
   el.descriptionForm?.addEventListener("submit", (e) => {
     e.preventDefault();
+    if (!requireAdminForEdit("add description")) return;
     const title = String(document.getElementById("description-title")?.value || "").trim();
     const text = String(document.getElementById("description-text")?.value || "").trim();
     if (!title || !text) return notify("Provide valid description.");
@@ -924,6 +938,7 @@ function bindForms() {
 
   el.partnerFormAdmin?.addEventListener("submit", (e) => {
     e.preventDefault();
+    if (!requireAdminForEdit("add partner")) return;
     const name = String(document.getElementById("partner-name")?.value || "").trim();
     const email = String(document.getElementById("partner-email")?.value || "").trim();
     const description = String(document.getElementById("partner-description")?.value || "").trim();
@@ -935,6 +950,7 @@ function bindForms() {
 
   el.reviewForm?.addEventListener("submit", (e) => {
     e.preventDefault();
+    if (!requireAdminForEdit("add review")) return;
     const name = String(document.getElementById("review-name")?.value || "").trim();
     const text = String(document.getElementById("review-text")?.value || "").trim();
     const rating = Number(document.getElementById("review-rating")?.value || 5);
@@ -946,6 +962,7 @@ function bindForms() {
 
   el.uploadForm?.addEventListener("submit", async (e) => {
     e.preventDefault();
+    if (!requireAdminForEdit("upload media")) return;
     const folder = String(document.getElementById("upload-folder")?.value || "outfits");
     const fileInput = document.getElementById("upload-file");
     const file = fileInput?.files?.[0];
