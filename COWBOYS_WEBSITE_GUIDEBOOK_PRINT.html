@@ -1,0 +1,201 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Cowboys Website Guidebook (Print Edition)</title>
+    <style>
+      :root {
+        --ink: #1f2937;
+        --muted: #4b5563;
+        --line: #d1d5db;
+      }
+      body {
+        margin: 0;
+        font-family: "Georgia", "Times New Roman", serif;
+        color: var(--ink);
+        line-height: 1.55;
+        background: #fff;
+      }
+      .page {
+        max-width: 820px;
+        margin: 0 auto;
+        padding: 44px 48px;
+        border-bottom: 1px solid var(--line);
+      }
+      h1, h2, h3 {
+        margin: 0 0 12px;
+        line-height: 1.25;
+      }
+      h1 { font-size: 34px; }
+      h2 { font-size: 24px; margin-top: 14px; }
+      h3 { font-size: 18px; margin-top: 14px; }
+      p, li { font-size: 16px; color: var(--ink); }
+      ul, ol { margin: 8px 0 12px 22px; }
+      .meta { color: var(--muted); }
+      .code {
+        background: #f8fafc;
+        border: 1px solid var(--line);
+        border-radius: 6px;
+        padding: 10px 12px;
+        font-family: "Courier New", monospace;
+        font-size: 14px;
+        white-space: pre-wrap;
+      }
+      .page-break {
+        page-break-after: always;
+        break-after: page;
+      }
+      @media print {
+        .page {
+          border-bottom: none;
+          padding: 20mm 14mm;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <section class="page page-break">
+      <h1>Cowboys Group Holdings Website Guidebook</h1>
+      <p class="meta">Print Edition</p>
+      <p><strong>Author:</strong> Justus Kinyua and team</p>
+      <p><strong>Project:</strong> Cowboys Group Holdings website + lightweight backend</p>
+      <p>
+        This guide records how the website was built, how it works, and how to maintain, improve, and deploy it.
+      </p>
+      <h2>Purpose</h2>
+      <p>
+        To preserve technical knowledge for the next generation, including the exact build path, key decisions,
+        and practical workflows.
+      </p>
+    </section>
+
+    <section class="page page-break">
+      <h2>1. Technology Used</h2>
+      <ul>
+        <li>Frontend: HTML, CSS, Vanilla JavaScript</li>
+        <li>Backend: Node.js native HTTP server</li>
+        <li>Storage: JSON files under <code>data/</code></li>
+        <li>Version control: Git + GitHub</li>
+        <li>Media: Local assets under <code>assets/</code></li>
+      </ul>
+      <h2>2. Project Structure</h2>
+      <div class="code">cwboys website/
+  assets/
+  data/
+  index.html
+  styles.css
+  script.js
+  server.js
+  robots.txt
+  sitemap.xml
+  COWBOYS_WEBSITE_GUIDEBOOK.md
+  COWBOYS_WEBSITE_GUIDEBOOK_PRINT.html</div>
+    </section>
+
+    <section class="page page-break">
+      <h2>3. Run Modes</h2>
+      <h3>Private Debug</h3>
+      <div class="code">cd "/Users/justusmurerwa/Documents/cwboys website"
+HOST="127.0.0.1" PORT="8000" ADMIN_KEY="your-admin-key" MANUAL_TILL_NUMBER="5628570" MANUAL_PAYEE_NAME="Cowboys Group Holdings" npm start</div>
+      <p>Open: <code>http://127.0.0.1:8000</code></p>
+      <h3>LAN Demo (same Wi-Fi)</h3>
+      <div class="code">HOST="0.0.0.0" PORT="8000" ADMIN_KEY="your-admin-key" MANUAL_TILL_NUMBER="5628570" MANUAL_PAYEE_NAME="Cowboys Group Holdings" npm start</div>
+      <p>Share: <code>http://&lt;local-ip&gt;:8000</code></p>
+    </section>
+
+    <section class="page page-break">
+      <h2>4. Build Timeline</h2>
+      <ol>
+        <li>Initial project snapshot</li>
+        <li>Setup docs + env template</li>
+        <li>Section placeholders and content mapping</li>
+        <li>Team photos and profile framing</li>
+        <li>Media loading fixes and URL normalization</li>
+        <li>Real media mapped (outfits, events, livestock, videos)</li>
+        <li>Backend hardening (headers, limits, rate controls)</li>
+        <li>UX polish (admin-only controls, toasts, faster loading)</li>
+        <li>SEO setup (meta tags, robots, sitemap)</li>
+        <li>Knowledge guidebook creation</li>
+      </ol>
+    </section>
+
+    <section class="page page-break">
+      <h2>5. How It Works</h2>
+      <h3>Frontend (<code>script.js</code>)</h3>
+      <ul>
+        <li>Fetches content from <code>/api/content</code></li>
+        <li>Renders sections (outfits, events, team, socials, etc.)</li>
+        <li>Handles cart and checkout interactions</li>
+        <li>Handles admin forms and save actions</li>
+      </ul>
+      <h3>Backend (<code>server.js</code>)</h3>
+      <ul>
+        <li>Serves static site files</li>
+        <li>Serves API routes for content and payments</li>
+        <li>Stores data in JSON files</li>
+        <li>Accepts media uploads</li>
+        <li>Applies security headers and rate limits</li>
+      </ul>
+    </section>
+
+    <section class="page page-break">
+      <h2>6. Core API Endpoints</h2>
+      <div class="code">GET  /api/health
+GET  /api/content
+PUT  /api/content            (admin key required)
+GET  /api/payments/config
+POST /api/payments/checkout
+GET  /api/payments/status
+GET  /api/payments/receipt
+POST /api/payments/confirm-manual   (admin key required)
+POST /api/media                      (admin key required)</div>
+    </section>
+
+    <section class="page page-break">
+      <h2>7. Media Workflow</h2>
+      <ol>
+        <li>Place files in the right assets folder.</li>
+        <li>Use clean file names (no spaces/special symbols).</li>
+        <li>Map each file path in <code>data/content.json</code>.</li>
+        <li>Hard refresh browser (<code>Cmd+Shift+R</code>).</li>
+      </ol>
+      <h3>Example</h3>
+      <div class="code">"photo": "assets/team/aaron-sang.jpg"</div>
+    </section>
+
+    <section class="page page-break">
+      <h2>8. SEO Setup</h2>
+      <ul>
+        <li>Canonical and social meta tags in <code>index.html</code></li>
+        <li><code>robots.txt</code> at root</li>
+        <li><code>sitemap.xml</code> at root</li>
+        <li>JSON-LD Organization schema</li>
+      </ul>
+      <p>
+        After deployment, submit sitemap in Google Search Console and request indexing for homepage.
+      </p>
+    </section>
+
+    <section class="page page-break">
+      <h2>9. Security Practices</h2>
+      <ul>
+        <li>Never expose tokens in public/chat.</li>
+        <li>Use strong <code>ADMIN_KEY</code> in production.</li>
+        <li>Rotate compromised tokens immediately.</li>
+        <li>Use HTTPS for live deployment.</li>
+      </ul>
+    </section>
+
+    <section class="page">
+      <h2>10. Final Lesson</h2>
+      <p>
+        Real software is built by iteration: build, test, fix, improve, and save progress in Git.
+      </p>
+      <p>
+        This guide is proof that steady progress creates real systems.
+      </p>
+      <p><strong>End of Print Edition</strong></p>
+    </section>
+  </body>
+</html>
