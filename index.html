@@ -894,6 +894,33 @@
             <p><a href="tel:+254793791623">+254 793 791 623</a></p>
           </article>
         </div>
+        <div class="split top-space">
+          <article class="product-card">
+            <h3>Get Event Updates</h3>
+            <p>Subscribe to get event dates, tickets, and outfit drops by email.</p>
+            <form id="subscriber-form" class="inquiry-form">
+              <label>Name (Optional) <input id="subscriber-name" type="text" /></label>
+              <label>Email <input id="subscriber-email" type="email" required /></label>
+              <label>
+                <input id="subscriber-consent" type="checkbox" />
+                I agree to receive updates from Cowboys Group Holdings.
+              </label>
+              <button class="btn btn-primary" type="submit">Subscribe</button>
+            </form>
+            <p id="subscriber-status" class="fine">Ready.</p>
+          </article>
+          <article class="product-card">
+            <h3>Admin: Subscriber List</h3>
+            <label>Admin Key (Mailing Admin)
+              <input id="admin-key-subscribers" type="password" placeholder="same ADMIN_KEY used on server" />
+            </label>
+            <div class="outfit-actions top-space">
+              <button id="download-subscribers-btn" class="btn btn-ghost" type="button">Download Subscribers CSV</button>
+              <button id="refresh-subscribers-btn" class="btn btn-ghost" type="button">Refresh List</button>
+            </div>
+            <div id="subscriber-admin-list" class="gallery-grid top-space"></div>
+          </article>
+        </div>
       </section>
     </main>
 

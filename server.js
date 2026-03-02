@@ -9,6 +9,7 @@ const ROOT = process.cwd();
 const CONTENT_PATH = path.join(ROOT, 'data', 'content.json');
 const PAYMENTS_PATH = path.join(ROOT, 'data', 'payments.json');
 const DONATIONS_PATH = path.join(ROOT, 'data', 'donations.json');
+const SUBSCRIBERS_PATH = path.join(ROOT, 'data', 'subscribers.json');
 const ADMIN_KEY = process.env.ADMIN_KEY || 'change-me-admin-key';
 const PORT = Number(process.env.PORT || 8000);
 const HOST = process.env.HOST || '127.0.0.1';
@@ -52,7 +53,9 @@ const RATE_LIMIT_CONFIG = {
   confirmManual: { windowMs: 60_000, max: 30 },
   mediaUpload: { windowMs: 60_000, max: 40 },
   donationSubmit: { windowMs: 60_000, max: 30 },
-  donationAdmin: { windowMs: 60_000, max: 60 }
+  donationAdmin: { windowMs: 60_000, max: 60 },
+  subscribeSubmit: { windowMs: 60_000, max: 40 },
+  subscribeAdmin: { windowMs: 60_000, max: 60 }
 };
 const RATE_LIMIT_STORE = new Map();
 
@@ -169,6 +172,21 @@ async function writeDonations(donations) {
   await fsp.writeFile(DONATIONS_PATH, JSON.stringify(donations, null, 2), 'utf8');
 }
 
+async function readSubscribers() {
+  try {
+    const raw = await fsp.readFile(SUBSCRIBERS_PATH, 'utf8');
+    const parsed = JSON.parse(raw);
+    if (!Array.isArray(parsed.subscribers)) return { subscribers: [] };
+    return parsed;
+  } catch {
+    return { subscribers: [] };
+  }
+}
+
+async function writeSubscribers(payload) {
+  await fsp.writeFile(SUBSCRIBERS_PATH, JSON.stringify(payload, null, 2), 'utf8');
+}
+
 function isAuthed(req) {
   return req.headers['x-admin-key'] === ADMIN_KEY;
 }
@@ -244,6 +262,15 @@ function donationToReceipt(donation) {
     confirmed_at: donation.confirmed_at || null,
     message: donation.message || null
   };
+}
+
+function makeSubscriberId() {
+  return `sub-${Date.now()}-${Math.floor(Math.random() * 1e6)}`;
+}
+
+function makeSubscriberToken(email) {
+  const seed = `${String(email || '').toLowerCase()}-${Date.now()}-${Math.random()}`;
+  return Buffer.from(seed).toString('base64').replace(/[^a-zA-Z0-9]/g, '').slice(0, 24);
 }
 
 function isMpesaConfigured() {
@@ -522,6 +549,95 @@ async function handleApi(req, res, urlObj) {
         bank_swift: FOUNDATION_PAYMENT.bankSwift
       }
     });
+  }
+
+  if (req.method === 'POST' && urlObj.pathname === '/api/subscribers') {
+    const rate = hitRateLimit(req, 'subscribe-submit', RATE_LIMIT_CONFIG.subscribeSubmit);
+    if (rate.limited) {
+      res.setHeader('Retry-After', String(rate.retryAfterSec));
+      return sendJson(res, 429, { error: 'Too many subscribe attempts. Please retry shortly.' });
+    }
+
+    try {
+      const raw = await readBody(req);
+      const payload = parseJson(raw);
+      if (!payload || typeof payload !== 'object') return sendJson(res, 400, { error: 'Invalid JSON body.' });
+
+      const name = String(payload.name || '').trim().slice(0, 120);
+      const email = sanitizeEmail(payload.email);
+      const consent = Boolean(payload.consent);
+      if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+        return sendJson(res, 400, { error: 'Valid email is required.' });
+      }
+      if (!consent) return sendJson(res, 400, { error: 'Consent is required to subscribe.' });
+
+      const subscribers = await readSubscribers();
+      const existing = subscribers.subscribers.find((x) => String(x.email || '').toLowerCase() === email);
+      if (existing) {
+        existing.name = name || existing.name || null;
+        existing.status = 'active';
+        existing.updated_at = new Date().toISOString();
+        existing.consent = true;
+        await writeSubscribers(subscribers);
+        return sendJson(res, 200, { ok: true, status: 'active', message: 'Subscription updated.' });
+      }
+
+      const record = {
+        id: makeSubscriberId(),
+        name: name || null,
+        email,
+        status: 'active',
+        consent: true,
+        source: 'website',
+        unsubscribe_token: makeSubscriberToken(email),
+        created_at: new Date().toISOString(),
+        updated_at: null
+      };
+      subscribers.subscribers.unshift(record);
+      await writeSubscribers(subscribers);
+      return sendJson(res, 200, { ok: true, subscriber_id: record.id, status: record.status });
+    } catch (err) {
+      return sendJson(res, 400, { error: 'Invalid subscriber payload', detail: err.message });
+    }
+  }
+
+  if (req.method === 'POST' && urlObj.pathname === '/api/subscribers/unsubscribe') {
+    const rate = hitRateLimit(req, 'subscribe-submit', RATE_LIMIT_CONFIG.subscribeSubmit);
+    if (rate.limited) {
+      res.setHeader('Retry-After', String(rate.retryAfterSec));
+      return sendJson(res, 429, { error: 'Too many unsubscribe attempts. Please retry shortly.' });
+    }
+    try {
+      const raw = await readBody(req);
+      const payload = parseJson(raw, {});
+      const email = sanitizeEmail(payload.email);
+      if (!email) return sendJson(res, 400, { error: 'Email is required.' });
+      const subscribers = await readSubscribers();
+      const found = subscribers.subscribers.find((x) => String(x.email || '').toLowerCase() === email);
+      if (!found) return sendJson(res, 404, { error: 'Subscriber not found.' });
+      found.status = 'unsubscribed';
+      found.updated_at = new Date().toISOString();
+      await writeSubscribers(subscribers);
+      return sendJson(res, 200, { ok: true, status: found.status });
+    } catch (err) {
+      return sendJson(res, 400, { error: 'Invalid unsubscribe payload', detail: err.message });
+    }
+  }
+
+  if (req.method === 'GET' && urlObj.pathname === '/api/subscribers') {
+    const rate = hitRateLimit(req, 'subscribe-admin', RATE_LIMIT_CONFIG.subscribeAdmin);
+    if (rate.limited) {
+      res.setHeader('Retry-After', String(rate.retryAfterSec));
+      return sendJson(res, 429, { error: 'Too many requests. Please retry shortly.' });
+    }
+    if (!isAuthed(req)) return sendJson(res, 401, { error: 'Unauthorized' });
+    const status = String(urlObj.searchParams.get('status') || '').trim().toLowerCase();
+    const limit = Math.max(1, Math.min(2000, Number(urlObj.searchParams.get('limit') || 500)));
+    const subscribers = await readSubscribers();
+    let rows = Array.isArray(subscribers.subscribers) ? subscribers.subscribers.slice() : [];
+    if (status) rows = rows.filter((x) => String(x.status || '') === status);
+    rows = rows.slice(0, limit);
+    return sendJson(res, 200, { ok: true, count: rows.length, subscribers: rows });
   }
 
   if (req.method === 'POST' && urlObj.pathname === '/api/donations') {
@@ -1035,6 +1151,11 @@ server.listen(PORT, HOST, async () => {
     await fsp.access(DONATIONS_PATH);
   } catch {
     await writeDonations({ donations: [] });
+  }
+  try {
+    await fsp.access(SUBSCRIBERS_PATH);
+  } catch {
+    await writeSubscribers({ subscribers: [] });
   }
 
   console.log(`Server running at http://${HOST}:${PORT}`);

@@ -73,6 +73,7 @@ const el = {
   nav: document.querySelector(".main-nav"),
   adminKey: document.getElementById("admin-key"),
   adminKeyFoundation: document.getElementById("admin-key-foundation"),
+  adminKeySubscribers: document.getElementById("admin-key-subscribers"),
   cartCount: document.getElementById("cart-count"),
   cartLane: document.getElementById("cart-lane"),
   cartItems: document.getElementById("cart-items"),
@@ -141,7 +142,15 @@ const el = {
   donationConfirmForm: document.getElementById("donation-confirm-form"),
   donationConfirmId: document.getElementById("donation-confirm-id"),
   donationConfirmRef: document.getElementById("donation-confirm-ref"),
-  donationAdminList: document.getElementById("donation-admin-list")
+  donationAdminList: document.getElementById("donation-admin-list"),
+  subscriberForm: document.getElementById("subscriber-form"),
+  subscriberName: document.getElementById("subscriber-name"),
+  subscriberEmail: document.getElementById("subscriber-email"),
+  subscriberConsent: document.getElementById("subscriber-consent"),
+  subscriberStatus: document.getElementById("subscriber-status"),
+  downloadSubscribersBtn: document.getElementById("download-subscribers-btn"),
+  refreshSubscribersBtn: document.getElementById("refresh-subscribers-btn"),
+  subscriberAdminList: document.getElementById("subscriber-admin-list")
 };
 
 function formatKes(value) {
@@ -160,6 +169,7 @@ function setAdminKeyEverywhere(value) {
   const key = String(value || "").trim();
   if (el.adminKey) el.adminKey.value = key;
   if (el.adminKeyFoundation) el.adminKeyFoundation.value = key;
+  if (el.adminKeySubscribers) el.adminKeySubscribers.value = key;
   return key;
 }
 
@@ -224,6 +234,10 @@ function setPaymentHint(msg) {
 
 function setDonationStatus(msg) {
   if (el.donationStatus) el.donationStatus.textContent = msg;
+}
+
+function setSubscriberStatus(msg) {
+  if (el.subscriberStatus) el.subscriberStatus.textContent = msg;
 }
 
 function laneFromKind(kind) {
@@ -1143,6 +1157,113 @@ async function confirmDonationById(donationId) {
   }
 }
 
+async function submitSubscriber() {
+  const name = String(el.subscriberName?.value || "").trim();
+  const email = String(el.subscriberEmail?.value || "").trim();
+  const consent = Boolean(el.subscriberConsent?.checked);
+  if (!email) {
+    setSubscriberStatus("Email is required.");
+    return;
+  }
+  if (!consent) {
+    setSubscriberStatus("Please accept consent to subscribe.");
+    return;
+  }
+  setSubscriberStatus("Submitting subscription...");
+  try {
+    const response = await fetch("/api/subscribers", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ name, email, consent: true })
+    });
+    const data = await response.json();
+    if (!response.ok) {
+      setSubscriberStatus(`Subscribe failed: ${data.error || "Request failed."}`);
+      return;
+    }
+    setSubscriberStatus("Subscribed successfully. You will receive updates.");
+    el.subscriberForm?.reset();
+    if (isAdminMode()) await loadSubscriberAdminList();
+  } catch {
+    setSubscriberStatus("Subscription request failed.");
+  }
+}
+
+function renderSubscriberAdminList(rows = []) {
+  if (!el.subscriberAdminList) return;
+  el.subscriberAdminList.innerHTML = "";
+  if (!rows.length) {
+    el.subscriberAdminList.appendChild(emptyNode("No subscribers yet."));
+    return;
+  }
+  rows.slice(0, 50).forEach((row) => {
+    const node = document.createElement("div");
+    node.className = "team-row";
+    node.innerHTML = `
+      <strong>${row.name || "Subscriber"}</strong><br>
+      ${row.email || "-"}<br>
+      Status: ${row.status || "-"}<br>
+      Joined: ${formatDateTime(row.created_at)}
+    `;
+    el.subscriberAdminList.appendChild(node);
+  });
+}
+
+async function loadSubscriberAdminList() {
+  if (!isAdminMode()) {
+    renderSubscriberAdminList([]);
+    return;
+  }
+  try {
+    const response = await fetch("/api/subscribers?limit=500", {
+      headers: { "x-admin-key": adminKey() }
+    });
+    const data = await response.json();
+    if (!response.ok) {
+      renderSubscriberAdminList([]);
+      return;
+    }
+    renderSubscriberAdminList(Array.isArray(data.subscribers) ? data.subscribers : []);
+  } catch {
+    renderSubscriberAdminList([]);
+  }
+}
+
+function subscribersToCsv(rows) {
+  const header = ["id", "name", "email", "status", "consent", "source", "created_at", "updated_at"];
+  const esc = (v) => {
+    const s = String(v ?? "");
+    if (/[\",\\n]/.test(s)) return `"${s.replace(/\"/g, "\"\"")}"`;
+    return s;
+  };
+  const lines = [header.join(",")];
+  rows.forEach((r) => {
+    const line = [r.id, r.name, r.email, r.status, r.consent, r.source, r.created_at, r.updated_at].map(esc).join(",");
+    lines.push(line);
+  });
+  return lines.join("\\n");
+}
+
+async function downloadSubscribersCsv() {
+  const key = ensureAdminKey("download subscriber list");
+  if (!key) return;
+  try {
+    const response = await fetch("/api/subscribers?limit=2000", {
+      headers: { "x-admin-key": key }
+    });
+    const data = await response.json();
+    if (!response.ok) {
+      toast(data.error || "Could not load subscribers.", "warn");
+      return;
+    }
+    const csv = subscribersToCsv(Array.isArray(data.subscribers) ? data.subscribers : []);
+    downloadTextFile(`subscribers-${new Date().toISOString().slice(0, 10)}.csv`, csv, "text/csv;charset=utf-8");
+    toast("Subscribers CSV downloaded.", "ok");
+  } catch {
+    toast("Failed to download subscribers CSV.", "warn");
+  }
+}
+
 function bindForms() {
   el.checkoutBtn?.addEventListener("click", () => {
     startCheckout();
@@ -1327,6 +1448,16 @@ function bindForms() {
     e.preventDefault();
     confirmDonationFromAdminForm();
   });
+  el.subscriberForm?.addEventListener("submit", (e) => {
+    e.preventDefault();
+    submitSubscriber();
+  });
+  el.downloadSubscribersBtn?.addEventListener("click", () => {
+    downloadSubscribersCsv();
+  });
+  el.refreshSubscribersBtn?.addEventListener("click", () => {
+    loadSubscriberAdminList();
+  });
 
   document.addEventListener("click", (e) => {
     const addCart = e.target.closest(".add-to-cart");
@@ -1408,18 +1539,22 @@ function bindForms() {
   el.savePartnersBtn?.addEventListener("click", () => saveContent("Partners"));
   el.saveReviewsBtn?.addEventListener("click", () => saveContent("Reviews"));
   el.adminKey?.addEventListener("input", () => {
-    if (el.adminKeyFoundation && el.adminKeyFoundation.value !== el.adminKey.value) {
-      el.adminKeyFoundation.value = el.adminKey.value;
-    }
+    setAdminKeyEverywhere(el.adminKey.value);
     renderAll();
     loadDonationAdminList();
+    loadSubscriberAdminList();
   });
   el.adminKeyFoundation?.addEventListener("input", () => {
-    if (el.adminKey && el.adminKey.value !== el.adminKeyFoundation.value) {
-      el.adminKey.value = el.adminKeyFoundation.value;
-    }
+    setAdminKeyEverywhere(el.adminKeyFoundation.value);
     renderAll();
     loadDonationAdminList();
+    loadSubscriberAdminList();
+  });
+  el.adminKeySubscribers?.addEventListener("input", () => {
+    setAdminKeyEverywhere(el.adminKeySubscribers.value);
+    renderAll();
+    loadDonationAdminList();
+    loadSubscriberAdminList();
   });
 }
 
@@ -1448,4 +1583,5 @@ function setupNav() {
   bindForms();
   renderAll();
   await loadDonationAdminList();
+  await loadSubscriberAdminList();
 })();
