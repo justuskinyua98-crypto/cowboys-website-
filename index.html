@@ -79,6 +79,7 @@
         <a href="#media">Media</a>
         <a href="#foundation">Foundation</a>
         <a href="DARAJA_READINESS_CHECKLIST.html">Daraja Checklist</a>
+        <a href="DONOR_GUIDE.html">Donor Guide</a>
         <a href="STAFF_UPDATE_PLAYBOOK.html">Staff Guide</a>
         <a href="#contact">Contact</a>
       </nav>
@@ -827,6 +828,7 @@
           <article class="product-card">
             <h3>Foundation Donation</h3>
             <p>Submit donation intent, then complete transfer via Till/Paybill/Bank details below.</p>
+            <p><a class="btn btn-ghost" href="DONOR_GUIDE.html">Open Donor Guide</a></p>
             <form id="donation-form" class="inquiry-form">
               <label>Full Name <input id="donation-name" type="text" required /></label>
               <label>Email <input id="donation-email" type="email" /></label>
@@ -849,6 +851,14 @@
             <div class="outfit-actions">
               <button id="download-donations-btn" class="btn btn-ghost" type="button">Download Donations CSV</button>
             </div>
+            <form id="donation-confirm-form" class="inquiry-form top-space">
+              <h3>Admin: Confirm Donation</h3>
+              <label>Donation ID <input id="donation-confirm-id" type="text" placeholder="donation-..." /></label>
+              <label>M-Pesa / Bank Reference <input id="donation-confirm-ref" type="text" placeholder="TXYZ123456" /></label>
+              <button id="confirm-donation-btn" class="btn btn-primary" type="submit">Confirm Donation</button>
+            </form>
+            <h3 class="top-space">Recent Donations (Admin)</h3>
+            <div id="donation-admin-list" class="gallery-grid"></div>
           </article>
         </div>
       </section>

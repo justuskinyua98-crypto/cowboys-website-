@@ -133,7 +133,11 @@ const el = {
   donationMessage: document.getElementById("donation-message"),
   donationStatus: document.getElementById("donation-status"),
   donationPaymentDetails: document.getElementById("donation-payment-details"),
-  downloadDonationsBtn: document.getElementById("download-donations-btn")
+  downloadDonationsBtn: document.getElementById("download-donations-btn"),
+  donationConfirmForm: document.getElementById("donation-confirm-form"),
+  donationConfirmId: document.getElementById("donation-confirm-id"),
+  donationConfirmRef: document.getElementById("donation-confirm-ref"),
+  donationAdminList: document.getElementById("donation-admin-list")
 };
 
 function formatKes(value) {
@@ -901,6 +905,7 @@ async function submitDonationIntent() {
     }
     setDonationStatus(`Donation recorded: ${data.donation_id}. Complete transfer and share reference with admin.`);
     el.donationForm?.reset();
+    if (isAdminMode()) await loadDonationAdminList();
   } catch {
     setDonationStatus("Donation request failed. Check server and retry.");
   }
@@ -940,6 +945,80 @@ async function downloadDonationsCsv() {
     toast("Donations CSV downloaded.", "ok");
   } catch {
     toast("Failed to download donations CSV.", "warn");
+  }
+}
+
+function renderDonationAdminList(rows = []) {
+  if (!el.donationAdminList) return;
+  el.donationAdminList.innerHTML = "";
+  if (!rows.length) {
+    el.donationAdminList.appendChild(emptyNode("No donation records found."));
+    return;
+  }
+  rows.slice(0, 20).forEach((row) => {
+    const node = document.createElement("div");
+    node.className = "team-row";
+    node.innerHTML = `
+      <strong>${row.name || "Donor"}</strong> - ${formatKes(row.amount_kes || 0)}<br>
+      ID: ${row.id || "-"}<br>
+      Status: ${row.status || "-"}<br>
+      Ref: ${row.reference_code || "Pending"}<br>
+      ${row.phone || row.email || ""}
+    `;
+    el.donationAdminList.appendChild(node);
+  });
+}
+
+async function loadDonationAdminList() {
+  if (!isAdminMode()) {
+    renderDonationAdminList([]);
+    return;
+  }
+  try {
+    const response = await fetch("/api/donations?limit=50", {
+      headers: { "x-admin-key": adminKey() }
+    });
+    const data = await response.json();
+    if (!response.ok) {
+      renderDonationAdminList([]);
+      return;
+    }
+    renderDonationAdminList(Array.isArray(data.donations) ? data.donations : []);
+  } catch {
+    renderDonationAdminList([]);
+  }
+}
+
+async function confirmDonationFromAdminForm() {
+  if (!requireAdminForEdit("confirm donation")) return;
+  const donationId = String(el.donationConfirmId?.value || "").trim();
+  const referenceCode = String(el.donationConfirmRef?.value || "").trim();
+  if (!donationId || !referenceCode) {
+    toast("Provide donation ID and reference code.", "warn");
+    return;
+  }
+  try {
+    const response = await fetch("/api/donations/confirm", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "x-admin-key": adminKey()
+      },
+      body: JSON.stringify({
+        donation_id: donationId,
+        reference_code: referenceCode
+      })
+    });
+    const data = await response.json();
+    if (!response.ok) {
+      toast(data.error || "Donation confirmation failed.", "warn");
+      return;
+    }
+    toast(`Donation confirmed: ${data.donation_id}`, "ok");
+    if (el.donationConfirmRef) el.donationConfirmRef.value = "";
+    await loadDonationAdminList();
+  } catch {
+    toast("Could not confirm donation.", "warn");
   }
 }
 
@@ -1120,6 +1199,10 @@ function bindForms() {
   el.downloadDonationsBtn?.addEventListener("click", () => {
     downloadDonationsCsv();
   });
+  el.donationConfirmForm?.addEventListener("submit", (e) => {
+    e.preventDefault();
+    confirmDonationFromAdminForm();
+  });
 
   document.addEventListener("click", (e) => {
     const addCart = e.target.closest(".add-to-cart");
@@ -1192,7 +1275,10 @@ function bindForms() {
   el.saveDescriptionsBtn?.addEventListener("click", () => saveContent("Descriptions"));
   el.savePartnersBtn?.addEventListener("click", () => saveContent("Partners"));
   el.saveReviewsBtn?.addEventListener("click", () => saveContent("Reviews"));
-  el.adminKey?.addEventListener("input", () => renderAll());
+  el.adminKey?.addEventListener("input", () => {
+    renderAll();
+    loadDonationAdminList();
+  });
 }
 
 function setupNav() {
@@ -1219,4 +1305,5 @@ function setupNav() {
   await loadDonationConfig();
   bindForms();
   renderAll();
+  await loadDonationAdminList();
 })();
