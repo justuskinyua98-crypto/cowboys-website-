@@ -220,6 +220,15 @@ function sanitizePhone(value) {
   return normalizeKenyanPhone(String(value || '').trim()).slice(0, 20);
 }
 
+function makeDonationReference(id) {
+  const d = new Date();
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, '0');
+  const day = String(d.getDate()).padStart(2, '0');
+  const suffix = String(id || '').replace(/^donation-/, '').slice(-6);
+  return `CGH-DON-${y}${m}${day}-${suffix}`;
+}
+
 function isMpesaConfigured() {
   return Boolean(
     M_PESA.consumerKey &&
@@ -532,6 +541,7 @@ async function handleApi(req, res, urlObj) {
       const donations = await readDonations();
       const donation = {
         id: `donation-${Date.now()}`,
+        donation_reference: null,
         name: donorName,
         email: donorEmail || null,
         phone: donorPhone || null,
@@ -543,12 +553,14 @@ async function handleApi(req, res, urlObj) {
         confirmed_at: null,
         reference_code: null
       };
+      donation.donation_reference = makeDonationReference(donation.id);
       donations.donations.unshift(donation);
       await writeDonations(donations);
 
       return sendJson(res, 200, {
         ok: true,
         donation_id: donation.id,
+        donation_reference: donation.donation_reference,
         status: donation.status,
         message: 'Donation pledge received. Complete payment using the foundation account details.'
       });

@@ -903,7 +903,7 @@ async function submitDonationIntent() {
       setDonationStatus(`Donation failed: ${data.error || "Request failed."}`);
       return;
     }
-    setDonationStatus(`Donation recorded: ${data.donation_id}. Complete transfer and share reference with admin.`);
+    setDonationStatus(`Donation recorded: ${data.donation_id} | Receipt Ref: ${data.donation_reference || "-"}. Complete transfer and share your payment reference with admin.`);
     el.donationForm?.reset();
     if (isAdminMode()) await loadDonationAdminList();
   } catch {
@@ -912,7 +912,7 @@ async function submitDonationIntent() {
 }
 
 function donationsToCsv(rows) {
-  const header = ["id", "name", "email", "phone", "amount_kes", "method", "status", "reference_code", "created_at", "confirmed_at", "message"];
+  const header = ["id", "donation_reference", "name", "email", "phone", "amount_kes", "method", "status", "reference_code", "created_at", "confirmed_at", "message"];
   const esc = (v) => {
     const s = String(v ?? "");
     if (/[\",\\n]/.test(s)) return `"${s.replace(/\"/g, "\"\"")}"`;
@@ -921,7 +921,7 @@ function donationsToCsv(rows) {
   const lines = [header.join(",")];
   rows.forEach((r) => {
     const line = [
-      r.id, r.name, r.email, r.phone, r.amount_kes, r.method,
+      r.id, r.donation_reference, r.name, r.email, r.phone, r.amount_kes, r.method,
       r.status, r.reference_code, r.created_at, r.confirmed_at, r.message
     ].map(esc).join(",");
     lines.push(line);
@@ -958,12 +958,17 @@ function renderDonationAdminList(rows = []) {
   rows.slice(0, 20).forEach((row) => {
     const node = document.createElement("div");
     node.className = "team-row";
+    const quickConfirmBtn = (row.status !== "confirmed" && isAdminMode())
+      ? `<div class="outfit-actions top-space"><button class="btn btn-primary confirm-donation-row" type="button" data-id="${row.id}">Confirm</button></div>`
+      : "";
     node.innerHTML = `
       <strong>${row.name || "Donor"}</strong> - ${formatKes(row.amount_kes || 0)}<br>
       ID: ${row.id || "-"}<br>
+      Receipt Ref: ${row.donation_reference || "-"}<br>
       Status: ${row.status || "-"}<br>
       Ref: ${row.reference_code || "Pending"}<br>
       ${row.phone || row.email || ""}
+      ${quickConfirmBtn}
     `;
     el.donationAdminList.appendChild(node);
   });
@@ -1016,6 +1021,37 @@ async function confirmDonationFromAdminForm() {
     }
     toast(`Donation confirmed: ${data.donation_id}`, "ok");
     if (el.donationConfirmRef) el.donationConfirmRef.value = "";
+    await loadDonationAdminList();
+  } catch {
+    toast("Could not confirm donation.", "warn");
+  }
+}
+
+async function confirmDonationById(donationId) {
+  if (!requireAdminForEdit("confirm donation")) return;
+  const referenceCode = String(window.prompt("Enter M-Pesa/Bank reference code:") || "").trim();
+  if (!referenceCode) {
+    toast("Reference code is required.", "warn");
+    return;
+  }
+  try {
+    const response = await fetch("/api/donations/confirm", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "x-admin-key": adminKey()
+      },
+      body: JSON.stringify({
+        donation_id: donationId,
+        reference_code: referenceCode
+      })
+    });
+    const data = await response.json();
+    if (!response.ok) {
+      toast(data.error || "Donation confirmation failed.", "warn");
+      return;
+    }
+    toast(`Donation confirmed: ${data.donation_id}`, "ok");
     await loadDonationAdminList();
   } catch {
     toast("Could not confirm donation.", "warn");
@@ -1234,6 +1270,14 @@ function bindForms() {
 
     const decor = e.target.closest(".decor-inquiry");
     if (decor) return notify(`${decor.dataset.action || "Decor request"} inquiry received.`);
+
+    const quickConfirm = e.target.closest(".confirm-donation-row");
+    if (quickConfirm) {
+      const donationId = String(quickConfirm.dataset.id || "").trim();
+      if (!donationId) return;
+      confirmDonationById(donationId);
+      return;
+    }
 
     const del = e.target.closest(".delete-outfit");
     if (!del) return;
