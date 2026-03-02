@@ -1,0 +1,197 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Event Campaign Builder | Cowboys Group Holdings</title>
+    <style>
+      body { margin: 0; font-family: Arial, sans-serif; background: #f8fafc; color: #111827; }
+      .wrap { max-width: 1100px; margin: 0 auto; padding: 22px; }
+      .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+      .card { background: #fff; border: 1px solid #d1d5db; border-radius: 12px; padding: 14px; }
+      h1, h2, h3 { margin: 0 0 10px; }
+      p { line-height: 1.45; }
+      label { display: grid; gap: 6px; margin-bottom: 9px; font-weight: 700; }
+      input, textarea { border: 1px solid #cbd5e1; border-radius: 8px; padding: 10px; font: inherit; }
+      textarea { min-height: 90px; }
+      .row { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 8px; }
+      button { border: 0; border-radius: 8px; padding: 9px 12px; font-weight: 700; cursor: pointer; }
+      .btn { background: #111827; color: #fff; }
+      .ghost { background: #e5e7eb; color: #111827; }
+      .output { white-space: pre-wrap; background: #f8fafc; border: 1px solid #d1d5db; border-radius: 8px; padding: 10px; min-height: 120px; }
+      .fine { font-size: 0.9rem; color: #475569; }
+      .ok { color: #065f46; font-weight: 700; }
+      @media (max-width: 980px) { .grid { grid-template-columns: 1fr; } }
+    </style>
+  </head>
+  <body>
+    <div class="wrap">
+      <h1>Event Campaign Builder</h1>
+      <p class="fine">Generate email-ready campaign copy for upcoming events and send through your mailing list tool.</p>
+      <div class="grid">
+        <section class="card">
+          <h2>Campaign Inputs</h2>
+          <label>Event Title
+            <input id="event-title" type="text" placeholder="Nairobi Ranch Night Experience" />
+          </label>
+          <label>Date
+            <input id="event-date" type="text" placeholder="18 Dec 2026" />
+          </label>
+          <label>Venue
+            <input id="event-venue" type="text" placeholder="Karen, Nairobi" />
+          </label>
+          <label>Ticket Price (KES)
+            <input id="event-price" type="number" min="0" step="1" placeholder="2000" />
+          </label>
+          <label>Booking Link
+            <input id="event-link" type="text" placeholder="https://cowboysgroupholdings.co.ke/#events" />
+          </label>
+          <label>Highlights
+            <textarea id="event-highlights" placeholder="Live band, dance crew, family experience."></textarea>
+          </label>
+          <label>CTA Button Text
+            <input id="event-cta" type="text" placeholder="Book Your Spot" />
+          </label>
+          <div class="row">
+            <button id="generate-btn" class="btn" type="button">Generate Campaign</button>
+            <button id="reset-btn" class="ghost" type="button">Reset</button>
+          </div>
+          <p id="status" class="fine"></p>
+        </section>
+
+        <section class="card">
+          <h2>Email Metadata</h2>
+          <h3>Subject</h3>
+          <div id="subject-out" class="output"></div>
+          <div class="row">
+            <button data-copy="subject-out" class="ghost copy-btn" type="button">Copy Subject</button>
+          </div>
+
+          <h3>Preview Text</h3>
+          <div id="preview-out" class="output"></div>
+          <div class="row">
+            <button data-copy="preview-out" class="ghost copy-btn" type="button">Copy Preview</button>
+          </div>
+        </section>
+      </div>
+
+      <div class="grid" style="margin-top:14px;">
+        <section class="card">
+          <h2>Plain Text Email</h2>
+          <div id="plain-out" class="output"></div>
+          <div class="row">
+            <button data-copy="plain-out" class="ghost copy-btn" type="button">Copy Plain Text</button>
+            <button id="download-txt-btn" class="ghost" type="button">Download .txt</button>
+          </div>
+        </section>
+        <section class="card">
+          <h2>HTML Email Block</h2>
+          <div id="html-out" class="output"></div>
+          <div class="row">
+            <button data-copy="html-out" class="ghost copy-btn" type="button">Copy HTML</button>
+            <button id="download-html-btn" class="ghost" type="button">Download .html</button>
+          </div>
+        </section>
+      </div>
+    </div>
+
+    <script>
+      const byId = (id) => document.getElementById(id);
+      const fmtKes = (v) => `KES ${Number(v || 0).toLocaleString("en-KE")}`;
+
+      function defaultValues() {
+        byId("event-title").value = "Nairobi Ranch Night Experience";
+        byId("event-date").value = "18 Dec 2026";
+        byId("event-venue").value = "Karen, Nairobi";
+        byId("event-price").value = "2000";
+        byId("event-link").value = "https://cowboysgroupholdings.co.ke/#events";
+        byId("event-highlights").value = "Live band, DJ, dance crew, and family-friendly western culture experience.";
+        byId("event-cta").value = "Book Your Spot";
+      }
+
+      function renderOutputs() {
+        const title = byId("event-title").value.trim();
+        const date = byId("event-date").value.trim();
+        const venue = byId("event-venue").value.trim();
+        const price = Number(byId("event-price").value || 0);
+        const link = byId("event-link").value.trim();
+        const highlights = byId("event-highlights").value.trim();
+        const cta = byId("event-cta").value.trim() || "Book Now";
+
+        const subject = `${title} | ${date} | Tickets ${fmtKes(price)}`;
+        const preview = `Join us at ${venue}. ${highlights.slice(0, 90)}`;
+        const plain = [
+          `Cowboys Group Holdings Event Update`,
+          ``,
+          `Event: ${title}`,
+          `Date: ${date}`,
+          `Venue: ${venue}`,
+          `Ticket: ${fmtKes(price)}`,
+          ``,
+          `Highlights:`,
+          `${highlights}`,
+          ``,
+          `${cta}: ${link}`,
+          ``,
+          `You are receiving this because you subscribed for updates.`,
+          `To unsubscribe, reply to this email with UNSUBSCRIBE.`
+        ].join("\\n");
+
+        const html = [
+          `<div style="font-family:Arial,sans-serif;line-height:1.5;color:#111827;">`,
+          `<h2 style="margin:0 0 8px;">${title}</h2>`,
+          `<p style="margin:0 0 6px;"><strong>Date:</strong> ${date}</p>`,
+          `<p style="margin:0 0 6px;"><strong>Venue:</strong> ${venue}</p>`,
+          `<p style="margin:0 0 10px;"><strong>Ticket:</strong> ${fmtKes(price)}</p>`,
+          `<p style="margin:0 0 12px;">${highlights}</p>`,
+          `<p style="margin:0;"><a href="${link}" style="display:inline-block;padding:10px 14px;background:#111827;color:#fff;text-decoration:none;border-radius:8px;">${cta}</a></p>`,
+          `<p style="margin-top:14px;font-size:12px;color:#475569;">You are receiving this because you subscribed for updates. Reply with UNSUBSCRIBE to opt out.</p>`,
+          `</div>`
+        ].join("");
+
+        byId("subject-out").textContent = subject;
+        byId("preview-out").textContent = preview;
+        byId("plain-out").textContent = plain;
+        byId("html-out").textContent = html;
+        byId("status").innerHTML = `<span class="ok">Campaign generated.</span>`;
+      }
+
+      function copyFrom(id) {
+        const text = byId(id).textContent || "";
+        navigator.clipboard.writeText(text).then(() => {
+          byId("status").innerHTML = `<span class="ok">Copied from ${id}.</span>`;
+        });
+      }
+
+      function downloadFile(name, content, type) {
+        const blob = new Blob([content], { type });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = name;
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        URL.revokeObjectURL(url);
+      }
+
+      byId("generate-btn").addEventListener("click", renderOutputs);
+      byId("reset-btn").addEventListener("click", () => {
+        defaultValues();
+        renderOutputs();
+      });
+      document.querySelectorAll(".copy-btn").forEach((btn) => {
+        btn.addEventListener("click", () => copyFrom(btn.dataset.copy));
+      });
+      byId("download-txt-btn").addEventListener("click", () => {
+        downloadFile("event-campaign.txt", byId("plain-out").textContent || "", "text/plain;charset=utf-8");
+      });
+      byId("download-html-btn").addEventListener("click", () => {
+        downloadFile("event-campaign.html", byId("html-out").textContent || "", "text/html;charset=utf-8");
+      });
+
+      defaultValues();
+      renderOutputs();
+    </script>
+  </body>
+</html>
