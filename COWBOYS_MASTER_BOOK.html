@@ -1,0 +1,4374 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Cowboys Master Book (Guide + Code + Print + PIN)</title>
+  <style>
+    :root { --ink:#1f2937; --muted:#6b7280; --line:#d1d5db; --bg:#f8fafc; }
+    body { margin:0; font-family: Arial, sans-serif; color:var(--ink); background:var(--bg); }
+    .shell { min-height:100vh; display:grid; place-items:center; padding:20px; }
+    .card { width:min(520px,96vw); background:#fff; border:1px solid var(--line); border-radius:12px; padding:18px; box-shadow:0 8px 24px rgba(0,0,0,.08); }
+    h1 { margin:0 0 10px; font-size:1.35rem; }
+    p { margin:0 0 10px; color:var(--muted); line-height:1.45; }
+    label { display:block; font-weight:700; margin-top:8px; }
+    input { width:100%; margin-top:6px; border:1px solid var(--line); border-radius:10px; padding:10px 12px; font-size:1rem; }
+    .row { display:flex; gap:10px; flex-wrap:wrap; margin-top:12px; }
+    button { border:0; border-radius:10px; padding:10px 14px; font-weight:700; cursor:pointer; }
+    .btn-primary { background:#111827; color:#fff; }
+    .btn-ghost { background:#e5e7eb; color:#111827; }
+    .warn { color:#991b1b; font-weight:700; }
+
+    #book-wrap { display:none; }
+    .topbar { position:sticky; top:0; z-index:30; background:#111827; color:#fff; padding:10px 12px; display:flex; gap:10px; align-items:center; }
+    .container { max-width:1100px; margin:0 auto; padding:18px; }
+    .chapter { background:#fff; border:1px solid var(--line); border-radius:10px; margin-bottom:16px; overflow:hidden; }
+    .chapter h2 { margin:0; padding:12px 14px; background:#f3f4f6; border-bottom:1px solid var(--line); font-size:1.05rem; }
+    .chapter pre { margin:0; padding:14px; white-space:pre-wrap; word-break:break-word; font-family:"Courier New", monospace; font-size:13px; line-height:1.45; }
+
+    @media print {
+      #lock-wrap, .topbar { display:none !important; }
+      #book-wrap { display:block !important; }
+      .container { max-width:none; padding:0; }
+      .chapter { border:none; border-radius:0; page-break-inside:avoid; break-inside:avoid; margin-bottom:12px; }
+      .chapter h2 { background:#fff; border-bottom:1px solid #000; }
+    }
+  </style>
+</head>
+<body>
+  <div id="lock-wrap" class="shell">
+    <div class="card">
+      <h1>Master Book PIN Access</h1>
+      <p>This single file contains Guidebook + Full Codebook and is printable.</p>
+      <p>PIN expires after first successful open on this device.</p>
+      <label for="pin-input">PIN</label>
+      <input id="pin-input" type="password" inputmode="numeric" autocomplete="off" />
+      <p id="status" class="warn" aria-live="polite"></p>
+      <div class="row">
+        <button id="unlock-btn" class="btn-primary" type="button">Open Master Book</button>
+        <button id="print-btn" class="btn-ghost" type="button" disabled>Print</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="book-wrap">
+    <div class="topbar">
+      <strong>Cowboys Master Book</strong>
+      <button id="print-btn-2" class="btn-ghost" type="button">Print</button>
+    </div>
+    <div class="container">
+      <section class="chapter">
+        <h2>Part 1: Project Guidebook</h2>
+        <pre># Cowboys Group Holdings Website Guidebook
+
+Author: Justus Kinyua and team  
+Project: Cowboys Group Holdings website and lightweight backend  
+Purpose: A step-by-step record of how this website was built, how it works, and how to maintain it
+
+---
+
+## 1. Why This Project Exists
+
+This project was built to create one digital home for:
+- brand identity
+- apparel showcase
+- events and ticket flow
+- livestock listings
+- decor services
+- team and social channels
+- foundation and partnership communication
+
+It is designed to be simple, editable, and practical for real business use.
+
+---
+
+## 2. Technology Stack
+
+- Frontend: `HTML + CSS + Vanilla JavaScript`
+- Backend: `Node.js` with native `http` module (`server.js`)
+- Data storage: local JSON files
+- Version control: Git + GitHub
+- Assets: images/videos in `assets/`
+
+No heavy framework was used. This keeps learning easier and deployment lighter.
+
+---
+
+## 3. Project Structure
+
+```text
+cwboys website/
+  assets/
+    decor/
+    events/
+    livestock/
+    outfits/
+    team/
+    videos/
+    placeholders/
+  data/
+    content.json
+    payments.json
+  index.html
+  styles.css
+  script.js
+  server.js
+  package.json
+  .env.example
+  README.md
+  robots.txt
+  sitemap.xml
+```
+
+---
+
+## 4. How To Run The Project
+
+### Private debug mode (only on this Mac)
+
+```bash
+cd "/Users/justusmurerwa/Documents/cwboys website"
+HOST="127.0.0.1" PORT="8000" ADMIN_KEY="your-admin-key" MANUAL_TILL_NUMBER="5628570" MANUAL_PAYEE_NAME="Cowboys Group Holdings" npm start
+```
+
+Open:
+
+```text
+http://127.0.0.1:8000
+```
+
+### LAN demo mode (same Wi-Fi)
+
+```bash
+cd "/Users/justusmurerwa/Documents/cwboys website"
+HOST="0.0.0.0" PORT="8000" ADMIN_KEY="your-admin-key" MANUAL_TILL_NUMBER="5628570" MANUAL_PAYEE_NAME="Cowboys Group Holdings" npm start
+```
+
+Find local IP and share `http://&lt;IP&gt;:8000`.
+
+---
+
+## 5. Build Timeline (Real Git History)
+
+These commits show how the project evolved:
+
+1. `79b9cc3` - Initial project snapshot
+2. `b665131` - Setup docs and `.env.example`
+3. `2aba8b7` - Placeholder images mapped by section
+4. `f114a18` - Real team photos + better framing
+5. `d1fe6e9` - Videos muted by default
+6. `daf8fe1` - Media path normalization
+7. `4942996` - Media URL loading fix
+8. `f4dd312` - Real media mapped across sections
+9. `f81b469` - Backend hardening/security/rate limiting
+10. `2ff7b86` - UX polish (admin-only controls, toasts, faster loading)
+11. `2fd3ec6` - SEO metadata, `robots.txt`, `sitemap.xml`
+
+---
+
+## 6. Data Model
+
+Main content file: `data/content.json`
+
+Major keys:
+- `brand`
+- `socials`
+- `team`
+- `videos`
+- `outfits`
+- `events`
+- `livestock`
+- `decor`
+- `descriptions`
+- `partners`
+- `reviews`
+
+Payments file: `data/payments.json`
+- stores order records and payment status history
+
+---
+
+## 7. Backend Architecture (`server.js`)
+
+Backend responsibilities:
+- serve static files
+- expose API routes
+- store/read data JSON
+- run checkout flow (manual + optional M-Pesa)
+- confirm manual payments
+- issue receipt/ticket payloads
+- upload media files
+
+### Important API routes
+
+- `GET /api/health`
+- `GET /api/content`
+- `PUT /api/content` (admin key required)
+- `GET /api/payments/config`
+- `POST /api/payments/checkout`
+- `GET /api/payments/status?order_id=...`
+- `GET /api/payments/receipt?order_id=...`
+- `POST /api/payments/confirm-manual` (admin key required)
+- `GET /api/payments/orders` (admin key required)
+- `POST /api/payments/mpesa/callback`
+- `POST /api/media` (admin key required)
+
+### Safety hardening added
+
+- security headers
+- payload limit checks
+- safe JSON parsing
+- IP-based rate limiting for sensitive endpoints
+- clearer API 404 behavior
+
+---
+
+## 8. Frontend Architecture (`script.js`, `index.html`, `styles.css`)
+
+Frontend responsibilities:
+- fetch and render content from backend
+- render all sections dynamically
+- handle cart and checkout
+- handle admin forms (adding/editing items)
+- display payment status
+- upload media paths
+
+### UX improvements added
+
+- admin delete buttons hidden unless admin key is present
+- toast notifications for loading/success/warnings
+- safer image/video URL handling
+- videos muted and set to `preload="none"` for faster mobile load
+
+---
+
+## 9. Media Workflow (How Images/Videos Are Added)
+
+Step-by-step:
+
+1. Put files in proper folder under `assets/`:
+   - `assets/team`
+   - `assets/outfits`
+   - `assets/events`
+   - `assets/livestock`
+   - `assets/decor`
+   - `assets/videos`
+
+2. Use clean filenames:
+   - good: `aaron-sang.jpg`
+   - avoid spaces and symbols in filenames
+
+3. Map file path in `data/content.json`:
+   - example: `"photo": "assets/team/aaron-sang.jpg"`
+
+4. Save and refresh page (`Cmd+Shift+R`).
+
+---
+
+## 10. SEO and Discoverability
+
+Implemented:
+- stronger title/description
+- canonical URL
+- Open Graph tags
+- Twitter card tags
+- Organization JSON-LD schema
+- `robots.txt`
+- `sitemap.xml`
+
+After deploying to live domain:
+1. open Google Search Console
+2. add property
+3. submit sitemap URL
+4. request homepage indexing
+
+Note: ranking #1 is not instant; SEO grows over time with content and backlinks.
+
+---
+
+## 11. Security Rules For Future Maintenance
+
+- Never paste admin keys or tokens in chats or public docs
+- Keep `.env` secrets private
+- Rotate exposed tokens immediately
+- Use HTTPS on production
+- Use strong `ADMIN_KEY` in production
+
+---
+
+## 12. How To Continue Building
+
+### Add a new outfit
+1. Add image to `assets/outfits/`
+2. Add entry in `data/content.json` under `outfits`
+3. Refresh page
+
+### Add a new team member
+1. Add image to `assets/team/`
+2. Add entry under `team` with `name`, `role`, `photo`, `bio`
+3. Refresh page
+
+### Add a new video
+1. Add file to `assets/videos/`
+2. Add entry in `videos` with `src` and `poster`
+3. Refresh page
+
+---
+
+## 13. Troubleshooting Cheatsheet
+
+### Problem: API routes return 404
+Cause: running static Python server instead of Node backend.  
+Fix: run `npm start` (not `python3 -m http.server`).
+
+### Problem: phone cannot access demo
+Cause: server bound to localhost only.  
+Fix: run with `HOST=0.0.0.0` and check firewall.
+
+### Problem: image not showing
+Cause: wrong path or unsupported format.  
+Fix: verify file exists under `assets/`, prefer `.jpg/.jpeg/.png/.webp`.
+
+### Problem: port already in use
+Fix:
+
+```bash
+pkill -f "node server.js" 2&gt;/dev/null
+```
+
+---
+
+## 14. Git Workflow Used In This Project
+
+```bash
+git status
+git add .
+git commit -m "Describe change"
+git push
+```
+
+This project now has a clean commit history and can be restored from GitHub anytime.
+
+---
+
+## 15. Final Message For My Kid
+
+This website was built step by step, not in one day.
+The most important skill is not writing perfect code first; it is:
+- start
+- test
+- fix
+- improve
+- save your work in git
+- keep going
+
+Every real software project grows this way.
+
+</pre>
+      </section>
+      <section class="chapter">
+        <h2>Part 2: Full Codebook</h2>
+        <pre># Cowboys Website Codebook (Step-by-Step + Full Code)
+
+This file contains:
+- build timeline (step-by-step)
+- key git commits
+- full source code snapshots (current)
+
+---
+
+## 1) Build Timeline
+
+```text
+79b9cc3 Initial project snapshot
+b665131 Add project setup guide and env template
+2aba8b7 Add section-specific placeholder images and map content
+f114a18 Map team photos and improve team image framing
+d1fe6e9 Mute videos by default
+daf8fe1 Normalize media paths for reliable image/video loading
+4942996 Fix media URL handling for images across page contexts
+f4dd312 Map uploaded media across sections and add showcase videos
+f81b469 Harden API handling, headers, and rate limits
+2ff7b86 Polish UX: admin-only controls, toasts, and faster media loading
+2fd3ec6 Add SEO metadata, sitemap, and robots setup
+33130ba Add printable project build guidebook
+```
+
+## 2) Setup Commands Used
+
+```bash
+cd "/Users/justusmurerwa/Documents/cwboys website"
+git init -b main
+git add .
+git commit -m "Initial project snapshot"
+npm start
+```
+
+---
+
+## 3) package.json
+
+```json
+{
+  "name": "cowboys-group-holdings-site",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Cowboys Group Holdings website with lightweight backend",
+  "scripts": {
+    "start": "node server.js"
+  }
+}
+```
+
+## 4) server.js
+
+```js
+const fs = require('fs');
+const fsp = require('fs/promises');
+const http = require('http');
+const path = require('path');
+const { URL } = require('url');
+const dns = require('dns');
+
+const ROOT = process.cwd();
+const CONTENT_PATH = path.join(ROOT, 'data', 'content.json');
+const PAYMENTS_PATH = path.join(ROOT, 'data', 'payments.json');
+const ADMIN_KEY = process.env.ADMIN_KEY || 'change-me-admin-key';
+const PORT = Number(process.env.PORT || 8000);
+const HOST = process.env.HOST || '127.0.0.1';
+const BODY_LIMIT_BYTES = Number(process.env.BODY_LIMIT_BYTES || 12_000_000);
+
+const SECURITY_HEADERS = {
+  'X-Content-Type-Options': 'nosniff',
+  'X-Frame-Options': 'SAMEORIGIN',
+  'Referrer-Policy': 'strict-origin-when-cross-origin'
+};
+
+const M_PESA = {
+  baseUrl: process.env.M_PESA_BASE_URL || 'https://sandbox.safaricom.co.ke',
+  consumerKey: process.env.M_PESA_CONSUMER_KEY || '',
+  consumerSecret: process.env.M_PESA_CONSUMER_SECRET || '',
+  shortcode: process.env.M_PESA_SHORTCODE || '',
+  passkey: process.env.M_PESA_PASSKEY || '',
+  callbackUrl: process.env.M_PESA_CALLBACK_URL || ''
+};
+const MANUAL_PAYMENT = {
+  tillNumber: process.env.MANUAL_TILL_NUMBER || '',
+  payeeName: process.env.MANUAL_PAYEE_NAME || 'Cowboys Group Holdings'
+};
+const PAYMENT_POLICY = {
+  mpesaPendingTimeoutMin: Number(process.env.MPESA_PENDING_TIMEOUT_MIN || 20),
+  manualPendingTimeoutHours: Number(process.env.MANUAL_PENDING_TIMEOUT_HOURS || 48)
+};
+
+const RATE_LIMIT_CONFIG = {
+  checkout: { windowMs: 60_000, max: 20 },
+  confirmManual: { windowMs: 60_000, max: 30 },
+  mediaUpload: { windowMs: 60_000, max: 40 }
+};
+const RATE_LIMIT_STORE = new Map();
+
+// Some networks resolve dual-stack hosts but only allow IPv4 egress reliably.
+dns.setDefaultResultOrder('ipv4first');
+
+const MIME_TYPES = {
+  '.html': 'text/html; charset=utf-8',
+  '.css': 'text/css; charset=utf-8',
+  '.js': 'application/javascript; charset=utf-8',
+  '.json': 'application/json; charset=utf-8',
+  '.xml': 'application/xml; charset=utf-8',
+  '.txt': 'text/plain; charset=utf-8',
+  '.svg': 'image/svg+xml',
+  '.png': 'image/png',
+  '.jpg': 'image/jpeg',
+  '.jpeg': 'image/jpeg',
+  '.webp': 'image/webp',
+  '.gif': 'image/gif',
+  '.mp4': 'video/mp4',
+  '.mov': 'video/quicktime'
+};
+
+function sendJson(res, status, payload) {
+  const body = JSON.stringify(payload);
+  res.writeHead(status, {
+    ...SECURITY_HEADERS,
+    'Cache-Control': 'no-store',
+    'Content-Type': 'application/json; charset=utf-8',
+    'Content-Length': Buffer.byteLength(body)
+  });
+  res.end(body);
+}
+
+function errInfo(err) {
+  return {
+    message: err?.message || 'Unknown error',
+    code: err?.code || err?.cause?.code || null,
+    cause: err?.cause?.message || null
+  };
+}
+
+async function readBody(req) {
+  return new Promise((resolve, reject) =&gt; {
+    let settled = false;
+    let data = '';
+
+    const fail = (err) =&gt; {
+      if (settled) return;
+      settled = true;
+      req.destroy();
+      reject(err);
+    };
+
+    const done = () =&gt; {
+      if (settled) return;
+      settled = true;
+      resolve(data);
+    };
+
+    req.on('data', (chunk) =&gt; {
+      data += chunk;
+      if (data.length &gt; BODY_LIMIT_BYTES) fail(new Error('Payload too large'));
+    });
+    req.on('end', done);
+    req.on('error', fail);
+  });
+}
+
+function parseJson(raw, fallback = null) {
+  try {
+    return JSON.parse(raw);
+  } catch {
+    return fallback;
+  }
+}
+
+async function readContent() {
+  const raw = await fsp.readFile(CONTENT_PATH, 'utf8');
+  return JSON.parse(raw);
+}
+
+async function writeContent(content) {
+  await fsp.writeFile(CONTENT_PATH, JSON.stringify(content, null, 2), 'utf8');
+}
+
+async function readPayments() {
+  try {
+    const raw = await fsp.readFile(PAYMENTS_PATH, 'utf8');
+    const parsed = JSON.parse(raw);
+    if (!Array.isArray(parsed.orders)) return { orders: [] };
+    return parsed;
+  } catch {
+    return { orders: [] };
+  }
+}
+
+async function writePayments(payments) {
+  await fsp.writeFile(PAYMENTS_PATH, JSON.stringify(payments, null, 2), 'utf8');
+}
+
+function isAuthed(req) {
+  return req.headers['x-admin-key'] === ADMIN_KEY;
+}
+
+function safeJoin(base, relativePath) {
+  const normalized = path.normalize(relativePath).replace(/^([/\\])+/, '');
+  const full = path.join(base, normalized);
+  if (!full.startsWith(base)) return null;
+  return full;
+}
+
+function getClientIp(req) {
+  const forwarded = String(req.headers['x-forwarded-for'] || '').trim();
+  if (forwarded) return forwarded.split(',')[0].trim();
+  return String(req.socket?.remoteAddress || 'unknown');
+}
+
+function hitRateLimit(req, key, config) {
+  const now = Date.now();
+  const bucketKey = `${key}:${getClientIp(req)}`;
+  const existing = RATE_LIMIT_STORE.get(bucketKey);
+
+  if (!existing || now - existing.startedAt &gt; config.windowMs) {
+    RATE_LIMIT_STORE.set(bucketKey, { count: 1, startedAt: now });
+    return { limited: false, retryAfterSec: 0 };
+  }
+
+  existing.count += 1;
+  RATE_LIMIT_STORE.set(bucketKey, existing);
+
+  if (existing.count &lt;= config.max) return { limited: false, retryAfterSec: 0 };
+
+  const retryMs = Math.max(1_000, config.windowMs - (now - existing.startedAt));
+  return { limited: true, retryAfterSec: Math.ceil(retryMs / 1_000) };
+}
+
+function cacheControlFor(filePath) {
+  const ext = path.extname(filePath).toLowerCase();
+  if (ext === '.html') return 'no-cache';
+  if (ext === '.json') return 'no-store';
+  return 'public, max-age=86400';
+}
+
+function isMpesaConfigured() {
+  return Boolean(
+    M_PESA.consumerKey &amp;&amp;
+    M_PESA.consumerSecret &amp;&amp;
+    M_PESA.shortcode &amp;&amp;
+    M_PESA.passkey &amp;&amp;
+    M_PESA.callbackUrl
+  );
+}
+
+function paymentMethods() {
+  return isMpesaConfigured() ? ['manual', 'mpesa'] : ['manual'];
+}
+
+function normalizeKenyanPhone(input) {
+  const raw = String(input || '').replace(/\s+/g, '').replace(/-/g, '');
+  if (!raw) return '';
+  if (raw.startsWith('+254')) return `254${raw.slice(4)}`;
+  if (raw.startsWith('254')) return raw;
+  if (raw.startsWith('07') &amp;&amp; raw.length === 10) return `254${raw.slice(1)}`;
+  if (raw.startsWith('01') &amp;&amp; raw.length === 10) return `254${raw.slice(1)}`;
+  return raw;
+}
+
+function mpesaTimestamp() {
+  const d = new Date();
+  const pad = (n) =&gt; String(n).padStart(2, '0');
+  return `${d.getFullYear()}${pad(d.getMonth() + 1)}${pad(d.getDate())}${pad(d.getHours())}${pad(d.getMinutes())}${pad(d.getSeconds())}`;
+}
+
+function sanitizeItem(rawItem) {
+  const name = String(rawItem?.name || 'Item').trim().slice(0, 140);
+  const rawKind = String(rawItem?.kind || 'product').trim().toLowerCase();
+  const kind = ['product', 'ticket', 'livestock'].includes(rawKind) ? rawKind : 'product';
+  const qty = Math.max(1, Number(rawItem?.qty || 1));
+  const unitPrice = Math.max(0, Math.round(Number(rawItem?.price || 0)));
+  return {
+    name: name || 'Item',
+    kind,
+    qty,
+    price: unitPrice,
+    total: unitPrice * qty
+  };
+}
+
+function laneFromKind(kind) {
+  if (kind === 'ticket') return 'tickets';
+  if (kind === 'livestock') return 'livestock';
+  return 'apparel';
+}
+
+function makeTicketCode(orderId, index) {
+  const base = String(orderId || '').replace(/^order-/, '').slice(-6);
+  const rnd = Math.random().toString(36).slice(2, 6).toUpperCase();
+  return `CGH-TKT-${base}-${index + 1}-${rnd}`;
+}
+
+function buildTicketsFromItems(orderId, items, status) {
+  const tickets = [];
+  items.forEach((item, index) =&gt; {
+    if (item.kind !== 'ticket') return;
+    tickets.push({
+      id: `${orderId}-ticket-${index + 1}`,
+      code: makeTicketCode(orderId, index),
+      event_name: item.name,
+      status: status === 'paid' ? 'issued' : 'pending_payment'
+    });
+  });
+  return tickets;
+}
+
+function makeReceiptNumber(order) {
+  const date = new Date(order.created_at || Date.now());
+  const y = String(date.getFullYear());
+  const m = String(date.getMonth() + 1).padStart(2, '0');
+  const d = String(date.getDate()).padStart(2, '0');
+  const suffix = String(order.id || '').replace(/^order-/, '').slice(-6);
+  return `CGH-${y}${m}${d}-${suffix}`;
+}
+
+function orderToReceipt(order) {
+  const items = Array.isArray(order.items) ? order.items : [];
+  const subtotal = items.reduce((sum, item) =&gt; sum + Number(item.total || item.price || 0), 0);
+  return {
+    receipt_number: makeReceiptNumber(order),
+    order_id: order.id,
+    created_at: order.created_at,
+    method: order.method,
+    status: order.status,
+    phone: order.phone,
+    amount_kes: order.amount_kes,
+    subtotal_kes: subtotal,
+    transaction_code: order.manual_transaction_code || null,
+    paid_at: order.paid_at || null,
+    items,
+    tickets: Array.isArray(order.tickets) ? order.tickets : []
+  };
+}
+
+function getMetadataValue(metadata, key) {
+  if (!Array.isArray(metadata)) return null;
+  const found = metadata.find((x) =&gt; x?.Name === key);
+  return found ? found.Value : null;
+}
+
+function isOrderExpired(order) {
+  const createdAtMs = Date.parse(order?.created_at || '');
+  if (!Number.isFinite(createdAtMs)) return false;
+  const ageMs = Date.now() - createdAtMs;
+  if (order.status === 'pending') {
+    return ageMs &gt; PAYMENT_POLICY.mpesaPendingTimeoutMin * 60 * 1000;
+  }
+  if (order.status === 'awaiting_manual_confirmation') {
+    return ageMs &gt; PAYMENT_POLICY.manualPendingTimeoutHours * 60 * 60 * 1000;
+  }
+  return false;
+}
+
+function applyAutoExpiry(order) {
+  if (!order || !isOrderExpired(order)) return false;
+  order.status = 'expired';
+  if (order.method === 'mpesa') {
+    order.result_desc = `Payment window expired after ${PAYMENT_POLICY.mpesaPendingTimeoutMin} minutes.`;
+  } else {
+    order.result_desc = `Manual payment window expired after ${PAYMENT_POLICY.manualPendingTimeoutHours} hours.`;
+  }
+  return true;
+}
+
+function applyExpiryToAllOrders(payments) {
+  let changed = false;
+  for (const order of payments.orders || []) {
+    changed = applyAutoExpiry(order) || changed;
+  }
+  return changed;
+}
+
+async function getMpesaAccessToken() {
+  const credentials = Buffer.from(`${M_PESA.consumerKey}:${M_PESA.consumerSecret}`).toString('base64');
+  let response;
+  try {
+    response = await fetch(`${M_PESA.baseUrl}/oauth/v1/generate?grant_type=client_credentials`, {
+      headers: { Authorization: `Basic ${credentials}` }
+    });
+  } catch (err) {
+    const info = errInfo(err);
+    throw new Error(`M-Pesa OAuth network failure: ${JSON.stringify(info)}`);
+  }
+
+  if (!response.ok) {
+    const text = await response.text();
+    throw new Error(`M-Pesa OAuth failed: ${response.status} ${text}`);
+  }
+
+  const data = await response.json();
+  if (!data.access_token) throw new Error('No M-Pesa access token returned');
+  return data.access_token;
+}
+
+async function initiateMpesaStk({ amountKes, phone, orderId }) {
+  const token = await getMpesaAccessToken();
+  const timestamp = mpesaTimestamp();
+  const password = Buffer.from(`${M_PESA.shortcode}${M_PESA.passkey}${timestamp}`).toString('base64');
+  const phoneNumber = normalizeKenyanPhone(phone);
+
+  const payload = {
+    BusinessShortCode: M_PESA.shortcode,
+    Password: password,
+    Timestamp: timestamp,
+    TransactionType: 'CustomerPayBillOnline',
+    Amount: Math.max(1, Math.round(Number(amountKes))),
+    PartyA: phoneNumber,
+    PartyB: M_PESA.shortcode,
+    PhoneNumber: phoneNumber,
+    CallBackURL: M_PESA.callbackUrl,
+    AccountReference: orderId,
+    TransactionDesc: 'Cowboys Group Holdings Checkout'
+  };
+
+  let response;
+  try {
+    response = await fetch(`${M_PESA.baseUrl}/mpesa/stkpush/v1/processrequest`, {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${token}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(payload)
+    });
+  } catch (err) {
+    const info = errInfo(err);
+    throw new Error(`M-Pesa STK network failure: ${JSON.stringify(info)}`);
+  }
+
+  const data = await response.json().catch(() =&gt; ({}));
+  if (!response.ok) {
+    throw new Error(`M-Pesa STK failed: ${response.status} ${JSON.stringify(data)}`);
+  }
+
+  if (data.ResponseCode !== '0') {
+    throw new Error(`M-Pesa STK rejected: ${JSON.stringify(data)}`);
+  }
+
+  return data;
+}
+
+async function handleApi(req, res, urlObj) {
+  if (req.method === 'OPTIONS') {
+    res.writeHead(204, {
+      ...SECURITY_HEADERS,
+      'Cache-Control': 'no-store',
+      Allow: 'GET,POST,PUT,OPTIONS'
+    });
+    res.end();
+    return true;
+  }
+
+  if (req.method === 'GET' &amp;&amp; urlObj.pathname === '/api/health') {
+    return sendJson(res, 200, {
+      ok: true,
+      now: new Date().toISOString(),
+      uptime_seconds: Math.round(process.uptime())
+    });
+  }
+
+  if (req.method === 'GET' &amp;&amp; urlObj.pathname === '/api/content') {
+    try {
+      const content = await readContent();
+      return sendJson(res, 200, content);
+    } catch (err) {
+      return sendJson(res, 500, { error: 'Failed to read content', detail: err.message });
+    }
+  }
+
+  if (req.method === 'PUT' &amp;&amp; urlObj.pathname === '/api/content') {
+    if (!isAuthed(req)) return sendJson(res, 401, { error: 'Unauthorized' });
+
+    try {
+      const raw = await readBody(req);
+      const next = parseJson(raw);
+      if (!next || typeof next !== 'object') {
+        return sendJson(res, 400, { error: 'Invalid JSON body.' });
+      }
+      await writeContent(next);
+      return sendJson(res, 200, { ok: true });
+    } catch (err) {
+      return sendJson(res, 400, { error: 'Invalid content payload', detail: err.message });
+    }
+  }
+
+  if (req.method === 'GET' &amp;&amp; urlObj.pathname === '/api/payments/config') {
+    return sendJson(res, 200, {
+      mpesa_enabled: isMpesaConfigured(),
+      methods: paymentMethods(),
+      manual: {
+        enabled: true,
+        till_number: MANUAL_PAYMENT.tillNumber,
+        payee_name: MANUAL_PAYMENT.payeeName
+      }
+    });
+  }
+
+  if (req.method === 'POST' &amp;&amp; urlObj.pathname === '/api/payments/checkout') {
+    const rate = hitRateLimit(req, 'checkout', RATE_LIMIT_CONFIG.checkout);
+    if (rate.limited) {
+      res.setHeader('Retry-After', String(rate.retryAfterSec));
+      return sendJson(res, 429, { error: 'Too many checkout attempts. Please retry shortly.' });
+    }
+
+    try {
+      const raw = await readBody(req);
+      const payload = parseJson(raw);
+      if (!payload || typeof payload !== 'object') {
+        return sendJson(res, 400, { error: 'Invalid JSON body.' });
+      }
+
+      const method = String(payload.method || 'manual').toLowerCase();
+      const amountKes = Number(payload.amount_kes || 0);
+      const phone = normalizeKenyanPhone(payload.phone || '');
+      const items = (Array.isArray(payload.items) ? payload.items : []).map(sanitizeItem);
+      const orderId = `order-${Date.now()}`;
+      const lanes = [...new Set(items.map((item) =&gt; laneFromKind(item.kind)))];
+
+      if (!Number.isFinite(amountKes) || amountKes &lt; 1) {
+        return sendJson(res, 400, { error: 'Amount must be at least KES 1.' });
+      }
+      if (!items.length) {
+        return sendJson(res, 400, { error: 'At least one item is required.' });
+      }
+      if (lanes.length &gt; 1) {
+        return sendJson(res, 400, {
+          error: 'Do not mix product types in one order. Checkout apparel, tickets, and livestock separately.'
+        });
+      }
+      if (!phone || !/^254\d{9}$/.test(phone)) {
+        return sendJson(res, 400, { error: 'Use a valid Kenyan phone format like 254712345678.' });
+      }
+      if (!paymentMethods().includes(method)) {
+        return sendJson(res, 400, { error: 'Invalid payment method.' });
+      }
+      if (method === 'mpesa' &amp;&amp; !isMpesaConfigured()) {
+        return sendJson(res, 503, { error: 'M-Pesa is not configured on server.' });
+      }
+
+      const payments = await readPayments();
+      if (applyExpiryToAllOrders(payments)) {
+        await writePayments(payments);
+      }
+      const order = {
+        id: orderId,
+        method,
+        status: method === 'manual' ? 'awaiting_manual_confirmation' : 'pending',
+        amount_kes: Math.round(amountKes),
+        phone,
+        items,
+        lane: lanes[0],
+        created_at: new Date().toISOString(),
+        mpesa_checkout_request_id: null,
+        mpesa_merchant_request_id: null,
+        result_code: null,
+        result_desc: null,
+        paid_at: null,
+        manual_transaction_code: null,
+        tickets: []
+      };
+      order.tickets = buildTicketsFromItems(order.id, order.items, order.status);
+
+      payments.orders.unshift(order);
+      await writePayments(payments);
+
+      if (method === 'manual') {
+        const till = MANUAL_PAYMENT.tillNumber || 'your till number';
+        order.result_desc = `Manual payment selected. Send KES ${order.amount_kes} to Till ${till}, then share M-Pesa transaction code with support for confirmation.`;
+        await writePayments(payments);
+        return sendJson(res, 200, {
+          ok: true,
+          order_id: orderId,
+          status: order.status,
+          message: order.result_desc,
+          manual: {
+            till_number: MANUAL_PAYMENT.tillNumber,
+            payee_name: MANUAL_PAYMENT.payeeName
+          }
+        });
+      }
+
+      const stk = await initiateMpesaStk({ amountKes, phone, orderId });
+
+      order.mpesa_checkout_request_id = stk.CheckoutRequestID || null;
+      order.mpesa_merchant_request_id = stk.MerchantRequestID || null;
+      order.result_desc = stk.CustomerMessage || stk.ResponseDescription || 'STK sent';
+      await writePayments(payments);
+
+      return sendJson(res, 200, {
+        ok: true,
+        order_id: orderId,
+        status: order.status,
+        message: order.result_desc
+      });
+    } catch (err) {
+      return sendJson(res, 500, { error: 'Checkout initiation failed', detail: err.message });
+    }
+  }
+
+  if (req.method === 'GET' &amp;&amp; urlObj.pathname === '/api/payments/status') {
+    const orderId = String(urlObj.searchParams.get('order_id') || '').trim();
+    if (!orderId) return sendJson(res, 400, { error: 'order_id is required' });
+
+    const payments = await readPayments();
+    if (applyExpiryToAllOrders(payments)) {
+      await writePayments(payments);
+    }
+    const order = payments.orders.find((x) =&gt; x.id === orderId);
+    if (!order) return sendJson(res, 404, { error: 'Order not found' });
+
+    return sendJson(res, 200, {
+      ok: true,
+      order_id: order.id,
+      method: order.method,
+      lane: order.lane || null,
+      status: order.status,
+      amount_kes: order.amount_kes,
+      result_desc: order.result_desc,
+      paid_at: order.paid_at
+    });
+  }
+
+  if (req.method === 'GET' &amp;&amp; urlObj.pathname === '/api/payments/receipt') {
+    const orderId = String(urlObj.searchParams.get('order_id') || '').trim();
+    if (!orderId) return sendJson(res, 400, { error: 'order_id is required' });
+
+    const payments = await readPayments();
+    if (applyExpiryToAllOrders(payments)) {
+      await writePayments(payments);
+    }
+    const order = payments.orders.find((x) =&gt; x.id === orderId);
+    if (!order) return sendJson(res, 404, { error: 'Order not found' });
+    if (order.status !== 'paid') {
+      return sendJson(res, 409, { error: 'Payment not yet confirmed. Receipt is available after payment confirmation.' });
+    }
+
+    return sendJson(res, 200, { ok: true, receipt: orderToReceipt(order) });
+  }
+
+  if (req.method === 'POST' &amp;&amp; urlObj.pathname === '/api/payments/confirm-manual') {
+    const rate = hitRateLimit(req, 'confirm-manual', RATE_LIMIT_CONFIG.confirmManual);
+    if (rate.limited) {
+      res.setHeader('Retry-After', String(rate.retryAfterSec));
+      return sendJson(res, 429, { error: 'Too many confirmation attempts. Please retry shortly.' });
+    }
+
+    if (!isAuthed(req)) return sendJson(res, 401, { error: 'Unauthorized' });
+    try {
+      const raw = await readBody(req);
+      const payload = parseJson(raw || '{}', {});
+      const orderId = String(payload.order_id || '').trim();
+      const transactionCode = String(payload.transaction_code || '').trim().toUpperCase();
+      if (!orderId) return sendJson(res, 400, { error: 'order_id is required.' });
+      if (!transactionCode) return sendJson(res, 400, { error: 'transaction_code is required.' });
+
+      const payments = await readPayments();
+      if (applyExpiryToAllOrders(payments)) {
+        await writePayments(payments);
+      }
+      const order = payments.orders.find((x) =&gt; x.id === orderId);
+      if (!order) return sendJson(res, 404, { error: 'Order not found.' });
+      if (order.method !== 'manual') return sendJson(res, 400, { error: 'Order is not manual payment.' });
+      if (order.status === 'paid') return sendJson(res, 409, { error: 'Order is already marked paid.' });
+      if (order.status === 'expired') return sendJson(res, 409, { error: 'Order has expired and cannot be confirmed.' });
+      if (order.status === 'failed') return sendJson(res, 409, { error: 'Order is failed and cannot be confirmed.' });
+
+      order.status = 'paid';
+      order.paid_at = new Date().toISOString();
+      order.manual_transaction_code = transactionCode;
+      order.result_desc = `Manual payment confirmed. Transaction ${transactionCode}.`;
+      if (Array.isArray(order.tickets)) {
+        order.tickets = order.tickets.map((t) =&gt; ({ ...t, status: 'issued' }));
+      }
+      await writePayments(payments);
+
+      return sendJson(res, 200, { ok: true, order_id: order.id, status: order.status });
+    } catch (err) {
+      return sendJson(res, 400, { error: 'Invalid confirmation payload', detail: err.message });
+    }
+  }
+
+  if (req.method === 'GET' &amp;&amp; urlObj.pathname === '/api/payments/orders') {
+    if (!isAuthed(req)) return sendJson(res, 401, { error: 'Unauthorized' });
+    const laneFilter = String(urlObj.searchParams.get('lane') || '').trim();
+    const statusFilter = String(urlObj.searchParams.get('status') || '').trim();
+    const limit = Math.max(1, Math.min(200, Number(urlObj.searchParams.get('limit') || 50)));
+
+    const payments = await readPayments();
+    if (applyExpiryToAllOrders(payments)) {
+      await writePayments(payments);
+    }
+
+    let orders = Array.isArray(payments.orders) ? payments.orders.slice() : [];
+    if (laneFilter) orders = orders.filter((x) =&gt; String(x.lane || '') === laneFilter);
+    if (statusFilter) orders = orders.filter((x) =&gt; String(x.status || '') === statusFilter);
+    orders = orders.slice(0, limit);
+
+    return sendJson(res, 200, {
+      ok: true,
+      count: orders.length,
+      orders: orders.map((o) =&gt; ({
+        id: o.id,
+        lane: o.lane || null,
+        method: o.method,
+        status: o.status,
+        amount_kes: o.amount_kes,
+        phone: o.phone,
+        created_at: o.created_at,
+        paid_at: o.paid_at,
+        result_desc: o.result_desc,
+        transaction_code: o.manual_transaction_code || null
+      }))
+    });
+  }
+
+  if (req.method === 'POST' &amp;&amp; urlObj.pathname === '/api/payments/mpesa/callback') {
+    try {
+      const raw = await readBody(req);
+      const payload = parseJson(raw || '{}', {});
+      const callback = payload?.Body?.stkCallback || {};
+
+      const checkoutRequestId = callback.CheckoutRequestID;
+      const resultCode = Number(callback.ResultCode);
+      const resultDesc = String(callback.ResultDesc || '');
+      if (!checkoutRequestId) {
+        return sendJson(res, 200, { ResultCode: 0, ResultDesc: 'Accepted' });
+      }
+
+      const payments = await readPayments();
+      const order = payments.orders.find((x) =&gt; x.mpesa_checkout_request_id === checkoutRequestId);
+      if (!order) {
+        return sendJson(res, 200, { ResultCode: 0, ResultDesc: 'Accepted' });
+      }
+      if (order.method !== 'mpesa') {
+        return sendJson(res, 200, { ResultCode: 0, ResultDesc: 'Accepted' });
+      }
+      if (order.status === 'paid' &amp;&amp; resultCode === 0) {
+        return sendJson(res, 200, { ResultCode: 0, ResultDesc: 'Accepted' });
+      }
+      if (applyAutoExpiry(order)) {
+        await writePayments(payments);
+        return sendJson(res, 200, { ResultCode: 0, ResultDesc: 'Accepted' });
+      }
+
+      order.result_code = resultCode;
+      order.result_desc = resultDesc;
+      order.callback_received_at = new Date().toISOString();
+
+      if (resultCode === 0) {
+        const metadata = callback.CallbackMetadata?.Item || [];
+        const amountValue = Number(getMetadataValue(metadata, 'Amount'));
+        const phoneValue = normalizeKenyanPhone(getMetadataValue(metadata, 'PhoneNumber') || '');
+        const mpesaCode = String(getMetadataValue(metadata, 'MpesaReceiptNumber') || '').trim().toUpperCase();
+        const amountMatches = Number.isFinite(amountValue) &amp;&amp; Number(amountValue) === Number(order.amount_kes);
+        const phoneMatches = !phoneValue || phoneValue === order.phone;
+
+        if (!amountMatches || !phoneMatches) {
+          order.status = 'flagged';
+          order.result_desc = 'Payment callback mismatch detected. Order flagged for review.';
+        } else {
+          order.status = 'paid';
+          order.paid_at = new Date().toISOString();
+          order.manual_transaction_code = mpesaCode || order.manual_transaction_code || null;
+          if (Array.isArray(order.tickets)) {
+            order.tickets = order.tickets.map((t) =&gt; ({ ...t, status: 'issued' }));
+          }
+        }
+      } else {
+        order.status = 'failed';
+      }
+      await writePayments(payments);
+
+      return sendJson(res, 200, { ResultCode: 0, ResultDesc: 'Accepted' });
+    } catch (err) {
+      return sendJson(res, 400, { ResultCode: 1, ResultDesc: `Callback parse failed: ${err.message}` });
+    }
+  }
+
+  if (req.method === 'POST' &amp;&amp; urlObj.pathname === '/api/media') {
+    const rate = hitRateLimit(req, 'media-upload', RATE_LIMIT_CONFIG.mediaUpload);
+    if (rate.limited) {
+      res.setHeader('Retry-After', String(rate.retryAfterSec));
+      return sendJson(res, 429, { error: 'Too many upload requests. Please retry shortly.' });
+    }
+
+    if (!isAuthed(req)) return sendJson(res, 401, { error: 'Unauthorized' });
+
+    try {
+      const raw = await readBody(req);
+      const payload = parseJson(raw);
+      if (!payload || typeof payload !== 'object') {
+        return sendJson(res, 400, { error: 'Invalid JSON body.' });
+      }
+      const fileName = String(payload.filename || '').trim();
+      const base64Data = String(payload.base64 || '').trim();
+      const folder = String(payload.folder || 'outfits').trim();
+
+      if (!fileName || !base64Data) {
+        return sendJson(res, 400, { error: 'filename and base64 are required' });
+      }
+
+      const targetFolder = safeJoin(path.join(ROOT, 'assets'), folder);
+      if (!targetFolder) return sendJson(res, 400, { error: 'Invalid folder path' });
+
+      await fsp.mkdir(targetFolder, { recursive: true });
+
+      const safeName = fileName.replace(/[^a-zA-Z0-9._-]/g, '_');
+      const fullPath = safeJoin(targetFolder, safeName);
+      if (!fullPath) return sendJson(res, 400, { error: 'Invalid file name' });
+
+      const noPrefix = base64Data.includes(',') ? base64Data.split(',').pop() : base64Data;
+      const buffer = Buffer.from(noPrefix, 'base64');
+      await fsp.writeFile(fullPath, buffer);
+
+      const rel = path.relative(ROOT, fullPath).replaceAll(path.sep, '/');
+      return sendJson(res, 200, { ok: true, path: rel });
+    } catch (err) {
+      return sendJson(res, 400, { error: 'Invalid media payload', detail: err.message });
+    }
+  }
+
+  return false;
+}
+
+function serveFile(res, filePath) {
+  const ext = path.extname(filePath).toLowerCase();
+  const contentType = MIME_TYPES[ext] || 'application/octet-stream';
+  const stream = fs.createReadStream(filePath);
+
+  stream.on('open', () =&gt; {
+    res.writeHead(200, {
+      ...SECURITY_HEADERS,
+      'Cache-Control': cacheControlFor(filePath),
+      'Content-Type': contentType
+    });
+  });
+
+  stream.on('error', () =&gt; {
+    res.writeHead(404, { 'Content-Type': 'text/plain; charset=utf-8' });
+    res.end('Not found');
+  });
+
+  stream.pipe(res);
+}
+
+const server = http.createServer(async (req, res) =&gt; {
+  const urlObj = new URL(req.url || '/', `http://${req.headers.host}`);
+
+  if (urlObj.pathname.startsWith('/api/')) {
+    const handled = await handleApi(req, res, urlObj);
+    if (handled !== false) return;
+    return sendJson(res, 404, { error: 'API route not found' });
+  }
+
+  const requestPath = urlObj.pathname === '/' ? '/index.html' : urlObj.pathname;
+  const target = safeJoin(ROOT, requestPath);
+
+  if (!target) {
+    res.writeHead(400, { 'Content-Type': 'text/plain; charset=utf-8' });
+    res.end('Bad request');
+    return;
+  }
+
+  try {
+    const stat = await fsp.stat(target);
+    if (stat.isDirectory()) {
+      return serveFile(res, path.join(target, 'index.html'));
+    }
+    return serveFile(res, target);
+  } catch {
+    res.writeHead(404, { 'Content-Type': 'text/plain; charset=utf-8' });
+    res.end('Not found');
+  }
+});
+
+server.listen(PORT, HOST, async () =&gt; {
+  await fsp.mkdir(path.join(ROOT, 'data'), { recursive: true });
+  try {
+    await fsp.access(PAYMENTS_PATH);
+  } catch {
+    await writePayments({ orders: [] });
+  }
+
+  console.log(`Server running at http://${HOST}:${PORT}`);
+  console.log('Set ADMIN_KEY and M-PESA env vars before production use.');
+});
+```
+
+## 5) script.js
+
+```js
+const PLACEHOLDER_IMAGE = "assets/logo-mark.svg";
+const OUTFIT_KEY = "cgh_outfits_v1";
+
+const defaultContent = {
+  socials: [
+    { id: "social-1", platform: "Instagram", url: "https://instagram.com/", handle: "@cowboysgroup" },
+    { id: "social-2", platform: "TikTok", url: "https://tiktok.com/@", handle: "@cowboysgroup" },
+    { id: "social-3", platform: "Facebook", url: "https://facebook.com/", handle: "Cowboys Group Holdings" },
+    { id: "social-4", platform: "YouTube", url: "https://youtube.com/@", handle: "@cowboysgroup" },
+    { id: "social-5", platform: "WhatsApp", url: "https://wa.me/254793791623", handle: "+254 793 791 623" }
+  ],
+  team: [
+    { id: "team-1", name: "Leadership Desk", role: "Holding Company Coordination", photo: PLACEHOLDER_IMAGE, bio: "Coordinating ventures, partnerships, and community programs across the ecosystem." },
+    { id: "team-2", name: "Events &amp; Experience Team", role: "Events, Tickets, Artist Bookings", photo: PLACEHOLDER_IMAGE, bio: "Running western-themed events, festivals, and family experiences with clear operations." },
+    { id: "team-3", name: "Commerce &amp; Marketplace Team", role: "Apparel, Livestock, Decor", photo: PLACEHOLDER_IMAGE, bio: "Managing stock quality, product listings, and customer order fulfillment." }
+  ],
+  videos: [
+    { title: "Ranch Life Preview", src: "", poster: PLACEHOLDER_IMAGE, category: "ranch" },
+    { title: "Events Highlight Reel", src: "", poster: PLACEHOLDER_IMAGE, category: "events" }
+  ],
+  outfits: [
+    { id: "adult-1", collection: "adults", name: "Cowboys Heritage Denim Shirt", price: 4200, image: PLACEHOLDER_IMAGE, description: "Premium western-inspired adult fit" },
+    { id: "adult-2", collection: "adults", name: "Ranch Work Jacket", price: 6800, image: PLACEHOLDER_IMAGE, description: "All-season rugged jacket for ranch and city wear" },
+    { id: "kids-1", collection: "kids", name: "Little Rider Weekend Set", price: 3200, image: PLACEHOLDER_IMAGE, description: "Kids-friendly fabric with playful western styling" },
+    { id: "kids-2", collection: "kids", name: "Kids Rodeo Hoodie", price: 2800, image: PLACEHOLDER_IMAGE, description: "Warm and durable hoodie for active children" },
+    { id: "acc-1", collection: "accessories", name: "Heritage Leather Belt", price: 3500, image: PLACEHOLDER_IMAGE, description: "Hand-finished leather belt" },
+    { id: "acc-2", collection: "accessories", name: "Bull Horn Signature Cap", price: 1800, image: PLACEHOLDER_IMAGE, description: "Daily wear cap with culture-forward mark" }
+  ],
+  events: [
+    { id: "event-1", title: "Nairobi Ranch Night Experience", date: "2026-12-18", venue: "Karen, Nairobi", performers: "Live Band + DJ + Dance Crew", ticket_kes: 2000, poster: "" },
+    { id: "event-2", title: "Western Family Sunday", date: "2026-12-27", venue: "Naivasha Grounds", performers: "Kids Dance, MC, Live Entertainment", ticket_kes: 1200, poster: "" },
+    { id: "event-3", title: "Classic Cars &amp; Cowboys Showcase", date: "2026-11-07", venue: "Nairobi Motor Hub", performers: "Car Clubs, Motorcycle Clubs, Guest Artists", ticket_kes: 1500, poster: "" }
+  ],
+  livestock: [
+    { id: "stock-1", name: "Goat - Premium Festive", weight_kg: 38, rate_per_kg_kes: 680, status: "Available", image: "" },
+    { id: "stock-2", name: "Goat - Standard Select", weight_kg: 31, rate_per_kg_kes: 620, status: "Available", image: "" },
+    { id: "stock-3", name: "Cattle - Prime Butchery Grade", weight_kg: 290, rate_per_kg_kes: 470, status: "Limited", image: "" }
+  ],
+  decor: [
+    { id: "decor-1", name: "Rustic Event Decor Package", category: "Service", price_kes: 25000, description: "Full setup for weddings, launches, private parties, and western-themed events.", image: "" },
+    { id: "decor-2", name: "Fresh Flower Ceremony Bundle", category: "Fresh Flowers", price_kes: 8500, description: "Fresh flower curation for events and home gifting.", image: "" },
+    { id: "decor-3", name: "Rustic Home Accent Set", category: "Rustic Decor", price_kes: 6200, description: "Handpicked pieces for homes, restaurants, and lodge interiors.", image: "" }
+  ],
+  descriptions: [
+    { id: "desc-1", title: "Community-First Ecosystem", text: "Built with creators, ranchers, families, and partners for shared growth and trusted collaboration." },
+    { id: "desc-2", title: "Kids Corner Commitment", text: "A safe and joyful experience for children through family events, age-appropriate fashion, and talent growth pathways." },
+    { id: "desc-3", title: "Inclusive Kenya Commitment", text: "Open to youth, adults, PWD communities, small businesses, and large institutions across Kenya and beyond." }
+  ],
+  partners: [
+    { id: "partner-1", name: "Ranchers &amp; Livestock Network", email: "partnerships@cowboysgroupholdings.co.ke", description: "Seasonal goat and cattle collaboration for festive commerce." },
+    { id: "partner-2", name: "Events &amp; Artist Collaboration Desk", email: "events@cowboysgroupholdings.co.ke", description: "Talent booking, event production, and entertainment partnerships." },
+    { id: "partner-3", name: "Foundation Partnerships Unit", email: "foundation@cowboysgroupholdings.co.ke", description: "MoUs, donor partnerships, and social impact programs." }
+  ],
+  reviews: [
+    { id: "review-1", name: "Community Member", text: "The platform is clear, welcoming, and truly reflects Kenyan culture.", rating: 5 },
+    { id: "review-2", name: "Event Client", text: "Ticketing, decor, and communication were smooth from start to finish.", rating: 5 },
+    { id: "review-3", name: "Family Shopper", text: "Kids and adult apparel sections are easy to browse and very practical.", rating: 5 }
+  ]
+};
+
+const state = {
+  cart: [],
+  content: structuredClone(defaultContent),
+  lastOrderId: "",
+  lastReceipt: null
+};
+
+const el = {
+  year: document.getElementById("year"),
+  navToggle: document.querySelector(".menu-toggle"),
+  nav: document.querySelector(".main-nav"),
+  adminKey: document.getElementById("admin-key"),
+  cartCount: document.getElementById("cart-count"),
+  cartLane: document.getElementById("cart-lane"),
+  cartItems: document.getElementById("cart-items"),
+  cartTotal: document.getElementById("cart-total"),
+  clearCartBtn: document.getElementById("clear-cart-btn"),
+  checkoutBtn: document.getElementById("checkout-btn"),
+  downloadReceiptBtn: document.getElementById("download-receipt-btn"),
+  downloadTicketBtn: document.getElementById("download-ticket-btn"),
+  paymentMethod: document.getElementById("payment-method"),
+  paymentPhone: document.getElementById("payment-phone"),
+  paymentStatus: document.getElementById("payment-status"),
+  paymentHint: document.getElementById("payment-hint"),
+  confirmOrderId: document.getElementById("confirm-order-id"),
+  confirmTxCode: document.getElementById("confirm-tx-code"),
+  confirmAdminKey: document.getElementById("confirm-admin-key"),
+  confirmPaymentBtn: document.getElementById("confirm-payment-btn"),
+  galleries: {
+    adults: document.getElementById("gallery-adults"),
+    kids: document.getElementById("gallery-kids"),
+    accessories: document.getElementById("gallery-accessories")
+  },
+  eventsGrid: document.getElementById("events-grid"),
+  livestockGrid: document.getElementById("livestock-grid"),
+  decorGrid: document.getElementById("decor-grid"),
+  videoGallery: document.getElementById("video-gallery"),
+  teamGrid: document.getElementById("team-grid"),
+  socialsGrid: document.getElementById("social-links"),
+  descriptionsGrid: document.getElementById("description-grid"),
+  partnersGrid: document.getElementById("partners-grid"),
+  reviewsGrid: document.getElementById("reviews-grid"),
+  outfitForm: document.getElementById("outfit-form"),
+  resetOutfitsBtn: document.getElementById("reset-outfits"),
+  saveOutfitsBtn: document.getElementById("save-backend"),
+  eventForm: document.getElementById("event-form"),
+  saveEventsBtn: document.getElementById("save-events-backend"),
+  livestockForm: document.getElementById("livestock-form"),
+  saveLivestockBtn: document.getElementById("save-livestock-backend"),
+  decorForm: document.getElementById("decor-form"),
+  saveDecorBtn: document.getElementById("save-decor-backend"),
+  teamForm: document.getElementById("team-form"),
+  saveTeamBtn: document.getElementById("save-team-backend"),
+  socialForm: document.getElementById("social-form"),
+  saveSocialsBtn: document.getElementById("save-socials-backend"),
+  descriptionForm: document.getElementById("description-form"),
+  saveDescriptionsBtn: document.getElementById("save-descriptions-backend"),
+  partnerFormAdmin: document.getElementById("partner-form-admin"),
+  savePartnersBtn: document.getElementById("save-partners-backend"),
+  reviewForm: document.getElementById("review-form"),
+  saveReviewsBtn: document.getElementById("save-reviews-backend"),
+  uploadForm: document.getElementById("media-upload-form"),
+  uploadResult: document.getElementById("upload-result"),
+  artistInquiry: document.getElementById("artist-inquiry"),
+  donorForm: document.getElementById("partner-form")
+};
+
+function formatKes(value) {
+  return `KES ${Number(value || 0).toLocaleString("en-KE")}`;
+}
+
+function uid(prefix) {
+  return `${prefix}-${Date.now()}-${Math.floor(Math.random() * 1e6)}`;
+}
+
+function adminKey() {
+  return (el.adminKey?.value || "").trim();
+}
+
+function notify(msg) {
+  alert(msg);
+}
+
+function isAdminMode() {
+  return Boolean(adminKey());
+}
+
+function adminOnly(html) {
+  return isAdminMode() ? html : "";
+}
+
+function toast(message, tone = "info") {
+  const id = "app-toast";
+  let node = document.getElementById(id);
+  if (!node) {
+    node = document.createElement("div");
+    node.id = id;
+    node.setAttribute("role", "status");
+    node.setAttribute("aria-live", "polite");
+    document.body.appendChild(node);
+  }
+  node.textContent = message;
+  node.className = `app-toast show ${tone}`;
+  window.clearTimeout(toast._timer);
+  toast._timer = window.setTimeout(() =&gt; {
+    const liveNode = document.getElementById(id);
+    if (liveNode) liveNode.classList.remove("show");
+  }, 2800);
+}
+
+function mediaSrc(path) {
+  const raw = String(path || "").trim();
+  if (!raw) return PLACEHOLDER_IMAGE;
+  if (/^(https?:)?\/\//i.test(raw) || raw.startsWith("data:")) return raw;
+  return encodeURI(raw.replace(/\\/g, "/").replace(/^\.?\//, ""));
+}
+
+function setPaymentStatus(msg) {
+  if (el.paymentStatus) el.paymentStatus.textContent = msg;
+}
+
+function setPaymentHint(msg) {
+  if (el.paymentHint) el.paymentHint.textContent = msg;
+}
+
+function laneFromKind(kind) {
+  if (kind === "ticket") return "Tickets";
+  if (kind === "livestock") return "Livestock";
+  return "Apparel";
+}
+
+function cartLaneName() {
+  if (!state.cart.length) return "None";
+  return laneFromKind(state.cart[0].kind || "product");
+}
+
+function addItemToCart(nextItem) {
+  const nextLane = laneFromKind(nextItem.kind || "product");
+  if (state.cart.length) {
+    const currentLane = laneFromKind(state.cart[0].kind || "product");
+    if (currentLane !== nextLane) {
+      notify(`Please complete or clear the ${currentLane} cart first. ${nextLane} must be checked out separately.`);
+      return false;
+    }
+  }
+  state.cart.push(nextItem);
+  renderCart();
+  return true;
+}
+
+function safeFilePart(value) {
+  return String(value || "order").replace(/[^a-zA-Z0-9_-]/g, "_");
+}
+
+function downloadTextFile(filename, content, mime = "text/plain;charset=utf-8") {
+  const blob = new Blob([content], { type: mime });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement("a");
+  link.href = url;
+  link.download = filename;
+  document.body.appendChild(link);
+  link.click();
+  link.remove();
+  URL.revokeObjectURL(url);
+}
+
+function formatDateTime(value) {
+  if (!value) return "N/A";
+  const dt = new Date(value);
+  return Number.isNaN(dt.getTime()) ? String(value) : dt.toLocaleString("en-KE");
+}
+
+function buildReceiptHtml(receipt) {
+  const rows = (receipt.items || []).map((item) =&gt; `
+    &lt;tr&gt;
+      &lt;td&gt;${item.name || "Item"}&lt;/td&gt;
+      &lt;td&gt;${item.kind || "product"}&lt;/td&gt;
+      &lt;td&gt;${item.qty || 1}&lt;/td&gt;
+      &lt;td&gt;${formatKes(item.price || 0)}&lt;/td&gt;
+      &lt;td&gt;${formatKes(item.total || item.price || 0)}&lt;/td&gt;
+    &lt;/tr&gt;
+  `).join("");
+  const tickets = (receipt.tickets || []).length
+    ? `&lt;h3&gt;Ticket Codes&lt;/h3&gt;&lt;ul&gt;${receipt.tickets.map((t) =&gt; `&lt;li&gt;${t.event_name} - ${t.code} (${t.status})&lt;/li&gt;`).join("")}&lt;/ul&gt;`
+    : "&lt;p&gt;No tickets in this order.&lt;/p&gt;";
+
+  return `&lt;!doctype html&gt;
+&lt;html&gt;
+&lt;head&gt;
+  &lt;meta charset="utf-8"&gt;
+  &lt;title&gt;Receipt ${receipt.receipt_number}&lt;/title&gt;
+  &lt;style&gt;
+    body { font-family: Arial, sans-serif; margin: 24px; color: #222; }
+    table { width: 100%; border-collapse: collapse; margin-top: 12px; }
+    th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+    th { background: #f7f2e8; }
+  &lt;/style&gt;
+&lt;/head&gt;
+&lt;body&gt;
+  &lt;h1&gt;Cowboys Group Holdings&lt;/h1&gt;
+  &lt;p&gt;&lt;strong&gt;Receipt:&lt;/strong&gt; ${receipt.receipt_number}&lt;/p&gt;
+  &lt;p&gt;&lt;strong&gt;Order ID:&lt;/strong&gt; ${receipt.order_id}&lt;/p&gt;
+  &lt;p&gt;&lt;strong&gt;Status:&lt;/strong&gt; ${receipt.status}&lt;/p&gt;
+  &lt;p&gt;&lt;strong&gt;Created:&lt;/strong&gt; ${formatDateTime(receipt.created_at)}&lt;/p&gt;
+  &lt;p&gt;&lt;strong&gt;Paid At:&lt;/strong&gt; ${formatDateTime(receipt.paid_at)}&lt;/p&gt;
+  &lt;p&gt;&lt;strong&gt;Phone:&lt;/strong&gt; ${receipt.phone || "N/A"}&lt;/p&gt;
+  &lt;p&gt;&lt;strong&gt;Amount:&lt;/strong&gt; ${formatKes(receipt.amount_kes || 0)}&lt;/p&gt;
+  &lt;p&gt;&lt;strong&gt;Transaction:&lt;/strong&gt; ${receipt.transaction_code || "Pending confirmation"}&lt;/p&gt;
+  &lt;table&gt;
+    &lt;thead&gt;
+      &lt;tr&gt;
+        &lt;th&gt;Item&lt;/th&gt;&lt;th&gt;Type&lt;/th&gt;&lt;th&gt;Qty&lt;/th&gt;&lt;th&gt;Unit Price&lt;/th&gt;&lt;th&gt;Total&lt;/th&gt;
+      &lt;/tr&gt;
+    &lt;/thead&gt;
+    &lt;tbody&gt;${rows}&lt;/tbody&gt;
+  &lt;/table&gt;
+  ${tickets}
+&lt;/body&gt;
+&lt;/html&gt;`;
+}
+
+async function fetchReceipt(orderId) {
+  const response = await fetch(`/api/payments/receipt?order_id=${encodeURIComponent(orderId)}`);
+  const data = await response.json();
+  if (!response.ok) throw new Error(data.error || "Receipt not available");
+  return data.receipt;
+}
+
+async function handleDownloadReceipt() {
+  const orderId = state.lastOrderId;
+  if (!orderId) return notify("Place an order first, then download receipt.");
+  try {
+    const receipt = await fetchReceipt(orderId);
+    state.lastReceipt = receipt;
+    const html = buildReceiptHtml(receipt);
+    downloadTextFile(`receipt-${safeFilePart(receipt.order_id)}.html`, html, "text/html;charset=utf-8");
+  } catch (err) {
+    notify(err?.message || "Could not download receipt. Please try again.");
+  }
+}
+
+async function handleDownloadTickets() {
+  const orderId = state.lastOrderId;
+  if (!orderId) return notify("No order found yet.");
+  try {
+    const receipt = state.lastReceipt || await fetchReceipt(orderId);
+    const tickets = Array.isArray(receipt.tickets) ? receipt.tickets : [];
+    if (!tickets.length) return notify("This order has no tickets.");
+    const body = [
+      `Cowboys Group Holdings Ticket Pack`,
+      `Order: ${receipt.order_id}`,
+      `Receipt: ${receipt.receipt_number}`,
+      `Status: ${receipt.status}`,
+      "",
+      ...tickets.map((t) =&gt; `${t.event_name} | Code: ${t.code} | Status: ${t.status}`)
+    ].join("\n");
+    downloadTextFile(`tickets-${safeFilePart(receipt.order_id)}.txt`, body);
+  } catch (err) {
+    notify(err?.message || "Could not download tickets right now.");
+  }
+}
+
+async function confirmManualPaymentFromAdminForm() {
+  const orderId = String(el.confirmOrderId?.value || "").trim();
+  const transactionCode = String(el.confirmTxCode?.value || "").trim().toUpperCase();
+  const adminKeyValue = String(el.confirmAdminKey?.value || "").trim();
+  if (!orderId || !transactionCode || !adminKeyValue) {
+    notify("Enter order ID, transaction code, and admin key.");
+    return;
+  }
+
+  try {
+    const response = await fetch("/api/payments/confirm-manual", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "x-admin-key": adminKeyValue
+      },
+      body: JSON.stringify({
+        order_id: orderId,
+        transaction_code: transactionCode
+      })
+    });
+    const data = await response.json();
+    if (!response.ok) {
+      notify(data.error || "Payment confirmation failed.");
+      return;
+    }
+
+    state.lastOrderId = orderId;
+    setPaymentStatus(`Payment confirmed for ${orderId}. Receipt and ticket download are now enabled.`);
+    if (el.confirmTxCode) el.confirmTxCode.value = "";
+    try {
+      state.lastReceipt = await fetchReceipt(orderId);
+    } catch {}
+  } catch {
+    notify("Could not confirm payment. Check server and admin key.");
+  }
+}
+
+function emptyNode(message) {
+  const d = document.createElement("div");
+  d.className = "gallery-empty";
+  d.textContent = message;
+  return d;
+}
+
+function maybeImage(path, alt = "") {
+  if (!path) return "";
+  return `&lt;img class="outfit-image" src="${mediaSrc(path)}" alt="${alt}" loading="lazy" onerror="this.onerror=null;this.src='${mediaSrc(PLACEHOLDER_IMAGE)}'"&gt;`;
+}
+
+function renderCart() {
+  if (!el.cartItems || !el.cartTotal || !el.cartCount) return;
+  el.cartItems.innerHTML = "";
+  if (el.cartLane) el.cartLane.textContent = cartLaneName();
+
+  if (!state.cart.length) {
+    el.cartItems.appendChild(emptyNode("Cart is empty."));
+    el.cartTotal.textContent = "KES 0";
+    el.cartCount.textContent = "0";
+    return;
+  }
+
+  let total = 0;
+  state.cart.forEach((item) =&gt; {
+    const qty = Math.max(1, Number(item.qty || 1));
+    total += Number(item.price || 0) * qty;
+    const li = document.createElement("li");
+    const itemTotal = Number(item.price || 0) * qty;
+    li.textContent = `${item.name} x${qty} - ${formatKes(itemTotal)}`;
+    el.cartItems.appendChild(li);
+  });
+  el.cartTotal.textContent = formatKes(total);
+  el.cartCount.textContent = String(state.cart.length);
+}
+
+function renderOutfits() {
+  ["adults", "kids", "accessories"].forEach((collection) =&gt; {
+    const container = el.galleries[collection];
+    if (!container) return;
+    container.innerHTML = "";
+
+    const items = state.content.outfits.filter((x) =&gt; x.collection === collection);
+    if (!items.length) {
+      container.appendChild(emptyNode("No items yet. Add from Admin Photo Manager."));
+      return;
+    }
+
+    items.forEach((item) =&gt; {
+      const card = document.createElement("article");
+      card.className = "outfit-card";
+      card.innerHTML = `
+        ${maybeImage(item.image, item.name)}
+        &lt;div class="outfit-body"&gt;
+          &lt;p class="outfit-name"&gt;${item.name}&lt;/p&gt;
+          &lt;p class="outfit-meta"&gt;${formatKes(item.price)} • ${item.description || ""}&lt;/p&gt;
+          &lt;div class="outfit-actions"&gt;
+            &lt;button class="btn btn-primary add-to-cart" type="button" data-name="${item.name}" data-price="${item.price}"&gt;Add To Cart&lt;/button&gt;
+            ${adminOnly(`&lt;button class="delete-outfit delete-outfit-item" type="button" data-id="${item.id}"&gt;Remove&lt;/button&gt;`)}
+          &lt;/div&gt;
+        &lt;/div&gt;
+      `;
+      container.appendChild(card);
+    });
+  });
+}
+
+function renderEvents() {
+  if (!el.eventsGrid) return;
+  el.eventsGrid.innerHTML = "";
+  if (!state.content.events.length) {
+    el.eventsGrid.appendChild(emptyNode("No events yet. Add one using Admin Ticket Manager."));
+    return;
+  }
+
+  state.content.events.forEach((item) =&gt; {
+    const dateLabel = item.date ? new Date(item.date).toLocaleDateString("en-KE", { year: "numeric", month: "short", day: "numeric" }) : "TBA";
+    const card = document.createElement("article");
+    card.className = "product-card";
+    card.innerHTML = `
+      ${maybeImage(item.poster, item.title)}
+      &lt;h3&gt;${item.title}&lt;/h3&gt;
+      &lt;p&gt;Date: ${dateLabel}&lt;/p&gt;
+      &lt;p&gt;Venue: ${item.venue || "TBA"}&lt;/p&gt;
+      &lt;p&gt;Performers: ${item.performers || "TBA"}&lt;/p&gt;
+      &lt;p&gt;Ticket: ${formatKes(item.ticket_kes)}&lt;/p&gt;
+      &lt;div class="outfit-actions"&gt;
+        &lt;button class="btn btn-primary ticket-btn" type="button" data-event="${item.title}" data-price="${Number(item.ticket_kes || 0)}"&gt;Buy Ticket&lt;/button&gt;
+        ${adminOnly(`&lt;button class="delete-outfit delete-event-item" type="button" data-id="${item.id}"&gt;Remove&lt;/button&gt;`)}
+      &lt;/div&gt;
+    `;
+    el.eventsGrid.appendChild(card);
+  });
+}
+
+function renderLivestock() {
+  if (!el.livestockGrid) return;
+  el.livestockGrid.innerHTML = "";
+  if (!state.content.livestock.length) {
+    el.livestockGrid.appendChild(emptyNode("No livestock listings yet. Add one using Admin Livestock Manager."));
+    return;
+  }
+
+  state.content.livestock.forEach((item) =&gt; {
+    const total = Number(item.weight_kg || 0) * Number(item.rate_per_kg_kes || 0);
+    const card = document.createElement("article");
+    card.className = "product-card";
+    card.innerHTML = `
+      ${maybeImage(item.image, item.name)}
+      &lt;h3&gt;${item.name}&lt;/h3&gt;
+      &lt;p&gt;Live Weight: ${item.weight_kg}kg&lt;/p&gt;
+      &lt;p&gt;Rate: ${formatKes(item.rate_per_kg_kes)} per kg&lt;/p&gt;
+      &lt;p&gt;Estimated Total: ${formatKes(total)}&lt;/p&gt;
+      &lt;p&gt;Status: ${item.status}&lt;/p&gt;
+      &lt;div class="outfit-actions"&gt;
+        &lt;button class="btn btn-ghost reserve-btn" type="button" data-item="${item.name}" data-price="${total}"&gt;Reserve Animal&lt;/button&gt;
+        ${adminOnly(`&lt;button class="delete-outfit delete-livestock-item" type="button" data-id="${item.id}"&gt;Remove&lt;/button&gt;`)}
+      &lt;/div&gt;
+    `;
+    el.livestockGrid.appendChild(card);
+  });
+}
+
+function renderDecor() {
+  if (!el.decorGrid) return;
+  el.decorGrid.innerHTML = "";
+  if (!state.content.decor.length) {
+    el.decorGrid.appendChild(emptyNode("No decor items yet. Add from Admin Decor Manager."));
+    return;
+  }
+
+  state.content.decor.forEach((item) =&gt; {
+    const card = document.createElement("article");
+    card.className = "product-card";
+    card.innerHTML = `
+      ${maybeImage(item.image, item.name)}
+      &lt;h3&gt;${item.name}&lt;/h3&gt;
+      &lt;p&gt;Category: ${item.category}&lt;/p&gt;
+      &lt;p&gt;Price: ${formatKes(item.price_kes)}&lt;/p&gt;
+      &lt;p&gt;${item.description || ""}&lt;/p&gt;
+      &lt;div class="outfit-actions"&gt;
+        &lt;button class="btn btn-ghost decor-inquiry" type="button" data-action="${item.name}"&gt;Request Item&lt;/button&gt;
+        ${adminOnly(`&lt;button class="delete-outfit delete-decor-item" type="button" data-id="${item.id}"&gt;Remove&lt;/button&gt;`)}
+      &lt;/div&gt;
+    `;
+    el.decorGrid.appendChild(card);
+  });
+}
+
+function renderVideos() {
+  if (!el.videoGallery) return;
+  el.videoGallery.innerHTML = "";
+  if (!state.content.videos.length) {
+    el.videoGallery.appendChild(emptyNode("No videos yet. Add in data/content.json or upload media."));
+    return;
+  }
+  state.content.videos.forEach((v) =&gt; {
+    const card = document.createElement("article");
+    card.className = "video-card";
+    card.innerHTML = `
+      ${v.src ? `&lt;video controls muted playsinline preload="none" ${v.poster ? `poster="${mediaSrc(v.poster)}"` : ""}&gt;&lt;source src="${mediaSrc(v.src)}"&gt;&lt;/video&gt;` : ""}
+      &lt;div class="video-body"&gt;${v.title || "Untitled Video"}&lt;/div&gt;
+    `;
+    el.videoGallery.appendChild(card);
+  });
+}
+
+function renderTeam() {
+  if (!el.teamGrid) return;
+  el.teamGrid.innerHTML = "";
+  if (!state.content.team.length) {
+    el.teamGrid.appendChild(emptyNode("No team profiles yet."));
+    return;
+  }
+  state.content.team.forEach((p) =&gt; {
+    const row = document.createElement("div");
+    row.className = "team-row";
+    row.innerHTML = `
+      ${p.photo ? `&lt;img class="team-photo" src="${mediaSrc(p.photo)}" alt="${p.name}" loading="lazy" onerror="this.onerror=null;this.src='${mediaSrc(PLACEHOLDER_IMAGE)}'"&gt;` : ""}
+      &lt;strong&gt;${p.name}&lt;/strong&gt;&lt;br&gt;${p.role || ""}&lt;br&gt;${p.bio || ""}
+      ${adminOnly(`&lt;div class="outfit-actions top-space"&gt;&lt;button class="delete-outfit delete-team-item" type="button" data-id="${p.id}"&gt;Remove&lt;/button&gt;&lt;/div&gt;`)}
+    `;
+    el.teamGrid.appendChild(row);
+  });
+}
+
+function renderSocials() {
+  if (!el.socialsGrid) return;
+  el.socialsGrid.innerHTML = "";
+  if (!state.content.socials.length) {
+    el.socialsGrid.appendChild(emptyNode("No social links yet."));
+    return;
+  }
+  state.content.socials.forEach((s) =&gt; {
+    const row = document.createElement("div");
+    row.className = "social-row";
+    row.innerHTML = `
+      &lt;a class="social-link" href="${s.url || '#'}" target="_blank" rel="noreferrer noopener"&gt;${s.platform}${s.handle ? ` • ${s.handle}` : ""}&lt;/a&gt;
+      ${adminOnly(`&lt;div class="outfit-actions top-space"&gt;&lt;button class="delete-outfit delete-social-item" type="button" data-id="${s.id}"&gt;Remove&lt;/button&gt;&lt;/div&gt;`)}
+    `;
+    el.socialsGrid.appendChild(row);
+  });
+}
+
+function renderCommunity() {
+  if (el.descriptionsGrid) {
+    el.descriptionsGrid.innerHTML = "";
+    if (!state.content.descriptions.length) {
+      el.descriptionsGrid.appendChild(emptyNode("No descriptions yet."));
+    } else {
+      state.content.descriptions.forEach((d) =&gt; {
+        const row = document.createElement("div");
+        row.className = "team-row";
+        row.innerHTML = `&lt;strong&gt;${d.title}&lt;/strong&gt;&lt;br&gt;${d.text}${adminOnly(`&lt;div class="outfit-actions top-space"&gt;&lt;button class="delete-outfit delete-description-item" data-id="${d.id}"&gt;Remove&lt;/button&gt;&lt;/div&gt;`)}`;
+        el.descriptionsGrid.appendChild(row);
+      });
+    }
+  }
+
+  if (el.partnersGrid) {
+    el.partnersGrid.innerHTML = "";
+    if (!state.content.partners.length) {
+      el.partnersGrid.appendChild(emptyNode("No partners yet."));
+    } else {
+      state.content.partners.forEach((p) =&gt; {
+        const row = document.createElement("div");
+        row.className = "team-row";
+        row.innerHTML = `&lt;strong&gt;${p.name}&lt;/strong&gt;&lt;br&gt;${p.description || ""}&lt;br&gt;${p.email || ""}${adminOnly(`&lt;div class="outfit-actions top-space"&gt;&lt;button class="delete-outfit delete-partner-item" data-id="${p.id}"&gt;Remove&lt;/button&gt;&lt;/div&gt;`)}`;
+        el.partnersGrid.appendChild(row);
+      });
+    }
+  }
+
+  if (el.reviewsGrid) {
+    el.reviewsGrid.innerHTML = "";
+    if (!state.content.reviews.length) {
+      el.reviewsGrid.appendChild(emptyNode("No reviews yet."));
+    } else {
+      state.content.reviews.forEach((r) =&gt; {
+        const row = document.createElement("div");
+        row.className = "team-row";
+        row.innerHTML = `&lt;strong&gt;${r.name}&lt;/strong&gt; (${r.rating}/5)&lt;br&gt;${r.text}${adminOnly(`&lt;div class="outfit-actions top-space"&gt;&lt;button class="delete-outfit delete-review-item" data-id="${r.id}"&gt;Remove&lt;/button&gt;&lt;/div&gt;`)}`;
+        el.reviewsGrid.appendChild(row);
+      });
+    }
+  }
+}
+
+function renderAll() {
+  renderOutfits();
+  renderEvents();
+  renderLivestock();
+  renderDecor();
+  renderVideos();
+  renderTeam();
+  renderSocials();
+  renderCommunity();
+  renderCart();
+}
+
+async function loadContent() {
+  try {
+    toast("Loading site content...", "info");
+    const response = await fetch("/api/content");
+    if (!response.ok) throw new Error(String(response.status));
+    const data = await response.json();
+    state.content = { ...structuredClone(defaultContent), ...data };
+    if (!Array.isArray(state.content.outfits) || !state.content.outfits.length) {
+      const local = localStorage.getItem(OUTFIT_KEY);
+      if (local) state.content.outfits = JSON.parse(local);
+    }
+    toast("Content loaded.", "ok");
+  } catch {
+    state.content = structuredClone(defaultContent);
+    try {
+      const local = localStorage.getItem(OUTFIT_KEY);
+      if (local) state.content.outfits = JSON.parse(local);
+    } catch {}
+    toast("Loaded fallback content (server unavailable).", "warn");
+  }
+}
+
+async function saveContent(scope) {
+  const key = adminKey();
+  if (!key) {
+    notify("Enter admin key first.");
+    return;
+  }
+  try {
+    const response = await fetch("/api/content", {
+      method: "PUT",
+      headers: { "Content-Type": "application/json", "x-admin-key": key },
+      body: JSON.stringify(state.content)
+    });
+    if (!response.ok) throw new Error(String(response.status));
+    toast(`${scope} saved successfully.`, "ok");
+  } catch {
+    toast("Save failed. Check admin key and server status.", "warn");
+  }
+}
+
+async function uploadMedia(file, folder) {
+  const key = adminKey();
+  if (!key) {
+    notify("Enter admin key before upload.");
+    return null;
+  }
+
+  const toBase64 = await new Promise((resolve, reject) =&gt; {
+    const reader = new FileReader();
+    reader.onload = () =&gt; resolve(String(reader.result || ""));
+    reader.onerror = reject;
+    reader.readAsDataURL(file);
+  });
+
+  const response = await fetch("/api/media", {
+    method: "POST",
+    headers: { "Content-Type": "application/json", "x-admin-key": key },
+    body: JSON.stringify({ filename: file.name, base64: toBase64, folder })
+  });
+
+  if (!response.ok) return null;
+  const data = await response.json();
+  return data.path || null;
+}
+
+async function startCheckout() {
+  if (!state.cart.length) {
+    notify("Your cart is empty. Add products first.");
+    return;
+  }
+
+  const method = String(el.paymentMethod?.value || "manual");
+  const phone = String(el.paymentPhone?.value || "").trim();
+  const amountKes = state.cart.reduce((sum, item) =&gt; sum + (Number(item.price || 0) * Math.max(1, Number(item.qty || 1))), 0);
+
+  if (!phone) {
+    notify("Enter customer phone in format 2547XXXXXXXX.");
+    return;
+  }
+
+  setPaymentStatus("Starting payment...");
+
+  try {
+    const response = await fetch("/api/payments/checkout", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        method,
+        phone,
+        amount_kes: amountKes,
+        items: state.cart
+      })
+    });
+
+    const data = await response.json();
+    if (!response.ok) {
+      setPaymentStatus(`Payment error: ${data.error || "Failed"}`);
+      return;
+    }
+
+    state.lastOrderId = data.order_id || "";
+    state.lastReceipt = null;
+    if (el.confirmOrderId &amp;&amp; data.order_id) el.confirmOrderId.value = data.order_id;
+    setPaymentStatus(data.message || "Order placed.");
+    if (data.order_id) {
+      pollPaymentStatus(data.order_id);
+    }
+
+    if (method === "manual" &amp;&amp; data.order_id) {
+      const till = data?.manual?.till_number ? `Till ${data.manual.till_number}` : "the business till";
+      const payee = data?.manual?.payee_name || "Cowboys Group Holdings";
+      setPaymentStatus(`Order ${data.order_id} created. Pay ${formatKes(amountKes)} to ${till} (${payee}), then share your M-Pesa code for confirmation.`);
+      state.cart = [];
+      renderCart();
+      return;
+    }
+  } catch {
+    setPaymentStatus("Payment request failed. Check server and configuration.");
+  }
+}
+
+function pollPaymentStatus(orderId) {
+  let attempts = 0;
+  const timer = setInterval(async () =&gt; {
+    attempts += 1;
+    try {
+      const response = await fetch(`/api/payments/status?order_id=${encodeURIComponent(orderId)}`);
+      const data = await response.json();
+      if (!response.ok) return;
+
+      if (data.status === "paid") {
+        clearInterval(timer);
+        setPaymentStatus(`Payment successful: ${formatKes(data.amount_kes)} received.`);
+        try {
+          state.lastReceipt = await fetchReceipt(orderId);
+        } catch {}
+        state.cart = [];
+        renderCart();
+        return;
+      }
+
+      if (data.status === "failed") {
+        clearInterval(timer);
+        setPaymentStatus(`Payment failed: ${data.result_desc || "Transaction not completed."}`);
+        return;
+      }
+
+      setPaymentStatus(`Waiting for payment confirmation... (${attempts})`);
+      if (attempts &gt;= 30) {
+        clearInterval(timer);
+        setPaymentStatus("Still pending. Confirm on phone and retry status shortly.");
+      }
+    } catch {
+      if (attempts &gt;= 30) {
+        clearInterval(timer);
+        setPaymentStatus("Status check stopped. Please retry checkout.");
+      }
+    }
+  }, 4000);
+}
+
+async function loadPaymentConfig() {
+  try {
+    const response = await fetch("/api/payments/config");
+    if (!response.ok) throw new Error(String(response.status));
+    const cfg = await response.json();
+
+    if (el.paymentMethod) {
+      const methods = Array.isArray(cfg.methods) ? cfg.methods : ["manual"];
+      el.paymentMethod.innerHTML = "";
+      methods.forEach((m) =&gt; {
+        const opt = document.createElement("option");
+        opt.value = m;
+        opt.textContent = m === "mpesa" ? "M-Pesa (STK Push)" : "Manual M-Pesa (Till)";
+        el.paymentMethod.appendChild(opt);
+      });
+    }
+
+    const till = cfg?.manual?.till_number || "";
+    if (till) {
+      setPaymentHint(`Manual mode active: customers pay directly to Till ${till}, then payment is confirmed by admin.`);
+    } else {
+      setPaymentHint("Manual mode active: set MANUAL_TILL_NUMBER on server to display your Till.");
+    }
+  } catch {
+    setPaymentHint("Could not load payment settings. Checkout may be limited.");
+  }
+}
+
+function bindForms() {
+  el.checkoutBtn?.addEventListener("click", () =&gt; {
+    startCheckout();
+  });
+  el.downloadReceiptBtn?.addEventListener("click", () =&gt; {
+    handleDownloadReceipt();
+  });
+  el.downloadTicketBtn?.addEventListener("click", () =&gt; {
+    handleDownloadTickets();
+  });
+  el.clearCartBtn?.addEventListener("click", () =&gt; {
+    state.cart = [];
+    renderCart();
+    setPaymentStatus("Cart cleared.");
+  });
+  el.confirmPaymentBtn?.addEventListener("click", () =&gt; {
+    confirmManualPaymentFromAdminForm();
+  });
+
+  el.outfitForm?.addEventListener("submit", (e) =&gt; {
+    e.preventDefault();
+    const fd = new FormData(el.outfitForm);
+    const collection = String(fd.get("outfit-collection") || document.getElementById("outfit-collection")?.value || "adults");
+    const name = String(fd.get("outfit-name") || document.getElementById("outfit-name")?.value || "").trim();
+    const price = Number(document.getElementById("outfit-price")?.value || 0);
+    const image = String(document.getElementById("outfit-image")?.value || "").trim() || PLACEHOLDER_IMAGE;
+    const description = String(document.getElementById("outfit-description")?.value || "").trim();
+    if (!name || !Number.isFinite(price)) return notify("Provide valid outfit details.");
+    state.content.outfits.unshift({ id: uid("outfit"), collection, name, price, image, description });
+    localStorage.setItem(OUTFIT_KEY, JSON.stringify(state.content.outfits));
+    el.outfitForm.reset();
+    renderOutfits();
+  });
+
+  el.resetOutfitsBtn?.addEventListener("click", () =&gt; {
+    state.content.outfits = structuredClone(defaultContent.outfits);
+    localStorage.setItem(OUTFIT_KEY, JSON.stringify(state.content.outfits));
+    renderOutfits();
+  });
+
+  el.eventForm?.addEventListener("submit", (e) =&gt; {
+    e.preventDefault();
+    const title = String(document.getElementById("event-title")?.value || "").trim();
+    const date = String(document.getElementById("event-date")?.value || "");
+    const venue = String(document.getElementById("event-venue")?.value || "").trim();
+    const performers = String(document.getElementById("event-performers")?.value || "").trim();
+    const ticket_kes = Number(document.getElementById("event-price")?.value || 0);
+    const poster = String(document.getElementById("event-poster")?.value || "").trim();
+    if (!title || !date || !venue || !Number.isFinite(ticket_kes)) return notify("Provide valid event details.");
+    state.content.events.unshift({ id: uid("event"), title, date, venue, performers, ticket_kes, poster });
+    el.eventForm.reset();
+    renderEvents();
+  });
+
+  el.livestockForm?.addEventListener("submit", (e) =&gt; {
+    e.preventDefault();
+    const name = String(document.getElementById("livestock-name")?.value || "").trim();
+    const weight_kg = Number(document.getElementById("livestock-weight")?.value || 0);
+    const rate_per_kg_kes = Number(document.getElementById("livestock-rate")?.value || 0);
+    const status = String(document.getElementById("livestock-status")?.value || "Available");
+    const image = String(document.getElementById("livestock-image")?.value || "").trim();
+    if (!name || weight_kg &lt;= 0 || !Number.isFinite(rate_per_kg_kes)) return notify("Provide valid livestock details.");
+    state.content.livestock.unshift({ id: uid("stock"), name, weight_kg, rate_per_kg_kes, status, image });
+    el.livestockForm.reset();
+    renderLivestock();
+  });
+
+  el.decorForm?.addEventListener("submit", (e) =&gt; {
+    e.preventDefault();
+    const name = String(document.getElementById("decor-name")?.value || "").trim();
+    const category = String(document.getElementById("decor-category")?.value || "Service");
+    const price_kes = Number(document.getElementById("decor-price")?.value || 0);
+    const description = String(document.getElementById("decor-description")?.value || "").trim();
+    const image = String(document.getElementById("decor-image")?.value || "").trim();
+    if (!name || !Number.isFinite(price_kes)) return notify("Provide valid decor details.");
+    state.content.decor.unshift({ id: uid("decor"), name, category, price_kes, description, image });
+    el.decorForm.reset();
+    renderDecor();
+  });
+
+  el.teamForm?.addEventListener("submit", (e) =&gt; {
+    e.preventDefault();
+    const name = String(document.getElementById("team-name")?.value || "").trim();
+    const role = String(document.getElementById("team-role")?.value || "").trim();
+    const photo = String(document.getElementById("team-photo")?.value || "").trim() || PLACEHOLDER_IMAGE;
+    const bio = String(document.getElementById("team-bio")?.value || "").trim();
+    if (!name || !role) return notify("Provide valid team details.");
+    state.content.team.unshift({ id: uid("team"), name, role, photo, bio });
+    el.teamForm.reset();
+    renderTeam();
+  });
+
+  el.socialForm?.addEventListener("submit", (e) =&gt; {
+    e.preventDefault();
+    const platform = String(document.getElementById("social-platform")?.value || "").trim();
+    const handle = String(document.getElementById("social-handle")?.value || "").trim();
+    const url = String(document.getElementById("social-url")?.value || "").trim();
+    if (!platform || !url) return notify("Provide valid social details.");
+    state.content.socials.unshift({ id: uid("social"), platform, handle, url });
+    el.socialForm.reset();
+    renderSocials();
+  });
+
+  el.descriptionForm?.addEventListener("submit", (e) =&gt; {
+    e.preventDefault();
+    const title = String(document.getElementById("description-title")?.value || "").trim();
+    const text = String(document.getElementById("description-text")?.value || "").trim();
+    if (!title || !text) return notify("Provide valid description.");
+    state.content.descriptions.unshift({ id: uid("desc"), title, text });
+    el.descriptionForm.reset();
+    renderCommunity();
+  });
+
+  el.partnerFormAdmin?.addEventListener("submit", (e) =&gt; {
+    e.preventDefault();
+    const name = String(document.getElementById("partner-name")?.value || "").trim();
+    const email = String(document.getElementById("partner-email")?.value || "").trim();
+    const description = String(document.getElementById("partner-description")?.value || "").trim();
+    if (!name || !email) return notify("Provide valid partner details.");
+    state.content.partners.unshift({ id: uid("partner"), name, email, description });
+    el.partnerFormAdmin.reset();
+    renderCommunity();
+  });
+
+  el.reviewForm?.addEventListener("submit", (e) =&gt; {
+    e.preventDefault();
+    const name = String(document.getElementById("review-name")?.value || "").trim();
+    const text = String(document.getElementById("review-text")?.value || "").trim();
+    const rating = Number(document.getElementById("review-rating")?.value || 5);
+    if (!name || !text) return notify("Provide valid review.");
+    state.content.reviews.unshift({ id: uid("review"), name, text, rating: Math.max(1, Math.min(5, rating)) });
+    el.reviewForm.reset();
+    renderCommunity();
+  });
+
+  el.uploadForm?.addEventListener("submit", async (e) =&gt; {
+    e.preventDefault();
+    const folder = String(document.getElementById("upload-folder")?.value || "outfits");
+    const fileInput = document.getElementById("upload-file");
+    const file = fileInput?.files?.[0];
+    if (!file) return notify("Choose a file first.");
+    const result = await uploadMedia(file, folder);
+    if (!result) return notify("Upload failed. Check admin key and server status.");
+    if (el.uploadResult) el.uploadResult.value = result;
+    notify(`Upload successful: ${result}`);
+  });
+
+  el.artistInquiry?.addEventListener("submit", (e) =&gt; {
+    e.preventDefault();
+    notify("Artist inquiry submitted. Options and rates will be shared.");
+    el.artistInquiry.reset();
+  });
+
+  el.donorForm?.addEventListener("submit", (e) =&gt; {
+    e.preventDefault();
+    notify("Partnership request received. MOU discussion will be scheduled.");
+    el.donorForm.reset();
+  });
+
+  document.addEventListener("click", (e) =&gt; {
+    const addCart = e.target.closest(".add-to-cart");
+    if (addCart) {
+      const card = addCart.closest(".product-card");
+      const name = addCart.dataset.name || card?.getAttribute("data-name") || "Item";
+      const price = Number(addCart.dataset.price || card?.getAttribute("data-price") || 0);
+      addItemToCart({ name, price, qty: 1, kind: "product" });
+      return;
+    }
+
+    const ticket = e.target.closest(".ticket-btn");
+    if (ticket) {
+      const eventName = ticket.dataset.event || "Event Ticket";
+      const price = Number(ticket.dataset.price || 0);
+      if (!price) return notify("Ticket price is missing. Update event ticket price.");
+      addItemToCart({ name: `${eventName} Ticket`, price, qty: 1, kind: "ticket" });
+      return;
+    }
+
+    const reserve = e.target.closest(".reserve-btn");
+    if (reserve) {
+      const animalName = reserve.dataset.item || "Livestock";
+      const price = Number(reserve.dataset.price || 0);
+      if (!price) return notify("Livestock price not available.");
+      addItemToCart({ name: `${animalName} (Livestock)`, price, qty: 1, kind: "livestock" });
+      return;
+    }
+
+    const decor = e.target.closest(".decor-inquiry");
+    if (decor) return notify(`${decor.dataset.action || "Decor request"} inquiry received.`);
+
+    const del = e.target.closest(".delete-outfit");
+    if (!del) return;
+    if (!isAdminMode()) {
+      toast("Enter admin key to remove items.", "warn");
+      return;
+    }
+    const id = del.dataset.id;
+    if (!id) return;
+
+    const map = [
+      ["delete-outfit-item", "outfits"],
+      ["delete-event-item", "events"],
+      ["delete-livestock-item", "livestock"],
+      ["delete-decor-item", "decor"],
+      ["delete-team-item", "team"],
+      ["delete-social-item", "socials"],
+      ["delete-description-item", "descriptions"],
+      ["delete-partner-item", "partners"],
+      ["delete-review-item", "reviews"]
+    ];
+
+    for (const [klass, key] of map) {
+      if (del.classList.contains(klass)) {
+        state.content[key] = state.content[key].filter((x) =&gt; x.id !== id);
+        if (key === "outfits") localStorage.setItem(OUTFIT_KEY, JSON.stringify(state.content.outfits));
+        renderAll();
+        return;
+      }
+    }
+  });
+
+  el.saveOutfitsBtn?.addEventListener("click", () =&gt; saveContent("Outfits"));
+  el.saveEventsBtn?.addEventListener("click", () =&gt; saveContent("Events"));
+  el.saveLivestockBtn?.addEventListener("click", () =&gt; saveContent("Livestock"));
+  el.saveDecorBtn?.addEventListener("click", () =&gt; saveContent("Decor"));
+  el.saveTeamBtn?.addEventListener("click", () =&gt; saveContent("Team"));
+  el.saveSocialsBtn?.addEventListener("click", () =&gt; saveContent("Socials"));
+  el.saveDescriptionsBtn?.addEventListener("click", () =&gt; saveContent("Descriptions"));
+  el.savePartnersBtn?.addEventListener("click", () =&gt; saveContent("Partners"));
+  el.saveReviewsBtn?.addEventListener("click", () =&gt; saveContent("Reviews"));
+  el.adminKey?.addEventListener("input", () =&gt; renderAll());
+}
+
+function setupNav() {
+  if (!el.navToggle || !el.nav) return;
+  el.navToggle.addEventListener("click", () =&gt; {
+    const isExpanded = el.navToggle.getAttribute("aria-expanded") === "true";
+    el.navToggle.setAttribute("aria-expanded", String(!isExpanded));
+    el.nav.classList.toggle("open");
+  });
+
+  el.nav.querySelectorAll("a").forEach((a) =&gt; {
+    a.addEventListener("click", () =&gt; {
+      el.nav.classList.remove("open");
+      el.navToggle.setAttribute("aria-expanded", "false");
+    });
+  });
+}
+
+(async function boot() {
+  if (el.year) el.year.textContent = String(new Date().getFullYear());
+  setupNav();
+  await loadContent();
+  await loadPaymentConfig();
+  bindForms();
+  renderAll();
+})();
+```
+
+## 6) styles.css
+
+```css
+:root {
+  --paper: #f6efdd;
+  --cream: #fff9ec;
+  --gold: #d39a38;
+  --rust: #a9532d;
+  --oak: #2d231d;
+  --ink: #2f2a24;
+  --line: rgba(45, 35, 29, 0.16);
+  --ok: #2f8b44;
+  --warn: #ac6b0f;
+  --shadow: 0 20px 45px rgba(18, 11, 7, 0.16);
+  --radius-lg: 18px;
+  --radius-md: 12px;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  min-height: 100vh;
+  font-family: "Manrope", sans-serif;
+  color: var(--ink);
+  line-height: 1.6;
+  background:
+    radial-gradient(circle at 12% 8%, rgba(255, 249, 236, 0.95), transparent 28%),
+    radial-gradient(circle at 88% 12%, rgba(211, 154, 56, 0.22), transparent 35%),
+    linear-gradient(135deg, #ead6b4 0%, #f6efdd 48%, #e7c99d 100%);
+}
+
+.site-header,
+.section,
+.site-footer {
+  width: min(1120px, 92vw);
+  margin-inline: auto;
+}
+
+.site-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1.2rem 0;
+  position: sticky;
+  top: 0;
+  z-index: 30;
+  backdrop-filter: blur(9px);
+  background: rgba(246, 239, 221, 0.84);
+}
+
+.brand {
+  text-decoration: none;
+  color: var(--oak);
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+}
+
+.brand-mark {
+  width: 50px;
+  height: 50px;
+  border-radius: 14px;
+  box-shadow: 0 7px 16px rgba(30, 23, 19, 0.24);
+}
+
+.brand-text {
+  display: grid;
+  gap: 0.08rem;
+}
+
+.brand-top {
+  font-family: "Alfa Slab One", serif;
+  letter-spacing: 0.02em;
+  font-size: clamp(1.05rem, 2.1vw, 1.45rem);
+}
+
+.brand-bottom {
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  font-weight: 800;
+  color: rgba(47, 42, 36, 0.78);
+}
+
+.main-nav {
+  display: flex;
+  gap: 0.8rem;
+}
+
+.main-nav a {
+  text-decoration: none;
+  font-weight: 800;
+  color: var(--oak);
+  padding: 0.35rem 0.45rem;
+  border-radius: 8px;
+}
+
+.main-nav a:hover,
+.main-nav a:focus-visible {
+  background: rgba(169, 83, 45, 0.12);
+  outline: none;
+}
+
+.menu-toggle {
+  display: none;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  padding: 0.48rem 0.82rem;
+  background: var(--cream);
+  font-weight: 700;
+}
+
+.section {
+  padding: clamp(2.8rem, 6vw, 4.7rem) 0;
+}
+
+.reveal {
+  animation: rise 0.7s ease both;
+}
+
+@keyframes rise {
+  from {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.kicker {
+  text-transform: uppercase;
+  font-size: 0.74rem;
+  letter-spacing: 0.17em;
+  font-weight: 800;
+  color: var(--rust);
+  margin-bottom: 0.7rem;
+}
+
+h1,
+h2,
+h3 {
+  line-height: 1.2;
+  color: var(--oak);
+}
+
+h1 {
+  font-size: clamp(2rem, 5.2vw, 3.4rem);
+  margin-bottom: 1rem;
+}
+
+h2 {
+  font-size: clamp(1.5rem, 3.3vw, 2.35rem);
+  margin-bottom: 0.7rem;
+}
+
+h3 {
+  font-size: 1.13rem;
+  margin-bottom: 0.45rem;
+}
+
+.section-heading {
+  margin-bottom: 1.3rem;
+  display: grid;
+  gap: 0.45rem;
+}
+
+.section-heading .kicker {
+  display: inline-flex;
+  width: fit-content;
+  padding: 0.2rem 0.62rem;
+  border-radius: 999px;
+  background: rgba(169, 83, 45, 0.13);
+  border: 1px solid rgba(169, 83, 45, 0.24);
+}
+
+.section-heading h2 {
+  font-size: clamp(1.7rem, 3.8vw, 2.7rem);
+  font-weight: 800;
+}
+
+.hero {
+  display: grid;
+  grid-template-columns: 1.12fr 0.88fr;
+  gap: 1.1rem;
+}
+
+.hero-copy,
+.hero-card,
+.product-card,
+.cart-panel,
+.inquiry-form,
+.foundation-card {
+  background: var(--cream);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow);
+}
+
+.hero-copy,
+.hero-card,
+.foundation-card {
+  padding: clamp(1.2rem, 3vw, 2.2rem);
+}
+
+.hero-card {
+  background: linear-gradient(170deg, #2f251f 0%, #1d1613 100%);
+}
+
+.hero-card h2,
+.hero-card li {
+  color: #fff6e8;
+}
+
+.hero-card ul {
+  list-style: none;
+  display: grid;
+  gap: 0.7rem;
+  margin-top: 1rem;
+}
+
+.hero-scene {
+  border: 1px solid rgba(255, 246, 232, 0.22);
+  border-radius: 14px;
+  overflow: hidden;
+  margin-bottom: 0.9rem;
+}
+
+.hero-scene svg {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+.horse-wrap {
+  animation: horse-run 1.22s ease-in-out infinite;
+  transform-origin: 170px 132px;
+}
+
+.leg-front {
+  animation: legs-front 0.46s linear infinite alternate;
+  transform-origin: 182px 126px;
+}
+
+.leg-back {
+  animation: legs-back 0.46s linear infinite alternate-reverse;
+  transform-origin: 112px 126px;
+}
+
+.rider {
+  animation: rider-bounce 0.6s ease-in-out infinite;
+  transform-origin: 147px 90px;
+}
+
+.dust {
+  animation: dust-shift 1s ease-out infinite;
+}
+
+.cowboy-stand {
+  animation: stand-breathe 2.8s ease-in-out infinite;
+  transform-origin: 44px 108px;
+}
+
+.sun-glow {
+  animation: sun-pulse 2.8s ease-in-out infinite;
+}
+
+.acacia {
+  animation: sway 3.4s ease-in-out infinite;
+  transform-origin: 52px 90px;
+}
+
+@keyframes horse-run {
+  0% { transform: translateX(0) translateY(0); }
+  30% { transform: translateX(8px) translateY(-1px); }
+  60% { transform: translateX(14px) translateY(0); }
+  100% { transform: translateX(0) translateY(0); }
+}
+
+@keyframes legs-front {
+  from { transform: rotate(9deg); }
+  to { transform: rotate(-9deg); }
+}
+
+@keyframes legs-back {
+  from { transform: rotate(-9deg); }
+  to { transform: rotate(9deg); }
+}
+
+@keyframes rider-bounce {
+  0% { transform: translateY(0); }
+  50% { transform: translateY(-2px); }
+  100% { transform: translateY(0); }
+}
+
+@keyframes dust-shift {
+  0% { transform: translateX(0) scale(1); opacity: 0.58; }
+  100% { transform: translateX(16px) scale(1.08); opacity: 0.2; }
+}
+
+@keyframes stand-breathe {
+  0% { transform: translateY(0); }
+  50% { transform: translateY(-1px); }
+  100% { transform: translateY(0); }
+}
+
+@keyframes sun-pulse {
+  0% { opacity: 0.86; }
+  50% { opacity: 1; }
+  100% { opacity: 0.86; }
+}
+
+@keyframes sway {
+  0% { transform: rotate(0deg); }
+  50% { transform: rotate(1.5deg); }
+  100% { transform: rotate(0deg); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .horse-wrap,
+  .leg-front,
+  .leg-back,
+  .rider,
+  .dust,
+  .cowboy-stand,
+  .sun-glow,
+  .acacia {
+    animation: none;
+  }
+}
+
+.hero-actions {
+  margin-top: 1.2rem;
+  display: flex;
+  gap: 0.7rem;
+  flex-wrap: wrap;
+}
+
+.ranch-feature {
+  display: grid;
+  grid-template-columns: 0.95fr 1.05fr;
+  gap: 1rem;
+  background: var(--cream);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow);
+  padding: 1rem;
+}
+
+.ranch-copy {
+  padding: 0.4rem 0.4rem 0.4rem 0.2rem;
+}
+
+.ranch-scene-wrap {
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  overflow: hidden;
+  background: #2a1f17;
+}
+
+.ranch-scene-wrap svg {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+.faith-strip {
+  background: linear-gradient(110deg, #fff3dd 0%, #f6e8cd 55%, #f2dfbe 100%);
+  border: 1px solid var(--line);
+  border-left: 6px solid var(--rust);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow);
+  padding: 1.15rem 1.2rem;
+}
+
+.faith-strip h3 {
+  margin-bottom: 0.4rem;
+}
+
+.journey-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0.9rem;
+}
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  text-decoration: none;
+  font-weight: 800;
+  border-radius: 999px;
+  padding: 0.72rem 1rem;
+  border: 1px solid transparent;
+  cursor: pointer;
+}
+
+.btn-primary {
+  background: var(--oak);
+  color: #fff7e9;
+}
+
+.btn-ghost {
+  border-color: var(--line);
+  color: var(--oak);
+  background: transparent;
+}
+
+.split {
+  display: grid;
+  grid-template-columns: 1.4fr 0.6fr;
+  gap: 1rem;
+}
+
+.top-space {
+  margin-top: 1rem;
+}
+
+.bottom-space {
+  margin-bottom: 1rem;
+}
+
+.gallery-manager {
+  background: var(--cream);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow);
+  padding: 1rem;
+}
+
+.compact-heading h2 {
+  font-size: clamp(1.2rem, 2vw, 1.55rem);
+}
+
+.admin-form {
+  margin-top: 0.5rem;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 0.8rem;
+}
+
+.admin-form label:nth-child(5),
+.admin-form .admin-actions,
+.admin-form #save-backend,
+.admin-form .fine {
+  grid-column: 1 / -1;
+}
+
+.admin-actions {
+  display: flex;
+  gap: 0.6rem;
+  flex-wrap: wrap;
+}
+
+.collection-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1rem;
+}
+
+.gallery-grid {
+  margin-top: 0.7rem;
+  display: grid;
+  gap: 0.65rem;
+}
+
+.outfit-card {
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: #fffef9;
+  overflow: hidden;
+}
+
+.outfit-image {
+  display: block;
+  width: 100%;
+  aspect-ratio: 4 / 3;
+  object-fit: cover;
+  background: linear-gradient(145deg, #f2e0bf, #ebd0a3);
+}
+
+.outfit-body {
+  padding: 0.7rem;
+}
+
+.outfit-name {
+  font-weight: 800;
+  color: var(--oak);
+}
+
+.outfit-meta {
+  font-size: 0.87rem;
+  color: rgba(47, 42, 36, 0.82);
+  margin: 0.2rem 0 0.45rem;
+}
+
+.gallery-empty {
+  border: 1px dashed var(--line);
+  border-radius: 10px;
+  padding: 0.65rem;
+  font-size: 0.86rem;
+  color: rgba(47, 42, 36, 0.7);
+}
+
+.outfit-actions {
+  display: flex;
+  gap: 0.45rem;
+  flex-wrap: wrap;
+}
+
+.video-card {
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  overflow: hidden;
+  background: #fffef9;
+}
+
+.video-card video {
+  width: 100%;
+  display: block;
+  background: #1d1713;
+}
+
+.video-body {
+  padding: 0.55rem 0.65rem 0.7rem;
+}
+
+.team-row,
+.social-row {
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 0.55rem 0.7rem;
+  background: #fffef9;
+}
+
+.team-row {
+  display: grid;
+  gap: 0.6rem;
+}
+
+.team-photo {
+  display: block;
+  width: 100%;
+  max-width: 280px;
+  aspect-ratio: 3 / 4;
+  object-fit: cover;
+  object-position: top center;
+  border-radius: 10px;
+  background: linear-gradient(145deg, #f2e0bf, #ebd0a3);
+}
+
+.social-link {
+  font-weight: 800;
+  text-decoration: none;
+}
+
+.delete-outfit {
+  border: 1px solid rgba(169, 83, 45, 0.35);
+  background: transparent;
+  color: var(--rust);
+  border-radius: 999px;
+  padding: 0.38rem 0.6rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.card-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1rem;
+}
+
+.card-grid.three {
+  grid-template-columns: repeat(3, 1fr);
+}
+
+.product-card,
+.cart-panel,
+.inquiry-form {
+  padding: 1.1rem;
+}
+
+.product-card label,
+.inquiry-form label {
+  display: grid;
+  gap: 0.35rem;
+  font-weight: 700;
+  margin: 0.5rem 0;
+}
+
+select,
+input,
+textarea {
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 0.68rem;
+  font-family: inherit;
+}
+
+.stock {
+  display: inline-block;
+  font-size: 0.74rem;
+  font-weight: 800;
+  padding: 0.2rem 0.5rem;
+  border-radius: 999px;
+  margin-bottom: 0.5rem;
+}
+
+.in-stock {
+  color: var(--ok);
+  background: rgba(47, 139, 68, 0.13);
+}
+
+.low-stock {
+  color: var(--warn);
+  background: rgba(172, 107, 15, 0.16);
+}
+
+.cart-panel h3 {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+#cart-count {
+  background: rgba(169, 83, 45, 0.16);
+  color: var(--rust);
+  padding: 0.15rem 0.45rem;
+  border-radius: 999px;
+}
+
+.cart-items {
+  list-style: none;
+  margin: 0.8rem 0;
+  display: grid;
+  gap: 0.45rem;
+}
+
+.cart-items li {
+  font-size: 0.92rem;
+  border-bottom: 1px dashed var(--line);
+  padding-bottom: 0.35rem;
+}
+
+.cart-total {
+  margin-bottom: 0.8rem;
+}
+
+.fine {
+  margin-top: 0.7rem;
+  font-size: 0.82rem;
+  color: rgba(47, 42, 36, 0.78);
+}
+
+.inquiry-form {
+  display: grid;
+  gap: 0.55rem;
+  margin-top: 1rem;
+}
+
+.pillars {
+  margin-top: 1rem;
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.pillars span {
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  padding: 0.35rem 0.65rem;
+  font-weight: 700;
+  background: rgba(211, 154, 56, 0.12);
+}
+
+.site-footer {
+  padding: 2rem 0 3rem;
+  color: rgba(47, 42, 36, 0.83);
+  font-size: 0.94rem;
+}
+
+a {
+  color: var(--rust);
+}
+
+#app-toast {
+  position: fixed;
+  right: 1rem;
+  bottom: 1rem;
+  z-index: 1200;
+  max-width: min(420px, 92vw);
+  border-radius: 10px;
+  padding: 0.7rem 0.85rem;
+  color: #fff;
+  background: rgba(31, 41, 55, 0.95);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.18);
+  transform: translateY(12px);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.16s ease, transform 0.16s ease;
+}
+
+#app-toast.show {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+#app-toast.ok {
+  background: rgba(6, 95, 70, 0.95);
+}
+
+#app-toast.warn {
+  background: rgba(146, 64, 14, 0.96);
+}
+
+@media (min-width: 981px) {
+  .team-row {
+    grid-template-columns: 220px 1fr;
+    align-items: start;
+  }
+
+  .team-photo {
+    max-width: 220px;
+  }
+}
+
+@media (max-width: 980px) {
+  .hero,
+  .ranch-feature,
+  .split,
+  .collection-grid,
+  .admin-form,
+  .card-grid,
+  .card-grid.three,
+  .journey-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .menu-toggle {
+    display: inline-flex;
+  }
+
+  .main-nav {
+    position: absolute;
+    top: 68px;
+    right: 4vw;
+    width: min(240px, 88vw);
+    flex-direction: column;
+    gap: 0.35rem;
+    border: 1px solid var(--line);
+    border-radius: var(--radius-md);
+    background: var(--cream);
+    box-shadow: var(--shadow);
+    padding: 0.7rem;
+    opacity: 0;
+    transform: scale(0.95);
+    pointer-events: none;
+    transition: 0.18s ease;
+  }
+
+  .main-nav.open {
+    opacity: 1;
+    transform: scale(1);
+    pointer-events: auto;
+  }
+
+  .brand-mark {
+    width: 44px;
+    height: 44px;
+  }
+}
+```
+
+## 7) index.html
+
+```html
+&lt;!doctype html&gt;
+&lt;html lang="en"&gt;
+  &lt;head&gt;
+    &lt;meta charset="UTF-8" /&gt;
+    &lt;meta name="viewport" content="width=device-width, initial-scale=1.0" /&gt;
+    &lt;title&gt;Cowboys Group Holdings | Kenya Culture, Events, Apparel &amp; Livestock&lt;/title&gt;
+    &lt;meta
+      name="description"
+      content="Cowboys Group Holdings is a Kenya-based platform for culture-led events, apparel, livestock marketplace, decor services, and community impact."
+    /&gt;
+    &lt;meta name="robots" content="index, follow, max-image-preview:large" /&gt;
+    &lt;meta name="author" content="Cowboys Group Holdings" /&gt;
+    &lt;meta name="theme-color" content="#8f6036" /&gt;
+    &lt;link rel="canonical" href="https://cowboysgroupholdings.co.ke/" /&gt;
+    &lt;meta property="og:type" content="website" /&gt;
+    &lt;meta property="og:site_name" content="Cowboys Group Holdings" /&gt;
+    &lt;meta property="og:title" content="Cowboys Group Holdings | Kenya Culture, Events, Apparel &amp; Livestock" /&gt;
+    &lt;meta
+      property="og:description"
+      content="Explore Cowboys Group Holdings: events, apparel, livestock, decor, and foundation programs across Kenya."
+    /&gt;
+    &lt;meta property="og:url" content="https://cowboysgroupholdings.co.ke/" /&gt;
+    &lt;meta property="og:image" content="https://cowboysgroupholdings.co.ke/assets/logo-primary.svg" /&gt;
+    &lt;meta name="twitter:card" content="summary_large_image" /&gt;
+    &lt;meta name="twitter:title" content="Cowboys Group Holdings | Kenya Culture, Events, Apparel &amp; Livestock" /&gt;
+    &lt;meta
+      name="twitter:description"
+      content="Kenya-based culture platform for events, apparel, livestock commerce, decor services, and impact initiatives."
+    /&gt;
+    &lt;meta name="twitter:image" content="https://cowboysgroupholdings.co.ke/assets/logo-primary.svg" /&gt;
+    &lt;link rel="preconnect" href="https://fonts.googleapis.com" /&gt;
+    &lt;link rel="preconnect" href="https://fonts.gstatic.com" crossorigin /&gt;
+    &lt;link
+      href="https://fonts.googleapis.com/css2?family=Alfa+Slab+One&amp;family=Manrope:wght@400;500;700;800&amp;display=swap"
+      rel="stylesheet"
+    /&gt;
+    &lt;link rel="icon" type="image/svg+xml" href="assets/logo-mark.svg" /&gt;
+    &lt;link rel="stylesheet" href="styles.css" /&gt;
+    &lt;script type="application/ld+json"&gt;
+      {
+        "@context": "https://schema.org",
+        "@type": "Organization",
+        "name": "Cowboys Group Holdings",
+        "url": "https://cowboysgroupholdings.co.ke/",
+        "logo": "https://cowboysgroupholdings.co.ke/assets/logo-mark.svg",
+        "description": "Kenya-based culture-driven holding company for events, apparel, livestock, decor, and impact programs.",
+        "contactPoint": [
+          {
+            "@type": "ContactPoint",
+            "telephone": "+254793791623",
+            "contactType": "customer support",
+            "areaServed": "KE"
+          }
+        ],
+        "sameAs": [
+          "https://www.instagram.com/gymie.fitness",
+          "https://www.facebook.com/share/1KoyUwx134/"
+        ]
+      }
+    &lt;/script&gt;
+  &lt;/head&gt;
+  &lt;body&gt;
+    &lt;header class="site-header"&gt;
+      &lt;a class="brand" href="#home"&gt;
+        &lt;img class="brand-mark" src="assets/logo-mark.svg" alt="Cowboys Group Holdings logo" /&gt;
+        &lt;span class="brand-text"&gt;
+          &lt;span class="brand-top"&gt;Cowboys Group Holdings&lt;/span&gt;
+          &lt;span class="brand-bottom"&gt;Culture. Business. Legacy.&lt;/span&gt;
+        &lt;/span&gt;
+      &lt;/a&gt;
+
+      &lt;button class="menu-toggle" aria-expanded="false" aria-controls="main-nav"&gt;Menu&lt;/button&gt;
+
+      &lt;nav id="main-nav" class="main-nav" aria-label="Primary navigation"&gt;
+        &lt;a href="#home"&gt;Home&lt;/a&gt;
+        &lt;a href="#journey"&gt;Journey&lt;/a&gt;
+        &lt;a href="#apparel"&gt;Shop&lt;/a&gt;
+        &lt;a href="#events"&gt;Events&lt;/a&gt;
+        &lt;a href="#media"&gt;Media&lt;/a&gt;
+        &lt;a href="#foundation"&gt;Foundation&lt;/a&gt;
+        &lt;a href="#contact"&gt;Contact&lt;/a&gt;
+      &lt;/nav&gt;
+    &lt;/header&gt;
+
+    &lt;main id="home"&gt;
+      &lt;section class="hero section reveal"&gt;
+        &lt;div class="hero-copy"&gt;
+          &lt;p class="kicker"&gt;Kenya-Born Holding Company&lt;/p&gt;
+          &lt;h1&gt;Culture-driven businesses that people can feel in real life.&lt;/h1&gt;
+          &lt;p&gt;
+            From marketing and apparel to events, livestock commerce, and community programs, this
+            platform is structured as one trusted ecosystem for step-by-step discovery and action.
+          &lt;/p&gt;
+          &lt;div class="hero-actions"&gt;
+            &lt;a class="btn btn-primary" href="#journey"&gt;Start Guided Journey&lt;/a&gt;
+            &lt;a class="btn btn-ghost" href="#apparel"&gt;Go To Shop&lt;/a&gt;
+          &lt;/div&gt;
+        &lt;/div&gt;
+
+        &lt;aside class="hero-card" aria-label="What makes us different"&gt;
+          &lt;h2&gt;What Makes Us Different&lt;/h2&gt;
+          &lt;ul&gt;
+            &lt;li&gt;One holding company, multiple focused business units&lt;/li&gt;
+            &lt;li&gt;Revenue + culture + community impact working together&lt;/li&gt;
+            &lt;li&gt;Built for partnerships, joint ventures, and expansion&lt;/li&gt;
+            &lt;li&gt;Friendly brand for kids, youth, adults, and families&lt;/li&gt;
+          &lt;/ul&gt;
+        &lt;/aside&gt;
+      &lt;/section&gt;
+
+      &lt;section class="section reveal"&gt;
+        &lt;div class="ranch-feature"&gt;
+          &lt;div class="ranch-copy"&gt;
+            &lt;p class="kicker"&gt;Kenyan Ranch Life&lt;/p&gt;
+            &lt;h2&gt;Horse and cowboy culture is part of our identity.&lt;/h2&gt;
+            &lt;p&gt;
+              This is the heart of the brand: authentic ranch storytelling, family-friendly energy,
+              and modern culture experiences rooted in Kenyan landscapes.
+            &lt;/p&gt;
+          &lt;/div&gt;
+          &lt;div class="ranch-scene-wrap" aria-hidden="true"&gt;
+            &lt;svg viewBox="0 0 640 360" xmlns="http://www.w3.org/2000/svg"&gt;
+              &lt;defs&gt;
+                &lt;linearGradient id="sky2" x1="0" y1="0" x2="0" y2="1"&gt;
+                  &lt;stop offset="0%" stop-color="#ffcf86" /&gt;
+                  &lt;stop offset="58%" stop-color="#f3a35f" /&gt;
+                  &lt;stop offset="100%" stop-color="#b96b39" /&gt;
+                &lt;/linearGradient&gt;
+                &lt;linearGradient id="ground2" x1="0" y1="0" x2="1" y2="0"&gt;
+                  &lt;stop offset="0%" stop-color="#6d4728" /&gt;
+                  &lt;stop offset="100%" stop-color="#8f6036" /&gt;
+                &lt;/linearGradient&gt;
+                &lt;linearGradient id="hill2" x1="0" y1="0" x2="0" y2="1"&gt;
+                  &lt;stop offset="0%" stop-color="#865634" /&gt;
+                  &lt;stop offset="100%" stop-color="#6e4628" /&gt;
+                &lt;/linearGradient&gt;
+                &lt;linearGradient id="horseBody2" x1="0" y1="0" x2="1" y2="1"&gt;
+                  &lt;stop offset="0%" stop-color="#2c221b" /&gt;
+                  &lt;stop offset="100%" stop-color="#120d09" /&gt;
+                &lt;/linearGradient&gt;
+              &lt;/defs&gt;
+              &lt;rect width="640" height="230" fill="url(#sky2)" /&gt;
+              &lt;rect y="230" width="640" height="130" fill="url(#ground2)" /&gt;
+              &lt;circle class="sun-glow" cx="534" cy="72" r="42" fill="#ffd76f" /&gt;
+              &lt;path d="M0 240 C120 208, 240 205, 360 234 C455 254, 560 250, 640 236 L640 360 L0 360 Z" fill="url(#hill2)"/&gt;
+              &lt;path d="M0 255 C130 225, 270 232, 422 254 C523 267, 588 264, 640 255 L640 360 L0 360 Z" fill="#7f5430"/&gt;
+              &lt;g class="acacia" transform="translate(100 210)"&gt;
+                &lt;rect x="46" y="32" width="12" height="58" fill="#2f2419" /&gt;
+                &lt;ellipse cx="52" cy="28" rx="66" ry="24" fill="#24351f" /&gt;
+              &lt;/g&gt;
+              &lt;g class="cowboy-stand" transform="translate(448 205)"&gt;
+                &lt;ellipse cx="42" cy="108" rx="26" ry="8" fill="#221711" opacity="0.45"/&gt;
+                &lt;circle cx="44" cy="28" r="10" fill="#120d0a"/&gt;
+                &lt;path d="M30 22 C35 12, 56 11, 60 22 C52 18, 39 18, 30 22 Z" fill="#21150f"/&gt;
+                &lt;rect x="39" y="38" width="12" height="35" rx="4" fill="#18120d"/&gt;
+                &lt;rect x="27" y="44" width="10" height="22" rx="4" fill="#18120d"/&gt;
+                &lt;rect x="53" y="44" width="10" height="22" rx="4" fill="#18120d"/&gt;
+                &lt;rect x="38" y="72" width="7" height="36" rx="3" fill="#120d0a"/&gt;
+                &lt;rect x="47" y="72" width="7" height="36" rx="3" fill="#120d0a"/&gt;
+              &lt;/g&gt;
+              &lt;g class="horse-wrap" transform="translate(190 210)"&gt;
+                &lt;ellipse cx="158" cy="112" rx="32" ry="10" fill="#1d130e" opacity="0.52"/&gt;
+                &lt;ellipse cx="96" cy="110" rx="26" ry="8" fill="#1d130e" opacity="0.45"/&gt;
+                &lt;path d="M28 113 C44 99, 108 92, 176 99 C220 104, 258 116, 278 114 C270 128, 238 137, 170 137 C101 137, 44 131, 28 113 Z" fill="url(#horseBody2)"/&gt;
+                &lt;path d="M196 98 C206 82, 224 75, 246 75 C254 75, 259 83, 253 90 C246 99, 220 106, 205 112 Z" fill="url(#horseBody2)"/&gt;
+                &lt;path d="M245 75 L262 65 L252 88 Z" fill="#0e0907"/&gt;
+                &lt;path d="M89 99 C75 85, 56 77, 42 81 C55 86, 66 95, 82 108 Z" fill="#0e0907"/&gt;
+                &lt;path d="M216 101 C198 95, 165 95, 138 102 C165 104, 193 108, 217 113 Z" stroke="#f1dca9" stroke-width="2" fill="none"/&gt;
+                &lt;g class="leg-set leg-front"&gt;
+                  &lt;rect x="164" y="126" width="10" height="54" rx="4" fill="#120d0a" /&gt;
+                  &lt;rect x="194" y="126" width="10" height="54" rx="4" fill="#120d0a" /&gt;
+                &lt;/g&gt;
+                &lt;g class="leg-set leg-back"&gt;
+                  &lt;rect x="90" y="126" width="10" height="54" rx="4" fill="#120d0a" /&gt;
+                  &lt;rect x="122" y="126" width="10" height="54" rx="4" fill="#120d0a" /&gt;
+                &lt;/g&gt;
+                &lt;path d="M38 112 C10 96, 8 77, 26 70 C12 76, 10 97, 34 117 Z" fill="#17100c" /&gt;
+                &lt;g class="rider"&gt;
+                  &lt;circle cx="147" cy="58" r="9" fill="#140f0b"/&gt;
+                  &lt;path d="M134 54 C138 44, 154 44, 160 54 C151 50, 141 50, 134 54 Z" fill="#20140e"/&gt;
+                  &lt;rect x="142" y="66" width="10" height="28" rx="4" fill="#1b130e"/&gt;
+                  &lt;rect x="132" y="72" width="8" height="22" rx="3" fill="#1b130e"/&gt;
+                  &lt;rect x="152" y="72" width="8" height="22" rx="3" fill="#1b130e"/&gt;
+                  &lt;rect x="139" y="92" width="7" height="26" rx="3" fill="#120d0a"/&gt;
+                  &lt;rect x="148" y="92" width="7" height="26" rx="3" fill="#120d0a"/&gt;
+                &lt;/g&gt;
+                &lt;g class="dust"&gt;
+                  &lt;ellipse cx="52" cy="174" rx="22" ry="6" fill="#d39b6f" opacity="0.5"/&gt;
+                  &lt;ellipse cx="78" cy="176" rx="19" ry="6" fill="#d39b6f" opacity="0.4"/&gt;
+                  &lt;ellipse cx="107" cy="175" rx="18" ry="5" fill="#d39b6f" opacity="0.34"/&gt;
+                &lt;/g&gt;
+              &lt;/g&gt;
+            &lt;/svg&gt;
+          &lt;/div&gt;
+        &lt;/div&gt;
+      &lt;/section&gt;
+
+      &lt;section class="section reveal"&gt;
+        &lt;div class="faith-strip"&gt;
+          &lt;p class="kicker"&gt;Christian Foundation&lt;/p&gt;
+          &lt;h3&gt;Strong faith, honest business, and servant leadership.&lt;/h3&gt;
+          &lt;p&gt;
+            Christian values guide this platform: integrity, stewardship, compassion, and
+            excellence in service to clients, teams, and communities.
+          &lt;/p&gt;
+        &lt;/div&gt;
+      &lt;/section&gt;
+
+      &lt;section id="journey" class="section reveal"&gt;
+        &lt;div class="section-heading"&gt;
+          &lt;p class="kicker"&gt;Guided Journey&lt;/p&gt;
+          &lt;h2&gt;Explore the company in a clear step-by-step order.&lt;/h2&gt;
+        &lt;/div&gt;
+        &lt;div class="journey-grid"&gt;
+          &lt;article class="product-card"&gt;
+            &lt;p class="stock in-stock"&gt;Step 1&lt;/p&gt;
+            &lt;h3&gt;Who We Are&lt;/h3&gt;
+            &lt;p&gt;Identity, mission, values, and inclusive culture commitment.&lt;/p&gt;
+            &lt;a class="btn btn-ghost" href="#identity"&gt;Open Step&lt;/a&gt;
+          &lt;/article&gt;
+          &lt;article class="product-card"&gt;
+            &lt;p class="stock in-stock"&gt;Step 2&lt;/p&gt;
+            &lt;h3&gt;Marketing Engine&lt;/h3&gt;
+            &lt;p&gt;See how branding, media, and campaigns drive all other ventures.&lt;/p&gt;
+            &lt;a class="btn btn-ghost" href="#marketing"&gt;Open Step&lt;/a&gt;
+          &lt;/article&gt;
+          &lt;article class="product-card"&gt;
+            &lt;p class="stock in-stock"&gt;Step 3&lt;/p&gt;
+            &lt;h3&gt;Apparel Commerce&lt;/h3&gt;
+            &lt;p&gt;Discover stock structure for adults, kids, and accessories.&lt;/p&gt;
+            &lt;a class="btn btn-ghost" href="#apparel"&gt;Open Step&lt;/a&gt;
+          &lt;/article&gt;
+          &lt;article class="product-card"&gt;
+            &lt;p class="stock in-stock"&gt;Step 4&lt;/p&gt;
+            &lt;h3&gt;Events &amp; Tickets&lt;/h3&gt;
+            &lt;p&gt;Upcoming experiences, performers, and ticketing flow.&lt;/p&gt;
+            &lt;a class="btn btn-ghost" href="#events"&gt;Open Step&lt;/a&gt;
+          &lt;/article&gt;
+          &lt;article class="product-card"&gt;
+            &lt;p class="stock in-stock"&gt;Step 5&lt;/p&gt;
+            &lt;h3&gt;Goat &amp; Cattle Sales&lt;/h3&gt;
+            &lt;p&gt;Festive-season livestock listings by weight and reservation.&lt;/p&gt;
+            &lt;a class="btn btn-ghost" href="#livestock"&gt;Open Step&lt;/a&gt;
+          &lt;/article&gt;
+          &lt;article class="product-card"&gt;
+            &lt;p class="stock in-stock"&gt;Step 6&lt;/p&gt;
+            &lt;h3&gt;Kids Corner&lt;/h3&gt;
+            &lt;p&gt;Family-safe experiences, kids fashion, and child-friendly programming.&lt;/p&gt;
+            &lt;a class="btn btn-ghost" href="#kids-corner"&gt;Open Step&lt;/a&gt;
+          &lt;/article&gt;
+          &lt;article class="product-card"&gt;
+            &lt;p class="stock in-stock"&gt;Step 7&lt;/p&gt;
+            &lt;h3&gt;Collaborations&lt;/h3&gt;
+            &lt;p&gt;Brands, classic cars, ranchers, and creators working together.&lt;/p&gt;
+            &lt;a class="btn btn-ghost" href="#collaborations"&gt;Open Step&lt;/a&gt;
+          &lt;/article&gt;
+          &lt;article class="product-card"&gt;
+            &lt;p class="stock in-stock"&gt;Step 8&lt;/p&gt;
+            &lt;h3&gt;Foundation Mission&lt;/h3&gt;
+            &lt;p&gt;Mission, vision, and donor-trust partnership model.&lt;/p&gt;
+            &lt;a class="btn btn-ghost" href="#foundation"&gt;Open Step&lt;/a&gt;
+          &lt;/article&gt;
+        &lt;/div&gt;
+      &lt;/section&gt;
+
+      &lt;section id="identity" class="section reveal"&gt;
+        &lt;div class="section-heading"&gt;
+          &lt;p class="kicker"&gt;Step 1: Who We Are&lt;/p&gt;
+          &lt;h2&gt;A culture-first Kenyan holding company built for long-term impact.&lt;/h2&gt;
+        &lt;/div&gt;
+        &lt;div class="card-grid three"&gt;
+          &lt;article class="product-card"&gt;
+            &lt;h3&gt;Identity&lt;/h3&gt;
+            &lt;p&gt;Culture-first holding platform rooted in Kenyan lifestyle and enterprise.&lt;/p&gt;
+          &lt;/article&gt;
+          &lt;article class="product-card"&gt;
+            &lt;h3&gt;Mission&lt;/h3&gt;
+            &lt;p&gt;Build profitable, inclusive, and trusted businesses that uplift people and communities.&lt;/p&gt;
+          &lt;/article&gt;
+          &lt;article class="product-card"&gt;
+            &lt;h3&gt;Values&lt;/h3&gt;
+            &lt;p&gt;Faith, integrity, excellence, inclusion, and long-term stewardship.&lt;/p&gt;
+          &lt;/article&gt;
+        &lt;/div&gt;
+      &lt;/section&gt;
+
+      &lt;section id="marketing" class="section reveal"&gt;
+        &lt;div class="section-heading"&gt;
+          &lt;p class="kicker"&gt;Step 2: Marketing&lt;/p&gt;
+          &lt;h2&gt;The growth engine that powers every venture.&lt;/h2&gt;
+        &lt;/div&gt;
+        &lt;div class="card-grid three"&gt;
+          &lt;article class="product-card"&gt;
+            &lt;h3&gt;Brand &amp; Creative&lt;/h3&gt;
+            &lt;p&gt;Identity systems, visual campaigns, and storytelling for businesses and artists.&lt;/p&gt;
+          &lt;/article&gt;
+          &lt;article class="product-card"&gt;
+            &lt;h3&gt;Digital Campaigns&lt;/h3&gt;
+            &lt;p&gt;Social media, paid promotions, and launch strategies for products and events.&lt;/p&gt;
+          &lt;/article&gt;
+          &lt;article class="product-card"&gt;
+            &lt;h3&gt;Partnership Promotion&lt;/h3&gt;
+            &lt;p&gt;Classic cars, ranchers, creators, and brands promoted under one trusted network.&lt;/p&gt;
+          &lt;/article&gt;
+        &lt;/div&gt;
+      &lt;/section&gt;
+
+      &lt;section id="apparel" class="section reveal"&gt;
+        &lt;div class="section-heading"&gt;
+          &lt;p class="kicker"&gt;Step 3: Apparel &amp; Merch Shop&lt;/p&gt;
+          &lt;h2&gt;Visible stock lanes for adults, kids, and accessories.&lt;/h2&gt;
+        &lt;/div&gt;
+
+        &lt;div class="gallery-manager top-space"&gt;
+          &lt;div class="section-heading compact-heading"&gt;
+            &lt;p class="kicker"&gt;Admin Photo Manager&lt;/p&gt;
+            &lt;h2&gt;Add new outfit stock without editing code.&lt;/h2&gt;
+          &lt;/div&gt;
+          &lt;form id="outfit-form" class="inquiry-form admin-form"&gt;
+            &lt;label&gt;Collection
+              &lt;select id="outfit-collection" required&gt;
+                &lt;option value="adults"&gt;Adults&lt;/option&gt;
+                &lt;option value="kids"&gt;Kids&lt;/option&gt;
+                &lt;option value="accessories"&gt;Accessories&lt;/option&gt;
+              &lt;/select&gt;
+            &lt;/label&gt;
+            &lt;label&gt;Item Name
+              &lt;input id="outfit-name" type="text" placeholder="Western Denim Jacket" required /&gt;
+            &lt;/label&gt;
+            &lt;label&gt;Price (KES)
+              &lt;input id="outfit-price" type="number" min="0" step="100" placeholder="4200" required /&gt;
+            &lt;/label&gt;
+            &lt;label&gt;Image Path or URL
+              &lt;input
+                id="outfit-image"
+                type="text"
+                placeholder="assets/outfits/denim-jacket.jpg or https://..."
+                required
+              /&gt;
+            &lt;/label&gt;
+            &lt;label&gt;Description
+              &lt;input id="outfit-description" type="text" placeholder="Unisex drop, premium cotton" /&gt;
+            &lt;/label&gt;
+            &lt;div class="admin-actions"&gt;
+              &lt;button class="btn btn-primary" type="submit"&gt;Add Outfit&lt;/button&gt;
+              &lt;button class="btn btn-ghost" id="reset-outfits" type="button"&gt;Reset Demo Data&lt;/button&gt;
+            &lt;/div&gt;
+            &lt;label&gt;Admin Key (for backend save)
+              &lt;input id="admin-key" type="password" placeholder="Your backend admin key" /&gt;
+            &lt;/label&gt;
+            &lt;button class="btn btn-ghost" id="save-backend" type="button"&gt;Save Outfits To Backend&lt;/button&gt;
+            &lt;p class="fine"&gt;
+              Tip: place images in `assets/outfits/` and paste the path here.
+            &lt;/p&gt;
+          &lt;/form&gt;
+        &lt;/div&gt;
+
+        &lt;div class="collection-grid top-space"&gt;
+          &lt;article class="product-card"&gt;
+            &lt;h3&gt;Adults Collection&lt;/h3&gt;
+            &lt;p&gt;Latest adult stock and lifestyle fits.&lt;/p&gt;
+            &lt;div id="gallery-adults" class="gallery-grid"&gt;&lt;/div&gt;
+          &lt;/article&gt;
+          &lt;article class="product-card"&gt;
+            &lt;h3&gt;Kids Collection&lt;/h3&gt;
+            &lt;p&gt;Family-friendly, durable, and playful looks.&lt;/p&gt;
+            &lt;div id="gallery-kids" class="gallery-grid"&gt;&lt;/div&gt;
+          &lt;/article&gt;
+          &lt;article class="product-card"&gt;
+            &lt;h3&gt;Accessories&lt;/h3&gt;
+            &lt;p&gt;Caps, belts, leather, and signature items.&lt;/p&gt;
+            &lt;div id="gallery-accessories" class="gallery-grid"&gt;&lt;/div&gt;
+          &lt;/article&gt;
+        &lt;/div&gt;
+
+        &lt;div class="split top-space"&gt;
+          &lt;div class="card-grid"&gt;
+            &lt;article class="product-card" data-name="Cowboys Heritage Tee" data-price="2200"&gt;
+              &lt;p class="stock in-stock"&gt;In Stock&lt;/p&gt;
+              &lt;h3&gt;Cowboys Heritage Tee&lt;/h3&gt;
+              &lt;p&gt;KES 2,200&lt;/p&gt;
+              &lt;label&gt;Size
+                &lt;select&gt;
+                  &lt;option&gt;S&lt;/option&gt;&lt;option&gt;M&lt;/option&gt;&lt;option&gt;L&lt;/option&gt;&lt;option&gt;XL&lt;/option&gt;
+                &lt;/select&gt;
+              &lt;/label&gt;
+              &lt;button class="btn btn-primary add-to-cart"&gt;Add To Cart&lt;/button&gt;
+            &lt;/article&gt;
+            &lt;article class="product-card" data-name="Rustic Leather Belt" data-price="3500"&gt;
+              &lt;p class="stock in-stock"&gt;In Stock&lt;/p&gt;
+              &lt;h3&gt;Rustic Leather Belt&lt;/h3&gt;
+              &lt;p&gt;KES 3,500&lt;/p&gt;
+              &lt;label&gt;Size
+                &lt;select&gt;
+                  &lt;option&gt;30&lt;/option&gt;&lt;option&gt;32&lt;/option&gt;&lt;option&gt;34&lt;/option&gt;&lt;option&gt;36&lt;/option&gt;
+                &lt;/select&gt;
+              &lt;/label&gt;
+              &lt;button class="btn btn-primary add-to-cart"&gt;Add To Cart&lt;/button&gt;
+            &lt;/article&gt;
+            &lt;article class="product-card" data-name="Bull Horn Cap" data-price="1800"&gt;
+              &lt;p class="stock low-stock"&gt;Low Stock&lt;/p&gt;
+              &lt;h3&gt;Bull Horn Cap&lt;/h3&gt;
+              &lt;p&gt;KES 1,800&lt;/p&gt;
+              &lt;label&gt;Color
+                &lt;select&gt;
+                  &lt;option&gt;Black&lt;/option&gt;&lt;option&gt;Khaki&lt;/option&gt;&lt;option&gt;Brown&lt;/option&gt;
+                &lt;/select&gt;
+              &lt;/label&gt;
+              &lt;button class="btn btn-primary add-to-cart"&gt;Add To Cart&lt;/button&gt;
+            &lt;/article&gt;
+            &lt;article class="product-card" data-name="Ranch Kids Hoodie" data-price="2600"&gt;
+              &lt;p class="stock in-stock"&gt;In Stock&lt;/p&gt;
+              &lt;h3&gt;Ranch Kids Hoodie&lt;/h3&gt;
+              &lt;p&gt;KES 2,600&lt;/p&gt;
+              &lt;label&gt;Size
+                &lt;select&gt;
+                  &lt;option&gt;4-6&lt;/option&gt;&lt;option&gt;7-9&lt;/option&gt;&lt;option&gt;10-12&lt;/option&gt;
+                &lt;/select&gt;
+              &lt;/label&gt;
+              &lt;button class="btn btn-primary add-to-cart"&gt;Add To Cart&lt;/button&gt;
+            &lt;/article&gt;
+          &lt;/div&gt;
+
+          &lt;aside class="cart-panel"&gt;
+            &lt;h3&gt;Cart &lt;span id="cart-count"&gt;0&lt;/span&gt;&lt;/h3&gt;
+            &lt;p class="fine"&gt;&lt;strong&gt;Checkout Lane:&lt;/strong&gt; &lt;span id="cart-lane"&gt;None&lt;/span&gt;&lt;/p&gt;
+            &lt;ul id="cart-items" class="cart-items"&gt;&lt;/ul&gt;
+            &lt;p class="cart-total"&gt;Total: &lt;strong id="cart-total"&gt;KES 0&lt;/strong&gt;&lt;/p&gt;
+            &lt;button id="clear-cart-btn" class="btn btn-ghost" type="button"&gt;Clear Cart&lt;/button&gt;
+            &lt;label&gt;Payment Method
+              &lt;select id="payment-method"&gt;
+                &lt;option value="manual"&gt;Manual M-Pesa (Till)&lt;/option&gt;
+                &lt;option value="mpesa"&gt;M-Pesa (STK Push)&lt;/option&gt;
+              &lt;/select&gt;
+            &lt;/label&gt;
+            &lt;label&gt;Customer Phone (2547XXXXXXXX)
+              &lt;input id="payment-phone" type="text" placeholder="254712345678" /&gt;
+            &lt;/label&gt;
+            &lt;button id="checkout-btn" class="btn btn-primary"&gt;Place Order&lt;/button&gt;
+            &lt;button id="download-receipt-btn" class="btn btn-ghost" type="button"&gt;Download Receipt&lt;/button&gt;
+            &lt;button id="download-ticket-btn" class="btn btn-ghost" type="button"&gt;Download Ticket(s)&lt;/button&gt;
+            &lt;p id="payment-status" class="fine"&gt;&lt;/p&gt;
+            &lt;p id="payment-hint" class="fine"&gt;&lt;/p&gt;
+            &lt;hr /&gt;
+            &lt;h4&gt;Admin: Confirm Manual Payment&lt;/h4&gt;
+            &lt;label&gt;Order ID
+              &lt;input id="confirm-order-id" type="text" placeholder="order-..." /&gt;
+            &lt;/label&gt;
+            &lt;label&gt;M-Pesa Transaction Code
+              &lt;input id="confirm-tx-code" type="text" placeholder="TXYZ123456" /&gt;
+            &lt;/label&gt;
+            &lt;label&gt;Admin Key
+              &lt;input id="confirm-admin-key" type="password" placeholder="same ADMIN_KEY used on server" /&gt;
+            &lt;/label&gt;
+            &lt;button id="confirm-payment-btn" class="btn btn-primary" type="button"&gt;Confirm Payment&lt;/button&gt;
+            &lt;p class="fine"&gt;Affiliate-ready: partner links and referral codes can be connected in backend phase.&lt;/p&gt;
+          &lt;/aside&gt;
+        &lt;/div&gt;
+      &lt;/section&gt;
+
+      &lt;section id="events" class="section reveal"&gt;
+        &lt;div class="section-heading"&gt;
+          &lt;p class="kicker"&gt;Step 4: Events, Tickets &amp; Talent&lt;/p&gt;
+          &lt;h2&gt;Publish upcoming events and sell tickets from one place.&lt;/h2&gt;
+        &lt;/div&gt;
+        &lt;div class="gallery-manager"&gt;
+          &lt;div class="section-heading compact-heading"&gt;
+            &lt;p class="kicker"&gt;Admin Ticket Manager&lt;/p&gt;
+            &lt;h2&gt;Add or update events and ticket pricing.&lt;/h2&gt;
+          &lt;/div&gt;
+          &lt;form id="event-form" class="inquiry-form admin-form"&gt;
+            &lt;label&gt;Event Title
+              &lt;input id="event-title" type="text" placeholder="Nairobi Ranch Night" required /&gt;
+            &lt;/label&gt;
+            &lt;label&gt;Date
+              &lt;input id="event-date" type="date" required /&gt;
+            &lt;/label&gt;
+            &lt;label&gt;Venue
+              &lt;input id="event-venue" type="text" placeholder="Karen, Nairobi" required /&gt;
+            &lt;/label&gt;
+            &lt;label&gt;Performers
+              &lt;input id="event-performers" type="text" placeholder="DJ + Live Band" required /&gt;
+            &lt;/label&gt;
+            &lt;label&gt;Ticket Price (KES)
+              &lt;input id="event-price" type="number" min="0" step="100" placeholder="2000" required /&gt;
+            &lt;/label&gt;
+            &lt;label&gt;Poster/Flyer Image Path
+              &lt;input id="event-poster" type="text" placeholder="assets/events/ranch-night-poster.jpg" /&gt;
+            &lt;/label&gt;
+            &lt;div class="admin-actions"&gt;
+              &lt;button class="btn btn-primary" type="submit"&gt;Add Event&lt;/button&gt;
+              &lt;button class="btn btn-ghost" id="save-events-backend" type="button"&gt;Save Events To Backend&lt;/button&gt;
+            &lt;/div&gt;
+          &lt;/form&gt;
+        &lt;/div&gt;
+
+        &lt;div id="events-grid" class="card-grid three top-space"&gt;
+        &lt;/div&gt;
+
+        &lt;form class="inquiry-form" id="artist-inquiry"&gt;
+          &lt;h3&gt;Hire Artists / MCs / Dancers&lt;/h3&gt;
+          &lt;label&gt;Name &lt;input type="text" required /&gt;&lt;/label&gt;
+          &lt;label&gt;Email &lt;input type="email" required /&gt;&lt;/label&gt;
+          &lt;label&gt;Event Type &lt;input type="text" placeholder="Wedding, launch, festival..." required /&gt;&lt;/label&gt;
+          &lt;label&gt;Message &lt;textarea rows="4" placeholder="Who do you want to hire and for what date?"&gt;&lt;/textarea&gt;&lt;/label&gt;
+          &lt;button class="btn btn-primary" type="submit"&gt;Send Artist Inquiry&lt;/button&gt;
+        &lt;/form&gt;
+      &lt;/section&gt;
+
+      &lt;section id="livestock" class="section reveal"&gt;
+        &lt;div class="section-heading"&gt;
+          &lt;p class="kicker"&gt;Step 5: Goat &amp; Cattle Marketplace&lt;/p&gt;
+          &lt;h2&gt;Festive season livestock reservations by weight.&lt;/h2&gt;
+        &lt;/div&gt;
+        &lt;div class="gallery-manager"&gt;
+          &lt;div class="section-heading compact-heading"&gt;
+            &lt;p class="kicker"&gt;Admin Livestock Manager&lt;/p&gt;
+            &lt;h2&gt;Add goats and cattle by weight and price per kg.&lt;/h2&gt;
+          &lt;/div&gt;
+          &lt;form id="livestock-form" class="inquiry-form admin-form"&gt;
+            &lt;label&gt;Animal Name
+              &lt;input id="livestock-name" type="text" placeholder="Goat - Premium" required /&gt;
+            &lt;/label&gt;
+            &lt;label&gt;Live Weight (kg)
+              &lt;input id="livestock-weight" type="number" min="1" step="1" placeholder="38" required /&gt;
+            &lt;/label&gt;
+            &lt;label&gt;Price per kg (KES)
+              &lt;input id="livestock-rate" type="number" min="0" step="10" placeholder="680" required /&gt;
+            &lt;/label&gt;
+            &lt;label&gt;Status
+              &lt;select id="livestock-status" required&gt;
+                &lt;option&gt;Available&lt;/option&gt;
+                &lt;option&gt;Limited&lt;/option&gt;
+                &lt;option&gt;Reserved&lt;/option&gt;
+              &lt;/select&gt;
+            &lt;/label&gt;
+            &lt;label&gt;Photo Path
+              &lt;input id="livestock-image" type="text" placeholder="assets/livestock/goat-premium.jpg" /&gt;
+            &lt;/label&gt;
+            &lt;div class="admin-actions"&gt;
+              &lt;button class="btn btn-primary" type="submit"&gt;Add Listing&lt;/button&gt;
+              &lt;button class="btn btn-ghost" id="save-livestock-backend" type="button"&gt;Save Livestock To Backend&lt;/button&gt;
+            &lt;/div&gt;
+          &lt;/form&gt;
+        &lt;/div&gt;
+
+        &lt;div id="livestock-grid" class="card-grid three top-space"&gt;
+        &lt;/div&gt;
+      &lt;/section&gt;
+
+      &lt;section id="decor" class="section reveal"&gt;
+        &lt;div class="section-heading"&gt;
+          &lt;p class="kicker"&gt;Decor &amp; Flowers&lt;/p&gt;
+          &lt;h2&gt;Hire decoration teams or buy fresh and rustic flower products.&lt;/h2&gt;
+        &lt;/div&gt;
+        &lt;div class="gallery-manager"&gt;
+          &lt;div class="section-heading compact-heading"&gt;
+            &lt;p class="kicker"&gt;Admin Decor Manager&lt;/p&gt;
+            &lt;h2&gt;Add decor services and flower products.&lt;/h2&gt;
+          &lt;/div&gt;
+          &lt;form id="decor-form" class="inquiry-form admin-form"&gt;
+            &lt;label&gt;Item Name
+              &lt;input id="decor-name" type="text" placeholder="Decor Hire Package" required /&gt;
+            &lt;/label&gt;
+            &lt;label&gt;Category
+              &lt;select id="decor-category" required&gt;
+                &lt;option&gt;Service&lt;/option&gt;
+                &lt;option&gt;Fresh Flowers&lt;/option&gt;
+                &lt;option&gt;Rustic Decor&lt;/option&gt;
+              &lt;/select&gt;
+            &lt;/label&gt;
+            &lt;label&gt;Price (KES)
+              &lt;input id="decor-price" type="number" min="0" step="100" placeholder="15000" required /&gt;
+            &lt;/label&gt;
+            &lt;label&gt;Description
+              &lt;input id="decor-description" type="text" placeholder="Rustic weddings and private events" required /&gt;
+            &lt;/label&gt;
+            &lt;label&gt;Image Path
+              &lt;input id="decor-image" type="text" placeholder="assets/decor/rustic-setup.jpg" /&gt;
+            &lt;/label&gt;
+            &lt;div class="admin-actions"&gt;
+              &lt;button class="btn btn-primary" type="submit"&gt;Add Decor Item&lt;/button&gt;
+              &lt;button class="btn btn-ghost" id="save-decor-backend" type="button"&gt;Save Decor To Backend&lt;/button&gt;
+            &lt;/div&gt;
+          &lt;/form&gt;
+        &lt;/div&gt;
+        &lt;div id="decor-grid" class="card-grid three top-space"&gt;
+        &lt;/div&gt;
+      &lt;/section&gt;
+
+      &lt;section id="media" class="section reveal"&gt;
+        &lt;div class="section-heading"&gt;
+          &lt;p class="kicker"&gt;Media &amp; Team&lt;/p&gt;
+          &lt;h2&gt;Videos, people, and social channels driving the movement.&lt;/h2&gt;
+        &lt;/div&gt;
+        &lt;div class="gallery-manager"&gt;
+          &lt;div class="section-heading compact-heading"&gt;
+            &lt;p class="kicker"&gt;Admin Team &amp; Social Manager&lt;/p&gt;
+            &lt;h2&gt;Add team profiles and social media links.&lt;/h2&gt;
+          &lt;/div&gt;
+          &lt;form id="team-form" class="inquiry-form admin-form"&gt;
+            &lt;label&gt;Team Member Name
+              &lt;input id="team-name" type="text" placeholder="Team Member Name" required /&gt;
+            &lt;/label&gt;
+            &lt;label&gt;Role
+              &lt;input id="team-role" type="text" placeholder="Operations Lead" required /&gt;
+            &lt;/label&gt;
+            &lt;label&gt;Photo Path
+              &lt;input id="team-photo" type="text" placeholder="assets/team/member.jpg" /&gt;
+            &lt;/label&gt;
+            &lt;label&gt;Bio
+              &lt;input id="team-bio" type="text" placeholder="Culture and partnerships lead" /&gt;
+            &lt;/label&gt;
+            &lt;div class="admin-actions"&gt;
+              &lt;button class="btn btn-primary" type="submit"&gt;Add Team Profile&lt;/button&gt;
+              &lt;button class="btn btn-ghost" id="save-team-backend" type="button"&gt;Save Team To Backend&lt;/button&gt;
+            &lt;/div&gt;
+          &lt;/form&gt;
+          &lt;form id="social-form" class="inquiry-form admin-form top-space"&gt;
+            &lt;label&gt;Platform
+              &lt;input id="social-platform" type="text" placeholder="Instagram" required /&gt;
+            &lt;/label&gt;
+            &lt;label&gt;Handle
+              &lt;input id="social-handle" type="text" placeholder="@cowboysgroup" /&gt;
+            &lt;/label&gt;
+            &lt;label&gt;URL
+              &lt;input id="social-url" type="url" placeholder="https://instagram.com/..." required /&gt;
+            &lt;/label&gt;
+            &lt;div class="admin-actions"&gt;
+              &lt;button class="btn btn-primary" type="submit"&gt;Add Social Link&lt;/button&gt;
+              &lt;button class="btn btn-ghost" id="save-socials-backend" type="button"&gt;Save Socials To Backend&lt;/button&gt;
+            &lt;/div&gt;
+          &lt;/form&gt;
+          &lt;form id="media-upload-form" class="inquiry-form admin-form top-space"&gt;
+            &lt;label&gt;Upload Folder
+              &lt;select id="upload-folder" required&gt;
+                &lt;option value="outfits"&gt;Outfits&lt;/option&gt;
+                &lt;option value="events"&gt;Events&lt;/option&gt;
+                &lt;option value="livestock"&gt;Livestock&lt;/option&gt;
+                &lt;option value="decor"&gt;Decor&lt;/option&gt;
+                &lt;option value="team"&gt;Team&lt;/option&gt;
+                &lt;option value="videos"&gt;Videos&lt;/option&gt;
+              &lt;/select&gt;
+            &lt;/label&gt;
+            &lt;label&gt;Choose File
+              &lt;input id="upload-file" type="file" required /&gt;
+            &lt;/label&gt;
+            &lt;div class="admin-actions"&gt;
+              &lt;button class="btn btn-primary" type="submit"&gt;Upload File To Server&lt;/button&gt;
+            &lt;/div&gt;
+            &lt;label&gt;Uploaded Path
+              &lt;input id="upload-result" type="text" readonly placeholder="Uploaded file path appears here" /&gt;
+            &lt;/label&gt;
+            &lt;p class="fine"&gt;Upload once, then paste this path into outfit/event/livestock/decor/team forms.&lt;/p&gt;
+          &lt;/form&gt;
+        &lt;/div&gt;
+        &lt;div class="card-grid three"&gt;
+          &lt;article class="product-card"&gt;
+            &lt;h3&gt;Featured Videos&lt;/h3&gt;
+            &lt;div id="video-gallery" class="gallery-grid"&gt;&lt;/div&gt;
+          &lt;/article&gt;
+          &lt;article class="product-card"&gt;
+            &lt;h3&gt;Team &amp; Faces&lt;/h3&gt;
+            &lt;div id="team-grid" class="gallery-grid"&gt;&lt;/div&gt;
+          &lt;/article&gt;
+          &lt;article class="product-card"&gt;
+            &lt;h3&gt;Social Channels&lt;/h3&gt;
+            &lt;div id="social-links" class="gallery-grid"&gt;&lt;/div&gt;
+          &lt;/article&gt;
+        &lt;/div&gt;
+      &lt;/section&gt;
+
+      &lt;section id="kids-corner" class="section reveal"&gt;
+        &lt;div class="section-heading"&gt;
+          &lt;p class="kicker"&gt;Step 6: Kids Corner&lt;/p&gt;
+          &lt;h2&gt;A safe, joyful, and growth-centered space for children and families.&lt;/h2&gt;
+        &lt;/div&gt;
+        &lt;div class="card-grid three"&gt;
+          &lt;article class="product-card"&gt;
+            &lt;h3&gt;Kids Fashion Lane&lt;/h3&gt;
+            &lt;p&gt;Age-appropriate apparel stock, updated regularly with practical size options.&lt;/p&gt;
+          &lt;/article&gt;
+          &lt;article class="product-card"&gt;
+            &lt;h3&gt;Family Event Tracks&lt;/h3&gt;
+            &lt;p&gt;Child-friendly event schedules with clear programming, security, and guidance.&lt;/p&gt;
+          &lt;/article&gt;
+          &lt;article class="product-card"&gt;
+            &lt;h3&gt;Talent Growth&lt;/h3&gt;
+            &lt;p&gt;Dance, arts, and culture exposure programs that nurture confidence and discipline.&lt;/p&gt;
+          &lt;/article&gt;
+        &lt;/div&gt;
+      &lt;/section&gt;
+
+      &lt;section id="collaborations" class="section reveal"&gt;
+        &lt;div class="section-heading"&gt;
+          &lt;p class="kicker"&gt;Step 7: Collaborations&lt;/p&gt;
+          &lt;h2&gt;Partner-driven growth across culture, enterprise, and community impact.&lt;/h2&gt;
+        &lt;/div&gt;
+        &lt;div class="card-grid three"&gt;
+          &lt;article class="product-card"&gt;
+            &lt;h3&gt;Classic Cars &amp; Bikes&lt;/h3&gt;
+            &lt;p&gt;Joint showcases and campaigns with owners clubs for events and content promotion.&lt;/p&gt;
+          &lt;/article&gt;
+          &lt;article class="product-card"&gt;
+            &lt;h3&gt;Ranchers &amp; Producers&lt;/h3&gt;
+            &lt;p&gt;Structured livestock and rural commerce collaboration with transparent listing standards.&lt;/p&gt;
+          &lt;/article&gt;
+          &lt;article class="product-card"&gt;
+            &lt;h3&gt;Brand &amp; Creator Network&lt;/h3&gt;
+            &lt;p&gt;Cross-promotion for artists, businesses, and institutions through one ecosystem.&lt;/p&gt;
+          &lt;/article&gt;
+        &lt;/div&gt;
+      &lt;/section&gt;
+
+      &lt;section id="community" class="section reveal"&gt;
+        &lt;div class="section-heading"&gt;
+          &lt;p class="kicker"&gt;Descriptions, Partners &amp; Reviews&lt;/p&gt;
+          &lt;h2&gt;Public trust content: descriptions, partner contacts, emails, and testimonials.&lt;/h2&gt;
+        &lt;/div&gt;
+        &lt;div class="gallery-manager"&gt;
+          &lt;form id="description-form" class="inquiry-form admin-form"&gt;
+            &lt;label&gt;Description Title
+              &lt;input id="description-title" type="text" placeholder="Who this platform serves" required /&gt;
+            &lt;/label&gt;
+            &lt;label&gt;Description Text
+              &lt;input id="description-text" type="text" placeholder="Built with creators, ranchers, families, and partners" required /&gt;
+            &lt;/label&gt;
+            &lt;div class="admin-actions"&gt;
+              &lt;button class="btn btn-primary" type="submit"&gt;Add Description&lt;/button&gt;
+              &lt;button class="btn btn-ghost" id="save-descriptions-backend" type="button"&gt;Save Descriptions&lt;/button&gt;
+            &lt;/div&gt;
+          &lt;/form&gt;
+          &lt;form id="partner-form-admin" class="inquiry-form admin-form top-space"&gt;
+            &lt;label&gt;Partner Name
+              &lt;input id="partner-name" type="text" placeholder="Partner Company" required /&gt;
+            &lt;/label&gt;
+            &lt;label&gt;Partner Email
+              &lt;input id="partner-email" type="email" placeholder="partner@company.com" required /&gt;
+            &lt;/label&gt;
+            &lt;label&gt;Partner Description
+              &lt;input id="partner-description" type="text" placeholder="Event production and logistics partner" /&gt;
+            &lt;/label&gt;
+            &lt;div class="admin-actions"&gt;
+              &lt;button class="btn btn-primary" type="submit"&gt;Add Partner&lt;/button&gt;
+              &lt;button class="btn btn-ghost" id="save-partners-backend" type="button"&gt;Save Partners&lt;/button&gt;
+            &lt;/div&gt;
+          &lt;/form&gt;
+          &lt;form id="review-form" class="inquiry-form admin-form top-space"&gt;
+            &lt;label&gt;Reviewer Name
+              &lt;input id="review-name" type="text" placeholder="Client Name" required /&gt;
+            &lt;/label&gt;
+            &lt;label&gt;Review Text
+              &lt;input id="review-text" type="text" placeholder="Amazing experience and clear communication." required /&gt;
+            &lt;/label&gt;
+            &lt;label&gt;Rating (1-5)
+              &lt;input id="review-rating" type="number" min="1" max="5" step="1" value="5" required /&gt;
+            &lt;/label&gt;
+            &lt;div class="admin-actions"&gt;
+              &lt;button class="btn btn-primary" type="submit"&gt;Add Review&lt;/button&gt;
+              &lt;button class="btn btn-ghost" id="save-reviews-backend" type="button"&gt;Save Reviews&lt;/button&gt;
+            &lt;/div&gt;
+          &lt;/form&gt;
+        &lt;/div&gt;
+        &lt;div class="card-grid three top-space"&gt;
+          &lt;article class="product-card"&gt;
+            &lt;h3&gt;Descriptions&lt;/h3&gt;
+            &lt;div id="description-grid" class="gallery-grid"&gt;&lt;/div&gt;
+          &lt;/article&gt;
+          &lt;article class="product-card"&gt;
+            &lt;h3&gt;Partners &amp; Emails&lt;/h3&gt;
+            &lt;div id="partners-grid" class="gallery-grid"&gt;&lt;/div&gt;
+          &lt;/article&gt;
+          &lt;article class="product-card"&gt;
+            &lt;h3&gt;Reviews&lt;/h3&gt;
+            &lt;div id="reviews-grid" class="gallery-grid"&gt;&lt;/div&gt;
+          &lt;/article&gt;
+        &lt;/div&gt;
+      &lt;/section&gt;
+
+      &lt;section id="foundation" class="section reveal"&gt;
+        &lt;div class="section-heading"&gt;
+          &lt;p class="kicker"&gt;Step 8: Foundation&lt;/p&gt;
+          &lt;h2&gt;Mission, vision, and donor-trust model for measurable impact.&lt;/h2&gt;
+        &lt;/div&gt;
+        &lt;div class="card-grid three bottom-space"&gt;
+          &lt;article class="product-card"&gt;
+            &lt;h3&gt;Mission&lt;/h3&gt;
+            &lt;p&gt;Empower youth, support vulnerable groups, and build opportunities through culture and enterprise.&lt;/p&gt;
+          &lt;/article&gt;
+          &lt;article class="product-card"&gt;
+            &lt;h3&gt;Vision&lt;/h3&gt;
+            &lt;p&gt;A united Kenya where talent, dignity, and inclusive growth are accessible to all communities.&lt;/p&gt;
+          &lt;/article&gt;
+          &lt;article class="product-card"&gt;
+            &lt;h3&gt;Trust Promise&lt;/h3&gt;
+            &lt;p&gt;Transparent reporting, clear programs, and accountable partnerships with donors and institutions.&lt;/p&gt;
+          &lt;/article&gt;
+        &lt;/div&gt;
+        &lt;div class="split"&gt;
+          &lt;div class="foundation-card"&gt;
+            &lt;p&gt;
+              The foundation arm runs transparent charity programs, publishes impact reports, and
+              executes MoUs with schools, companies, and development partners.
+            &lt;/p&gt;
+            &lt;div class="pillars"&gt;
+              &lt;span&gt;Youth Mentorship&lt;/span&gt;
+              &lt;span&gt;PWD Inclusion&lt;/span&gt;
+              &lt;span&gt;Talent Scholarships&lt;/span&gt;
+              &lt;span&gt;Faith &amp; Values Programs&lt;/span&gt;
+            &lt;/div&gt;
+          &lt;/div&gt;
+          &lt;form class="inquiry-form" id="partner-form"&gt;
+            &lt;h3&gt;MOU / Donor Partnership Inquiry&lt;/h3&gt;
+            &lt;label&gt;Organization &lt;input type="text" required /&gt;&lt;/label&gt;
+            &lt;label&gt;Email &lt;input type="email" required /&gt;&lt;/label&gt;
+            &lt;label&gt;Partnership Goal &lt;input type="text" required /&gt;&lt;/label&gt;
+            &lt;label&gt;Message &lt;textarea rows="4"&gt;&lt;/textarea&gt;&lt;/label&gt;
+            &lt;button class="btn btn-primary" type="submit"&gt;Submit Partnership Request&lt;/button&gt;
+          &lt;/form&gt;
+        &lt;/div&gt;
+      &lt;/section&gt;
+
+      &lt;!--
+        FUTURE IDEA (MANUAL ENABLE LATER):
+        Furniture vertical (rustic + custom premium).
+        Keep hidden for now until pricing, supplier mapping, and fulfillment process are finalized.
+      --&gt;
+
+      &lt;section id="contact" class="section reveal"&gt;
+        &lt;div class="section-heading"&gt;
+          &lt;p class="kicker"&gt;Contact&lt;/p&gt;
+          &lt;h2&gt;Let us build this culture together.&lt;/h2&gt;
+        &lt;/div&gt;
+        &lt;div class="card-grid three"&gt;
+          &lt;article class="product-card"&gt;
+            &lt;h3&gt;Leadership Office&lt;/h3&gt;
+            &lt;p&gt;Cowboys Group Holdings Team&lt;/p&gt;
+          &lt;/article&gt;
+          &lt;article class="product-card"&gt;
+            &lt;h3&gt;Email&lt;/h3&gt;
+            &lt;p&gt;&lt;a href="mailto:justuskinyua98@gmail.com"&gt;justuskinyua98@gmail.com&lt;/a&gt;&lt;/p&gt;
+          &lt;/article&gt;
+          &lt;article class="product-card"&gt;
+            &lt;h3&gt;Phone&lt;/h3&gt;
+            &lt;p&gt;&lt;a href="tel:+254793791623"&gt;+254 793 791 623&lt;/a&gt;&lt;/p&gt;
+          &lt;/article&gt;
+        &lt;/div&gt;
+      &lt;/section&gt;
+    &lt;/main&gt;
+
+    &lt;footer class="site-footer"&gt;
+      &lt;p&gt;© &lt;span id="year"&gt;&lt;/span&gt; Cowboys Group Holdings. Kenya United: faith-led, inclusive, culture-strong.&lt;/p&gt;
+    &lt;/footer&gt;
+
+    &lt;script src="script.js"&gt;&lt;/script&gt;
+  &lt;/body&gt;
+&lt;/html&gt;
+```
+
+## 8) data/content.json
+
+```json
+{
+  "brand": {
+    "name": "Cowboys Group Holdings",
+    "tagline": "Culture. Business. Legacy.",
+    "faith_statement": "Faith-led leadership, honest business, and community stewardship."
+  },
+  "socials": [
+    {
+      "id": "social-teddy-ig",
+      "platform": "Instagram",
+      "handle": "Teddy Otieno",
+      "url": "https://www.instagram.com/teddy0tieno?igsh=MXV2cDVyNW9vbzJucQ=="
+    },
+    {
+      "id": "social-teddy-tt",
+      "platform": "TikTok",
+      "handle": "Teddy Otieno",
+      "url": "https://www.tiktok.com/@teddy0tieno"
+    },
+    {
+      "id": "social-aaron-ig",
+      "platform": "Instagram",
+      "handle": "Aaron Sang",
+      "url": "https://www.instagram.com/aaron_sang_?igsh=MW5qYWRzd2dremh5OQ=="
+    },
+    {
+      "id": "social-aaron-tt",
+      "platform": "TikTok",
+      "handle": "Aaron Sang",
+      "url": "https://www.tiktok.com/@aaronksang?_r=1&amp;_t=ZS-94KfzZFkM7h"
+    },
+    {
+      "id": "social-justus-fb",
+      "platform": "Facebook",
+      "handle": "Justus Kinyua",
+      "url": "https://www.facebook.com/share/1KoyUwx134/"
+    },
+    {
+      "id": "social-justus-tt",
+      "platform": "TikTok",
+      "handle": "Justus Kinyua",
+      "url": "https://vm.tiktok.com/ZS9eoF6s5E3L6-mSwNl/"
+    },
+    {
+      "id": "social-justus-ig",
+      "platform": "Instagram",
+      "handle": "Justus Kinyua",
+      "url": "https://www.instagram.com/gymie.fitness?igsh=MWo1bHBiOHk5Mm1zOQ=="
+    }
+  ],
+  "team": [
+    {
+      "id": "team-1",
+      "name": "Justus Kinyua",
+      "role": "Chief Executive Officer (CEO)",
+      "photo": "assets/team/justus-kinyua.jpeg",
+      "bio": "Leading Cowboys Group Holdings strategy, partnerships, and growth."
+    },
+    {
+      "id": "team-2",
+      "name": "Teddy Otieno",
+      "role": "Chief Financial Officer (CFO)",
+      "photo": "assets/team/teddy-otieno.jpg",
+      "bio": "Overseeing financial planning, controls, and sustainable business performance."
+    },
+    {
+      "id": "team-3",
+      "name": "Aaron Sang",
+      "role": "Chief Marketing Officer (CMO)",
+      "photo": "assets/team/aaron-sang.jpg",
+      "bio": "Driving brand, campaigns, and audience growth across all company ventures."
+    }
+  ],
+  "videos": [
+    {
+      "id": "video-1",
+      "title": "Ranch Life Preview",
+      "src": "assets/videos/ranch-life-preview.mp4",
+      "poster": "assets/events/event-nairobi-ranch-night.jpg",
+      "category": "ranch"
+    },
+    {
+      "id": "video-2",
+      "title": "Events Highlight Reel",
+      "src": "assets/videos/events-highlight-reel.mov",
+      "poster": "assets/events/event-western-family-sunday.jpg",
+      "category": "events"
+    },
+    {
+      "id": "video-3",
+      "title": "Livestock Market Reel",
+      "src": "assets/videos/livestock-market-reel.mov",
+      "poster": "assets/livestock/livestock-cattle-prime.jpg",
+      "category": "livestock"
+    },
+    {
+      "id": "video-4",
+      "title": "Cowboys Fashion Reel",
+      "src": "assets/videos/fashion-reel.mov",
+      "poster": "assets/outfits/adults-ranch-jacket.jpg",
+      "category": "fashion"
+    }
+  ],
+  "decor": [
+    {
+      "id": "decor-1",
+      "name": "Rustic Event Decor Package",
+      "category": "Service",
+      "price_kes": 25000,
+      "description": "Full setup for weddings, launches, private parties, and western-themed events.",
+      "image": "assets/placeholders/decor.svg"
+    },
+    {
+      "id": "decor-2",
+      "name": "Fresh Flower Ceremony Bundle",
+      "category": "Fresh Flowers",
+      "price_kes": 8500,
+      "description": "Fresh flower curation for events and home gifting.",
+      "image": "assets/placeholders/decor.svg"
+    },
+    {
+      "id": "decor-3",
+      "name": "Rustic Home Accent Set",
+      "category": "Rustic Decor",
+      "price_kes": 6200,
+      "description": "Handpicked pieces for homes, restaurants, and lodge interiors.",
+      "image": "assets/placeholders/decor.svg"
+    }
+  ],
+  "outfits": [
+    {
+      "id": "adult-1",
+      "collection": "adults",
+      "name": "Cowboys Heritage Denim Shirt",
+      "price": 4200,
+      "image": "assets/outfits/adults-heritage-denim.jpg",
+      "description": "Premium western-inspired adult fit"
+    },
+    {
+      "id": "adult-2",
+      "collection": "adults",
+      "name": "Ranch Work Jacket",
+      "price": 6800,
+      "image": "assets/outfits/adults-ranch-jacket.jpg",
+      "description": "All-season rugged jacket for ranch and city wear"
+    },
+    {
+      "id": "kids-1",
+      "collection": "kids",
+      "name": "Little Rider Weekend Set",
+      "price": 3200,
+      "image": "assets/outfits/kids-little-rider.jpg",
+      "description": "Kids-friendly fabric with playful western styling"
+    },
+    {
+      "id": "kids-2",
+      "collection": "kids",
+      "name": "Kids Rodeo Hoodie",
+      "price": 2800,
+      "image": "assets/outfits/kids-rodeo-hoodie.jpeg",
+      "description": "Warm and durable hoodie for active children"
+    },
+    {
+      "id": "acc-1",
+      "collection": "accessories",
+      "name": "Heritage Leather Belt",
+      "price": 3500,
+      "image": "assets/outfits/accessories-heritage-belt.jpeg",
+      "description": "Hand-finished leather belt"
+    },
+    {
+      "id": "acc-2",
+      "collection": "accessories",
+      "name": "Bull Horn Signature Cap",
+      "price": 1800,
+      "image": "assets/outfits/accessories-bull-horn-cap.jpeg",
+      "description": "Daily wear cap with culture-forward mark"
+    }
+  ],
+  "events": [
+    {
+      "id": "event-1",
+      "title": "Nairobi Ranch Night Experience",
+      "date": "2026-12-18",
+      "venue": "Karen, Nairobi",
+      "performers": "Live Band + DJ + Dance Crew",
+      "ticket_kes": 2000,
+      "poster": "assets/events/event-nairobi-ranch-night.jpg"
+    },
+    {
+      "id": "event-2",
+      "title": "Western Family Sunday",
+      "date": "2026-12-27",
+      "venue": "Naivasha Grounds",
+      "performers": "Kids Dance, MC, Live Entertainment",
+      "ticket_kes": 1200,
+      "poster": "assets/events/event-western-family-sunday.jpg"
+    },
+    {
+      "id": "event-3",
+      "title": "Classic Cars &amp; Cowboys Showcase",
+      "date": "2026-11-07",
+      "venue": "Nairobi Motor Hub",
+      "performers": "Car Clubs, Motorcycle Clubs, Guest Artists",
+      "ticket_kes": 1500,
+      "poster": "assets/events/event-classic-cars-showcase.jpg"
+    }
+  ],
+  "livestock": [
+    {
+      "id": "stock-1",
+      "name": "Goat - Premium Festive",
+      "weight_kg": 38,
+      "rate_per_kg_kes": 680,
+      "status": "Available",
+      "image": "assets/livestock/livestock-goat-premium.jpg"
+    },
+    {
+      "id": "stock-2",
+      "name": "Goat - Standard Select",
+      "weight_kg": 31,
+      "rate_per_kg_kes": 620,
+      "status": "Available",
+      "image": "assets/livestock/livestock-goat-standard.jpg"
+    },
+    {
+      "id": "stock-3",
+      "name": "Cattle - Prime Butchery Grade",
+      "weight_kg": 290,
+      "rate_per_kg_kes": 470,
+      "status": "Limited",
+      "image": "assets/livestock/livestock-cattle-prime.jpg"
+    }
+  ],
+  "descriptions": [
+    {
+      "id": "desc-1",
+      "title": "Community-First Ecosystem",
+      "text": "Built with creators, ranchers, families, and partners for shared growth and trusted collaboration."
+    },
+    {
+      "id": "desc-2",
+      "title": "Kids Corner Commitment",
+      "text": "A safe and joyful experience for children through family events, age-appropriate fashion, and talent growth pathways."
+    },
+    {
+      "id": "desc-3",
+      "title": "Inclusive Kenya Commitment",
+      "text": "Open to youth, adults, PWD communities, small businesses, and large institutions across Kenya and beyond."
+    }
+  ],
+  "partners": [
+    {
+      "id": "partner-1",
+      "name": "Ranchers &amp; Livestock Network",
+      "email": "partnerships@cowboysgroupholdings.co.ke",
+      "description": "Seasonal goat and cattle collaboration for festive commerce."
+    },
+    {
+      "id": "partner-2",
+      "name": "Events &amp; Artist Collaboration Desk",
+      "email": "events@cowboysgroupholdings.co.ke",
+      "description": "Talent booking, event production, and entertainment partnerships."
+    },
+    {
+      "id": "partner-3",
+      "name": "Foundation Partnerships Unit",
+      "email": "foundation@cowboysgroupholdings.co.ke",
+      "description": "MoUs, donor partnerships, and social impact programs."
+    }
+  ],
+  "reviews": [
+    {
+      "id": "review-1",
+      "name": "Community Member",
+      "text": "The platform is clear, welcoming, and truly reflects Kenyan culture.",
+      "rating": 5
+    },
+    {
+      "id": "review-2",
+      "name": "Event Client",
+      "text": "Ticketing, decor, and communication were smooth from start to finish.",
+      "rating": 5
+    },
+    {
+      "id": "review-3",
+      "name": "Family Shopper",
+      "text": "Kids and adult apparel sections are easy to browse and very practical.",
+      "rating": 5
+    }
+  ]
+}
+```
+
+## 9) SEO Files
+
+### robots.txt
+
+```txt
+User-agent: *
+Allow: /
+
+Sitemap: https://cowboysgroupholdings.co.ke/sitemap.xml
+```
+
+### sitemap.xml
+
+```xml
+&lt;?xml version="1.0" encoding="UTF-8"?&gt;
+&lt;urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"&gt;
+  &lt;url&gt;
+    &lt;loc&gt;https://cowboysgroupholdings.co.ke/&lt;/loc&gt;
+    &lt;changefreq&gt;weekly&lt;/changefreq&gt;
+    &lt;priority&gt;1.0&lt;/priority&gt;
+  &lt;/url&gt;
+&lt;/urlset&gt;
+```
+
+## 10) Environment Template
+
+```env
+ADMIN_KEY=change-this-admin-key
+PORT=8000
+HOST=127.0.0.1
+
+# Manual payment fallback
+MANUAL_TILL_NUMBER=5628570
+MANUAL_PAYEE_NAME=Cowboys Group Holdings
+
+# Optional M-Pesa STK config
+M_PESA_BASE_URL=https://sandbox.safaricom.co.ke
+M_PESA_CONSUMER_KEY=
+M_PESA_CONSUMER_SECRET=
+M_PESA_SHORTCODE=
+M_PESA_PASSKEY=
+M_PESA_CALLBACK_URL=
+
+# Optional payment expiry policy
+MPESA_PENDING_TIMEOUT_MIN=20
+MANUAL_PENDING_TIMEOUT_HOURS=48
+```
+
+---
+
+End of codebook.
+</pre>
+      </section>
+    </div>
+  </div>
+
+  <script>
+    const MASTER_PIN = "7391";
+    const USED_KEY = "cgh_master_book_pin_used_v1";
+
+    const lockWrap = document.getElementById("lock-wrap");
+    const bookWrap = document.getElementById("book-wrap");
+    const pinInput = document.getElementById("pin-input");
+    const statusEl = document.getElementById("status");
+    const unlockBtn = document.getElementById("unlock-btn");
+    const printBtn = document.getElementById("print-btn");
+    const printBtn2 = document.getElementById("print-btn-2");
+
+    function showExpired() {
+      statusEl.textContent = "PIN expired for this device. Access already used.";
+      pinInput.disabled = true;
+      unlockBtn.disabled = true;
+      printBtn.disabled = true;
+    }
+
+    function openBook() {
+      lockWrap.style.display = "none";
+      bookWrap.style.display = "block";
+      printBtn.disabled = false;
+    }
+
+    if (localStorage.getItem(USED_KEY)) showExpired();
+
+    unlockBtn.addEventListener("click", () => {
+      const entered = String(pinInput.value || "").trim();
+      if (!entered) { statusEl.textContent = "Enter PIN first."; return; }
+      if (entered !== MASTER_PIN) { statusEl.textContent = "Incorrect PIN."; return; }
+      localStorage.setItem(USED_KEY, String(Date.now()));
+      statusEl.textContent = "";
+      openBook();
+    });
+
+    printBtn.addEventListener("click", () => window.print());
+    printBtn2.addEventListener("click", () => window.print());
+  </script>
+</body>
+</html>
