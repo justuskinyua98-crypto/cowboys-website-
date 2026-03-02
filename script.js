@@ -72,6 +72,7 @@ const el = {
   navToggle: document.querySelector(".menu-toggle"),
   nav: document.querySelector(".main-nav"),
   adminKey: document.getElementById("admin-key"),
+  adminKeyFoundation: document.getElementById("admin-key-foundation"),
   cartCount: document.getElementById("cart-count"),
   cartLane: document.getElementById("cart-lane"),
   cartItems: document.getElementById("cart-items"),
@@ -152,7 +153,7 @@ function uid(prefix) {
 }
 
 function adminKey() {
-  return (el.adminKey?.value || "").trim();
+  return (el.adminKey?.value || el.adminKeyFoundation?.value || "").trim();
 }
 
 function notify(msg) {
@@ -1385,6 +1386,16 @@ function bindForms() {
   el.savePartnersBtn?.addEventListener("click", () => saveContent("Partners"));
   el.saveReviewsBtn?.addEventListener("click", () => saveContent("Reviews"));
   el.adminKey?.addEventListener("input", () => {
+    if (el.adminKeyFoundation && el.adminKeyFoundation.value !== el.adminKey.value) {
+      el.adminKeyFoundation.value = el.adminKey.value;
+    }
+    renderAll();
+    loadDonationAdminList();
+  });
+  el.adminKeyFoundation?.addEventListener("input", () => {
+    if (el.adminKey && el.adminKey.value !== el.adminKeyFoundation.value) {
+      el.adminKey.value = el.adminKeyFoundation.value;
+    }
     renderAll();
     loadDonationAdminList();
   });
