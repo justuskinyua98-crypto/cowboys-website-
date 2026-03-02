@@ -11,6 +11,13 @@ const PAYMENTS_PATH = path.join(ROOT, 'data', 'payments.json');
 const ADMIN_KEY = process.env.ADMIN_KEY || 'change-me-admin-key';
 const PORT = Number(process.env.PORT || 8000);
 const HOST = process.env.HOST || '127.0.0.1';
+const BODY_LIMIT_BYTES = Number(process.env.BODY_LIMIT_BYTES || 12_000_000);
+
+const SECURITY_HEADERS = {
+  'X-Content-Type-Options': 'nosniff',
+  'X-Frame-Options': 'SAMEORIGIN',
+  'Referrer-Policy': 'strict-origin-when-cross-origin'
+};
 
 const M_PESA = {
   baseUrl: process.env.M_PESA_BASE_URL || 'https://sandbox.safaricom.co.ke',
@@ -28,6 +35,13 @@ const PAYMENT_POLICY = {
   mpesaPendingTimeoutMin: Number(process.env.MPESA_PENDING_TIMEOUT_MIN || 20),
   manualPendingTimeoutHours: Number(process.env.MANUAL_PENDING_TIMEOUT_HOURS || 48)
 };
+
+const RATE_LIMIT_CONFIG = {
+  checkout: { windowMs: 60_000, max: 20 },
+  confirmManual: { windowMs: 60_000, max: 30 },
+  mediaUpload: { windowMs: 60_000, max: 40 }
+};
+const RATE_LIMIT_STORE = new Map();
 
 // Some networks resolve dual-stack hosts but only allow IPv4 egress reliably.
 dns.setDefaultResultOrder('ipv4first');
@@ -50,6 +64,8 @@ const MIME_TYPES = {
 function sendJson(res, status, payload) {
   const body = JSON.stringify(payload);
   res.writeHead(status, {
+    ...SECURITY_HEADERS,
+    'Cache-Control': 'no-store',
     'Content-Type': 'application/json; charset=utf-8',
     'Content-Length': Buffer.byteLength(body)
   });
@@ -66,14 +82,37 @@ function errInfo(err) {
 
 async function readBody(req) {
   return new Promise((resolve, reject) => {
+    let settled = false;
     let data = '';
+
+    const fail = (err) => {
+      if (settled) return;
+      settled = true;
+      req.destroy();
+      reject(err);
+    };
+
+    const done = () => {
+      if (settled) return;
+      settled = true;
+      resolve(data);
+    };
+
     req.on('data', (chunk) => {
       data += chunk;
-      if (data.length > 12_000_000) reject(new Error('Payload too large'));
+      if (data.length > BODY_LIMIT_BYTES) fail(new Error('Payload too large'));
     });
-    req.on('end', () => resolve(data));
-    req.on('error', reject);
+    req.on('end', done);
+    req.on('error', fail);
   });
+}
+
+function parseJson(raw, fallback = null) {
+  try {
+    return JSON.parse(raw);
+  } catch {
+    return fallback;
+  }
 }
 
 async function readContent() {
@@ -109,6 +148,38 @@ function safeJoin(base, relativePath) {
   const full = path.join(base, normalized);
   if (!full.startsWith(base)) return null;
   return full;
+}
+
+function getClientIp(req) {
+  const forwarded = String(req.headers['x-forwarded-for'] || '').trim();
+  if (forwarded) return forwarded.split(',')[0].trim();
+  return String(req.socket?.remoteAddress || 'unknown');
+}
+
+function hitRateLimit(req, key, config) {
+  const now = Date.now();
+  const bucketKey = `${key}:${getClientIp(req)}`;
+  const existing = RATE_LIMIT_STORE.get(bucketKey);
+
+  if (!existing || now - existing.startedAt > config.windowMs) {
+    RATE_LIMIT_STORE.set(bucketKey, { count: 1, startedAt: now });
+    return { limited: false, retryAfterSec: 0 };
+  }
+
+  existing.count += 1;
+  RATE_LIMIT_STORE.set(bucketKey, existing);
+
+  if (existing.count <= config.max) return { limited: false, retryAfterSec: 0 };
+
+  const retryMs = Math.max(1_000, config.windowMs - (now - existing.startedAt));
+  return { limited: true, retryAfterSec: Math.ceil(retryMs / 1_000) };
+}
+
+function cacheControlFor(filePath) {
+  const ext = path.extname(filePath).toLowerCase();
+  if (ext === '.html') return 'no-cache';
+  if (ext === '.json') return 'no-store';
+  return 'public, max-age=86400';
 }
 
 function isMpesaConfigured() {
@@ -318,8 +389,22 @@ async function initiateMpesaStk({ amountKes, phone, orderId }) {
 }
 
 async function handleApi(req, res, urlObj) {
+  if (req.method === 'OPTIONS') {
+    res.writeHead(204, {
+      ...SECURITY_HEADERS,
+      'Cache-Control': 'no-store',
+      Allow: 'GET,POST,PUT,OPTIONS'
+    });
+    res.end();
+    return true;
+  }
+
   if (req.method === 'GET' && urlObj.pathname === '/api/health') {
-    return sendJson(res, 200, { ok: true, now: new Date().toISOString() });
+    return sendJson(res, 200, {
+      ok: true,
+      now: new Date().toISOString(),
+      uptime_seconds: Math.round(process.uptime())
+    });
   }
 
   if (req.method === 'GET' && urlObj.pathname === '/api/content') {
@@ -336,7 +421,10 @@ async function handleApi(req, res, urlObj) {
 
     try {
       const raw = await readBody(req);
-      const next = JSON.parse(raw);
+      const next = parseJson(raw);
+      if (!next || typeof next !== 'object') {
+        return sendJson(res, 400, { error: 'Invalid JSON body.' });
+      }
       await writeContent(next);
       return sendJson(res, 200, { ok: true });
     } catch (err) {
@@ -357,9 +445,18 @@ async function handleApi(req, res, urlObj) {
   }
 
   if (req.method === 'POST' && urlObj.pathname === '/api/payments/checkout') {
+    const rate = hitRateLimit(req, 'checkout', RATE_LIMIT_CONFIG.checkout);
+    if (rate.limited) {
+      res.setHeader('Retry-After', String(rate.retryAfterSec));
+      return sendJson(res, 429, { error: 'Too many checkout attempts. Please retry shortly.' });
+    }
+
     try {
       const raw = await readBody(req);
-      const payload = JSON.parse(raw);
+      const payload = parseJson(raw);
+      if (!payload || typeof payload !== 'object') {
+        return sendJson(res, 400, { error: 'Invalid JSON body.' });
+      }
 
       const method = String(payload.method || 'manual').toLowerCase();
       const amountKes = Number(payload.amount_kes || 0);
@@ -490,10 +587,16 @@ async function handleApi(req, res, urlObj) {
   }
 
   if (req.method === 'POST' && urlObj.pathname === '/api/payments/confirm-manual') {
+    const rate = hitRateLimit(req, 'confirm-manual', RATE_LIMIT_CONFIG.confirmManual);
+    if (rate.limited) {
+      res.setHeader('Retry-After', String(rate.retryAfterSec));
+      return sendJson(res, 429, { error: 'Too many confirmation attempts. Please retry shortly.' });
+    }
+
     if (!isAuthed(req)) return sendJson(res, 401, { error: 'Unauthorized' });
     try {
       const raw = await readBody(req);
-      const payload = JSON.parse(raw || '{}');
+      const payload = parseJson(raw || '{}', {});
       const orderId = String(payload.order_id || '').trim();
       const transactionCode = String(payload.transaction_code || '').trim().toUpperCase();
       if (!orderId) return sendJson(res, 400, { error: 'order_id is required.' });
@@ -562,7 +665,7 @@ async function handleApi(req, res, urlObj) {
   if (req.method === 'POST' && urlObj.pathname === '/api/payments/mpesa/callback') {
     try {
       const raw = await readBody(req);
-      const payload = JSON.parse(raw || '{}');
+      const payload = parseJson(raw || '{}', {});
       const callback = payload?.Body?.stkCallback || {};
 
       const checkoutRequestId = callback.CheckoutRequestID;
@@ -623,11 +726,20 @@ async function handleApi(req, res, urlObj) {
   }
 
   if (req.method === 'POST' && urlObj.pathname === '/api/media') {
+    const rate = hitRateLimit(req, 'media-upload', RATE_LIMIT_CONFIG.mediaUpload);
+    if (rate.limited) {
+      res.setHeader('Retry-After', String(rate.retryAfterSec));
+      return sendJson(res, 429, { error: 'Too many upload requests. Please retry shortly.' });
+    }
+
     if (!isAuthed(req)) return sendJson(res, 401, { error: 'Unauthorized' });
 
     try {
       const raw = await readBody(req);
-      const payload = JSON.parse(raw);
+      const payload = parseJson(raw);
+      if (!payload || typeof payload !== 'object') {
+        return sendJson(res, 400, { error: 'Invalid JSON body.' });
+      }
       const fileName = String(payload.filename || '').trim();
       const base64Data = String(payload.base64 || '').trim();
       const folder = String(payload.folder || 'outfits').trim();
@@ -665,7 +777,11 @@ function serveFile(res, filePath) {
   const stream = fs.createReadStream(filePath);
 
   stream.on('open', () => {
-    res.writeHead(200, { 'Content-Type': contentType });
+    res.writeHead(200, {
+      ...SECURITY_HEADERS,
+      'Cache-Control': cacheControlFor(filePath),
+      'Content-Type': contentType
+    });
   });
 
   stream.on('error', () => {
@@ -682,6 +798,7 @@ const server = http.createServer(async (req, res) => {
   if (urlObj.pathname.startsWith('/api/')) {
     const handled = await handleApi(req, res, urlObj);
     if (handled !== false) return;
+    return sendJson(res, 404, { error: 'API route not found' });
   }
 
   const requestPath = urlObj.pathname === '/' ? '/index.html' : urlObj.pathname;
