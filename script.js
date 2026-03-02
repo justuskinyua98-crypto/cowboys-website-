@@ -141,6 +141,13 @@ function notify(msg) {
   alert(msg);
 }
 
+function mediaSrc(path) {
+  const raw = String(path || "").trim();
+  if (!raw) return `/${PLACEHOLDER_IMAGE}`;
+  if (/^(https?:)?\/\//i.test(raw) || raw.startsWith("data:")) return raw;
+  return `/${raw.replace(/^\/+/, "")}`;
+}
+
 function setPaymentStatus(msg) {
   if (el.paymentStatus) el.paymentStatus.textContent = msg;
 }
@@ -333,7 +340,7 @@ function emptyNode(message) {
 
 function maybeImage(path, alt = "") {
   if (!path) return "";
-  return `<img class="outfit-image" src="${path}" alt="${alt}" loading="lazy" onerror="this.src='${PLACEHOLDER_IMAGE}'">`;
+  return `<img class="outfit-image" src="${mediaSrc(path)}" alt="${alt}" loading="lazy" onerror="this.src='/${PLACEHOLDER_IMAGE}'">`;
 }
 
 function renderCart() {
@@ -485,7 +492,7 @@ function renderVideos() {
     const card = document.createElement("article");
     card.className = "video-card";
     card.innerHTML = `
-      ${v.src ? `<video controls muted playsinline preload="metadata" ${v.poster ? `poster="${v.poster}"` : ""}><source src="${v.src}"></video>` : ""}
+      ${v.src ? `<video controls muted playsinline preload="metadata" ${v.poster ? `poster="${mediaSrc(v.poster)}"` : ""}><source src="${mediaSrc(v.src)}"></video>` : ""}
       <div class="video-body">${v.title || "Untitled Video"}</div>
     `;
     el.videoGallery.appendChild(card);
@@ -503,7 +510,7 @@ function renderTeam() {
     const row = document.createElement("div");
     row.className = "team-row";
     row.innerHTML = `
-      ${p.photo ? `<img class="team-photo" src="${p.photo}" alt="${p.name}" loading="lazy" onerror="this.src='${PLACEHOLDER_IMAGE}'">` : ""}
+      ${p.photo ? `<img class="team-photo" src="${mediaSrc(p.photo)}" alt="${p.name}" loading="lazy" onerror="this.src='/${PLACEHOLDER_IMAGE}'">` : ""}
       <strong>${p.name}</strong><br>${p.role || ""}<br>${p.bio || ""}
       <div class="outfit-actions top-space">
         <button class="delete-outfit delete-team-item" type="button" data-id="${p.id}">Remove</button>
