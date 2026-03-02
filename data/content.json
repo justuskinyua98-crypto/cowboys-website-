@@ -6,34 +6,46 @@
   },
   "socials": [
     {
-      "id": "social-1",
+      "id": "social-teddy-ig",
       "platform": "Instagram",
-      "url": "https://instagram.com/",
-      "handle": "@cowboysgroup"
+      "handle": "Teddy Otieno",
+      "url": "https://www.instagram.com/teddy0tieno?igsh=MXV2cDVyNW9vbzJucQ=="
     },
     {
-      "id": "social-2",
+      "id": "social-teddy-tt",
       "platform": "TikTok",
-      "url": "https://tiktok.com/@",
-      "handle": "@cowboysgroup"
+      "handle": "Teddy Otieno",
+      "url": "https://www.tiktok.com/@teddy0tieno"
     },
     {
-      "id": "social-3",
+      "id": "social-aaron-ig",
+      "platform": "Instagram",
+      "handle": "Aaron Sang",
+      "url": "https://www.instagram.com/aaron_sang_?igsh=MW5qYWRzd2dremh5OQ=="
+    },
+    {
+      "id": "social-aaron-tt",
+      "platform": "TikTok",
+      "handle": "Aaron Sang",
+      "url": "https://www.tiktok.com/@aaronksang?_r=1&_t=ZS-94KfzZFkM7h"
+    },
+    {
+      "id": "social-justus-fb",
       "platform": "Facebook",
-      "url": "https://facebook.com/",
-      "handle": "Cowboys Group Holdings"
+      "handle": "Justus Kinyua",
+      "url": "https://www.facebook.com/share/1KoyUwx134/"
     },
     {
-      "id": "social-4",
-      "platform": "YouTube",
-      "url": "https://youtube.com/@",
-      "handle": "@cowboysgroup"
+      "id": "social-justus-tt",
+      "platform": "TikTok",
+      "handle": "Justus Kinyua",
+      "url": "https://vm.tiktok.com/ZS9eoF6s5E3L6-mSwNl/"
     },
     {
-      "id": "social-5",
-      "platform": "WhatsApp",
-      "url": "https://wa.me/254793791623",
-      "handle": "+254 793 791 623"
+      "id": "social-justus-ig",
+      "platform": "Instagram",
+      "handle": "Justus Kinyua",
+      "url": "https://www.instagram.com/gymie.fitness?igsh=MWo1bHBiOHk5Mm1zOQ=="
     }
   ],
   "team": [
@@ -61,16 +73,32 @@
   ],
   "videos": [
     {
+      "id": "video-1",
       "title": "Ranch Life Preview",
-      "src": "",
-      "poster": "assets/placeholders/video-poster.svg",
+      "src": "assets/videos/ranch-life-preview.mp4",
+      "poster": "assets/events/event-nairobi-ranch-night.jpg",
       "category": "ranch"
     },
     {
+      "id": "video-2",
       "title": "Events Highlight Reel",
-      "src": "",
-      "poster": "assets/placeholders/video-poster.svg",
+      "src": "assets/videos/events-highlight-reel.mov",
+      "poster": "assets/events/event-western-family-sunday.jpg",
       "category": "events"
+    },
+    {
+      "id": "video-3",
+      "title": "Livestock Market Reel",
+      "src": "assets/videos/livestock-market-reel.mov",
+      "poster": "assets/livestock/livestock-cattle-prime.jpg",
+      "category": "livestock"
+    },
+    {
+      "id": "video-4",
+      "title": "Cowboys Fashion Reel",
+      "src": "assets/videos/fashion-reel.mov",
+      "poster": "assets/outfits/adults-ranch-jacket.jpg",
+      "category": "fashion"
     }
   ],
   "decor": [
@@ -105,7 +133,7 @@
       "collection": "adults",
       "name": "Cowboys Heritage Denim Shirt",
       "price": 4200,
-      "image": "assets/placeholders/outfit.svg",
+      "image": "assets/outfits/adults-heritage-denim.jpg",
       "description": "Premium western-inspired adult fit"
     },
     {
@@ -113,7 +141,7 @@
       "collection": "adults",
       "name": "Ranch Work Jacket",
       "price": 6800,
-      "image": "assets/placeholders/outfit.svg",
+      "image": "assets/outfits/adults-ranch-jacket.jpg",
       "description": "All-season rugged jacket for ranch and city wear"
     },
     {
@@ -121,7 +149,7 @@
       "collection": "kids",
       "name": "Little Rider Weekend Set",
       "price": 3200,
-      "image": "assets/placeholders/outfit.svg",
+      "image": "assets/outfits/kids-little-rider.jpg",
       "description": "Kids-friendly fabric with playful western styling"
     },
     {
@@ -129,7 +157,7 @@
       "collection": "kids",
       "name": "Kids Rodeo Hoodie",
       "price": 2800,
-      "image": "assets/placeholders/outfit.svg",
+      "image": "assets/outfits/kids-rodeo-hoodie.jpeg",
       "description": "Warm and durable hoodie for active children"
     },
     {
@@ -137,7 +165,7 @@
       "collection": "accessories",
       "name": "Heritage Leather Belt",
       "price": 3500,
-      "image": "assets/placeholders/outfit.svg",
+      "image": "assets/outfits/accessories-heritage-belt.jpeg",
       "description": "Hand-finished leather belt"
     },
     {
@@ -145,7 +173,7 @@
       "collection": "accessories",
       "name": "Bull Horn Signature Cap",
       "price": 1800,
-      "image": "assets/placeholders/outfit.svg",
+      "image": "assets/outfits/accessories-bull-horn-cap.jpeg",
       "description": "Daily wear cap with culture-forward mark"
     }
   ],
@@ -157,7 +185,7 @@
       "venue": "Karen, Nairobi",
       "performers": "Live Band + DJ + Dance Crew",
       "ticket_kes": 2000,
-      "poster": "assets/placeholders/event.svg"
+      "poster": "assets/events/event-nairobi-ranch-night.jpg"
     },
     {
       "id": "event-2",
@@ -166,7 +194,7 @@
       "venue": "Naivasha Grounds",
       "performers": "Kids Dance, MC, Live Entertainment",
       "ticket_kes": 1200,
-      "poster": "assets/placeholders/event.svg"
+      "poster": "assets/events/event-western-family-sunday.jpg"
     },
     {
       "id": "event-3",
@@ -175,7 +203,7 @@
       "venue": "Nairobi Motor Hub",
       "performers": "Car Clubs, Motorcycle Clubs, Guest Artists",
       "ticket_kes": 1500,
-      "poster": "assets/placeholders/event.svg"
+      "poster": "assets/events/event-classic-cars-showcase.jpg"
     }
   ],
   "livestock": [
@@ -185,7 +213,7 @@
       "weight_kg": 38,
       "rate_per_kg_kes": 680,
       "status": "Available",
-      "image": "assets/placeholders/livestock.svg"
+      "image": "assets/livestock/livestock-goat-premium.jpg"
     },
     {
       "id": "stock-2",
@@ -193,7 +221,7 @@
       "weight_kg": 31,
       "rate_per_kg_kes": 620,
       "status": "Available",
-      "image": "assets/placeholders/livestock.svg"
+      "image": "assets/livestock/livestock-goat-standard.jpg"
     },
     {
       "id": "stock-3",
@@ -201,7 +229,7 @@
       "weight_kg": 290,
       "rate_per_kg_kes": 470,
       "status": "Limited",
-      "image": "assets/placeholders/livestock.svg"
+      "image": "assets/livestock/livestock-cattle-prime.jpg"
     }
   ],
   "descriptions": [
