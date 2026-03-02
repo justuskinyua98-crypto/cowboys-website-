@@ -62,7 +62,9 @@ const state = {
   cart: [],
   content: structuredClone(defaultContent),
   lastOrderId: "",
-  lastReceipt: null
+  lastReceipt: null,
+  lastDonationId: "",
+  lastDonationReceipt: null
 };
 
 const el = {
@@ -134,6 +136,7 @@ const el = {
   donationStatus: document.getElementById("donation-status"),
   donationPaymentDetails: document.getElementById("donation-payment-details"),
   downloadDonationsBtn: document.getElementById("download-donations-btn"),
+  downloadDonationReceiptBtn: document.getElementById("download-donation-receipt-btn"),
   donationConfirmForm: document.getElementById("donation-confirm-form"),
   donationConfirmId: document.getElementById("donation-confirm-id"),
   donationConfirmRef: document.getElementById("donation-confirm-ref"),
@@ -253,6 +256,38 @@ function formatDateTime(value) {
   if (!value) return "N/A";
   const dt = new Date(value);
   return Number.isNaN(dt.getTime()) ? String(value) : dt.toLocaleString("en-KE");
+}
+
+function buildDonationReceiptHtml(receipt) {
+  return `<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Donation Receipt ${receipt.receipt_number}</title>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 24px; color: #222; }
+    .box { border: 1px solid #ddd; border-radius: 8px; padding: 14px; }
+  </style>
+</head>
+<body>
+  <h1>Cowboys Group Holdings Foundation</h1>
+  <h2>Donation Receipt</h2>
+  <div class="box">
+    <p><strong>Receipt No:</strong> ${receipt.receipt_number}</p>
+    <p><strong>Donation ID:</strong> ${receipt.donation_id}</p>
+    <p><strong>Status:</strong> ${receipt.status}</p>
+    <p><strong>Donor:</strong> ${receipt.name || "N/A"}</p>
+    <p><strong>Email:</strong> ${receipt.email || "N/A"}</p>
+    <p><strong>Phone:</strong> ${receipt.phone || "N/A"}</p>
+    <p><strong>Amount:</strong> ${formatKes(receipt.amount_kes || 0)}</p>
+    <p><strong>Payment Method:</strong> ${receipt.method || "manual"}</p>
+    <p><strong>Payment Reference:</strong> ${receipt.reference_code || "Pending confirmation"}</p>
+    <p><strong>Submitted:</strong> ${formatDateTime(receipt.created_at)}</p>
+    <p><strong>Confirmed:</strong> ${formatDateTime(receipt.confirmed_at)}</p>
+    <p><strong>Message:</strong> ${receipt.message || "N/A"}</p>
+  </div>
+</body>
+</html>`;
 }
 
 function buildReceiptHtml(receipt) {
@@ -903,11 +938,38 @@ async function submitDonationIntent() {
       setDonationStatus(`Donation failed: ${data.error || "Request failed."}`);
       return;
     }
+    state.lastDonationId = data.donation_id || "";
+    state.lastDonationReceipt = null;
     setDonationStatus(`Donation recorded: ${data.donation_id} | Receipt Ref: ${data.donation_reference || "-"}. Complete transfer and share your payment reference with admin.`);
     el.donationForm?.reset();
     if (isAdminMode()) await loadDonationAdminList();
   } catch {
     setDonationStatus("Donation request failed. Check server and retry.");
+  }
+}
+
+async function fetchDonationReceipt(donationId) {
+  const response = await fetch(`/api/donations/receipt?donation_id=${encodeURIComponent(donationId)}`);
+  const data = await response.json();
+  if (!response.ok) throw new Error(data.error || "Failed to fetch donation receipt.");
+  return data.receipt;
+}
+
+async function handleDownloadDonationReceipt() {
+  const donationId = state.lastDonationId || String(el.donationConfirmId?.value || "").trim();
+  if (!donationId) {
+    toast("No donation ID available yet. Submit donation first.", "warn");
+    return;
+  }
+  try {
+    const receipt = await fetchDonationReceipt(donationId);
+    state.lastDonationReceipt = receipt;
+    const safe = String(receipt.receipt_number || donationId).replace(/[^a-zA-Z0-9_-]/g, "_");
+    const html = buildDonationReceiptHtml(receipt);
+    downloadTextFile(`donation-receipt-${safe}.html`, html, "text/html;charset=utf-8");
+    toast("Donation receipt downloaded.", "ok");
+  } catch (err) {
+    toast(err.message || "Could not download donation receipt.", "warn");
   }
 }
 
@@ -1234,6 +1296,9 @@ function bindForms() {
   });
   el.downloadDonationsBtn?.addEventListener("click", () => {
     downloadDonationsCsv();
+  });
+  el.downloadDonationReceiptBtn?.addEventListener("click", () => {
+    handleDownloadDonationReceipt();
   });
   el.donationConfirmForm?.addEventListener("submit", (e) => {
     e.preventDefault();

@@ -229,6 +229,23 @@ function makeDonationReference(id) {
   return `CGH-DON-${y}${m}${day}-${suffix}`;
 }
 
+function donationToReceipt(donation) {
+  return {
+    receipt_number: donation.donation_reference || makeDonationReference(donation.id),
+    donation_id: donation.id,
+    name: donation.name,
+    email: donation.email,
+    phone: donation.phone,
+    amount_kes: donation.amount_kes,
+    method: donation.method,
+    status: donation.status,
+    reference_code: donation.reference_code || null,
+    created_at: donation.created_at,
+    confirmed_at: donation.confirmed_at || null,
+    message: donation.message || null
+  };
+}
+
 function isMpesaConfigured() {
   return Boolean(
     M_PESA.consumerKey &&
@@ -583,6 +600,19 @@ async function handleApi(req, res, urlObj) {
       count: donations.donations.length,
       donations: donations.donations.slice(0, limit)
     });
+  }
+
+  if (req.method === 'GET' && urlObj.pathname === '/api/donations/receipt') {
+    const donationId = String(urlObj.searchParams.get('donation_id') || '').trim();
+    if (!donationId) return sendJson(res, 400, { error: 'donation_id is required' });
+    const donations = await readDonations();
+    const item = donations.donations.find((x) => x.id === donationId);
+    if (!item) return sendJson(res, 404, { error: 'Donation not found' });
+    if (!item.donation_reference) {
+      item.donation_reference = makeDonationReference(item.id);
+      await writeDonations(donations);
+    }
+    return sendJson(res, 200, { ok: true, receipt: donationToReceipt(item) });
   }
 
   if (req.method === 'POST' && urlObj.pathname === '/api/donations/confirm') {
