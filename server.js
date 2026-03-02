@@ -1,0 +1,718 @@
+const fs = require('fs');
+const fsp = require('fs/promises');
+const http = require('http');
+const path = require('path');
+const { URL } = require('url');
+const dns = require('dns');
+
+const ROOT = process.cwd();
+const CONTENT_PATH = path.join(ROOT, 'data', 'content.json');
+const PAYMENTS_PATH = path.join(ROOT, 'data', 'payments.json');
+const ADMIN_KEY = process.env.ADMIN_KEY || 'change-me-admin-key';
+const PORT = Number(process.env.PORT || 8000);
+const HOST = process.env.HOST || '127.0.0.1';
+
+const M_PESA = {
+  baseUrl: process.env.M_PESA_BASE_URL || 'https://sandbox.safaricom.co.ke',
+  consumerKey: process.env.M_PESA_CONSUMER_KEY || '',
+  consumerSecret: process.env.M_PESA_CONSUMER_SECRET || '',
+  shortcode: process.env.M_PESA_SHORTCODE || '',
+  passkey: process.env.M_PESA_PASSKEY || '',
+  callbackUrl: process.env.M_PESA_CALLBACK_URL || ''
+};
+const MANUAL_PAYMENT = {
+  tillNumber: process.env.MANUAL_TILL_NUMBER || '',
+  payeeName: process.env.MANUAL_PAYEE_NAME || 'Cowboys Group Holdings'
+};
+const PAYMENT_POLICY = {
+  mpesaPendingTimeoutMin: Number(process.env.MPESA_PENDING_TIMEOUT_MIN || 20),
+  manualPendingTimeoutHours: Number(process.env.MANUAL_PENDING_TIMEOUT_HOURS || 48)
+};
+
+// Some networks resolve dual-stack hosts but only allow IPv4 egress reliably.
+dns.setDefaultResultOrder('ipv4first');
+
+const MIME_TYPES = {
+  '.html': 'text/html; charset=utf-8',
+  '.css': 'text/css; charset=utf-8',
+  '.js': 'application/javascript; charset=utf-8',
+  '.json': 'application/json; charset=utf-8',
+  '.svg': 'image/svg+xml',
+  '.png': 'image/png',
+  '.jpg': 'image/jpeg',
+  '.jpeg': 'image/jpeg',
+  '.webp': 'image/webp',
+  '.gif': 'image/gif',
+  '.mp4': 'video/mp4',
+  '.mov': 'video/quicktime'
+};
+
+function sendJson(res, status, payload) {
+  const body = JSON.stringify(payload);
+  res.writeHead(status, {
+    'Content-Type': 'application/json; charset=utf-8',
+    'Content-Length': Buffer.byteLength(body)
+  });
+  res.end(body);
+}
+
+function errInfo(err) {
+  return {
+    message: err?.message || 'Unknown error',
+    code: err?.code || err?.cause?.code || null,
+    cause: err?.cause?.message || null
+  };
+}
+
+async function readBody(req) {
+  return new Promise((resolve, reject) => {
+    let data = '';
+    req.on('data', (chunk) => {
+      data += chunk;
+      if (data.length > 12_000_000) reject(new Error('Payload too large'));
+    });
+    req.on('end', () => resolve(data));
+    req.on('error', reject);
+  });
+}
+
+async function readContent() {
+  const raw = await fsp.readFile(CONTENT_PATH, 'utf8');
+  return JSON.parse(raw);
+}
+
+async function writeContent(content) {
+  await fsp.writeFile(CONTENT_PATH, JSON.stringify(content, null, 2), 'utf8');
+}
+
+async function readPayments() {
+  try {
+    const raw = await fsp.readFile(PAYMENTS_PATH, 'utf8');
+    const parsed = JSON.parse(raw);
+    if (!Array.isArray(parsed.orders)) return { orders: [] };
+    return parsed;
+  } catch {
+    return { orders: [] };
+  }
+}
+
+async function writePayments(payments) {
+  await fsp.writeFile(PAYMENTS_PATH, JSON.stringify(payments, null, 2), 'utf8');
+}
+
+function isAuthed(req) {
+  return req.headers['x-admin-key'] === ADMIN_KEY;
+}
+
+function safeJoin(base, relativePath) {
+  const normalized = path.normalize(relativePath).replace(/^([/\\])+/, '');
+  const full = path.join(base, normalized);
+  if (!full.startsWith(base)) return null;
+  return full;
+}
+
+function isMpesaConfigured() {
+  return Boolean(
+    M_PESA.consumerKey &&
+    M_PESA.consumerSecret &&
+    M_PESA.shortcode &&
+    M_PESA.passkey &&
+    M_PESA.callbackUrl
+  );
+}
+
+function paymentMethods() {
+  return isMpesaConfigured() ? ['manual', 'mpesa'] : ['manual'];
+}
+
+function normalizeKenyanPhone(input) {
+  const raw = String(input || '').replace(/\s+/g, '').replace(/-/g, '');
+  if (!raw) return '';
+  if (raw.startsWith('+254')) return `254${raw.slice(4)}`;
+  if (raw.startsWith('254')) return raw;
+  if (raw.startsWith('07') && raw.length === 10) return `254${raw.slice(1)}`;
+  if (raw.startsWith('01') && raw.length === 10) return `254${raw.slice(1)}`;
+  return raw;
+}
+
+function mpesaTimestamp() {
+  const d = new Date();
+  const pad = (n) => String(n).padStart(2, '0');
+  return `${d.getFullYear()}${pad(d.getMonth() + 1)}${pad(d.getDate())}${pad(d.getHours())}${pad(d.getMinutes())}${pad(d.getSeconds())}`;
+}
+
+function sanitizeItem(rawItem) {
+  const name = String(rawItem?.name || 'Item').trim().slice(0, 140);
+  const rawKind = String(rawItem?.kind || 'product').trim().toLowerCase();
+  const kind = ['product', 'ticket', 'livestock'].includes(rawKind) ? rawKind : 'product';
+  const qty = Math.max(1, Number(rawItem?.qty || 1));
+  const unitPrice = Math.max(0, Math.round(Number(rawItem?.price || 0)));
+  return {
+    name: name || 'Item',
+    kind,
+    qty,
+    price: unitPrice,
+    total: unitPrice * qty
+  };
+}
+
+function laneFromKind(kind) {
+  if (kind === 'ticket') return 'tickets';
+  if (kind === 'livestock') return 'livestock';
+  return 'apparel';
+}
+
+function makeTicketCode(orderId, index) {
+  const base = String(orderId || '').replace(/^order-/, '').slice(-6);
+  const rnd = Math.random().toString(36).slice(2, 6).toUpperCase();
+  return `CGH-TKT-${base}-${index + 1}-${rnd}`;
+}
+
+function buildTicketsFromItems(orderId, items, status) {
+  const tickets = [];
+  items.forEach((item, index) => {
+    if (item.kind !== 'ticket') return;
+    tickets.push({
+      id: `${orderId}-ticket-${index + 1}`,
+      code: makeTicketCode(orderId, index),
+      event_name: item.name,
+      status: status === 'paid' ? 'issued' : 'pending_payment'
+    });
+  });
+  return tickets;
+}
+
+function makeReceiptNumber(order) {
+  const date = new Date(order.created_at || Date.now());
+  const y = String(date.getFullYear());
+  const m = String(date.getMonth() + 1).padStart(2, '0');
+  const d = String(date.getDate()).padStart(2, '0');
+  const suffix = String(order.id || '').replace(/^order-/, '').slice(-6);
+  return `CGH-${y}${m}${d}-${suffix}`;
+}
+
+function orderToReceipt(order) {
+  const items = Array.isArray(order.items) ? order.items : [];
+  const subtotal = items.reduce((sum, item) => sum + Number(item.total || item.price || 0), 0);
+  return {
+    receipt_number: makeReceiptNumber(order),
+    order_id: order.id,
+    created_at: order.created_at,
+    method: order.method,
+    status: order.status,
+    phone: order.phone,
+    amount_kes: order.amount_kes,
+    subtotal_kes: subtotal,
+    transaction_code: order.manual_transaction_code || null,
+    paid_at: order.paid_at || null,
+    items,
+    tickets: Array.isArray(order.tickets) ? order.tickets : []
+  };
+}
+
+function getMetadataValue(metadata, key) {
+  if (!Array.isArray(metadata)) return null;
+  const found = metadata.find((x) => x?.Name === key);
+  return found ? found.Value : null;
+}
+
+function isOrderExpired(order) {
+  const createdAtMs = Date.parse(order?.created_at || '');
+  if (!Number.isFinite(createdAtMs)) return false;
+  const ageMs = Date.now() - createdAtMs;
+  if (order.status === 'pending') {
+    return ageMs > PAYMENT_POLICY.mpesaPendingTimeoutMin * 60 * 1000;
+  }
+  if (order.status === 'awaiting_manual_confirmation') {
+    return ageMs > PAYMENT_POLICY.manualPendingTimeoutHours * 60 * 60 * 1000;
+  }
+  return false;
+}
+
+function applyAutoExpiry(order) {
+  if (!order || !isOrderExpired(order)) return false;
+  order.status = 'expired';
+  if (order.method === 'mpesa') {
+    order.result_desc = `Payment window expired after ${PAYMENT_POLICY.mpesaPendingTimeoutMin} minutes.`;
+  } else {
+    order.result_desc = `Manual payment window expired after ${PAYMENT_POLICY.manualPendingTimeoutHours} hours.`;
+  }
+  return true;
+}
+
+function applyExpiryToAllOrders(payments) {
+  let changed = false;
+  for (const order of payments.orders || []) {
+    changed = applyAutoExpiry(order) || changed;
+  }
+  return changed;
+}
+
+async function getMpesaAccessToken() {
+  const credentials = Buffer.from(`${M_PESA.consumerKey}:${M_PESA.consumerSecret}`).toString('base64');
+  let response;
+  try {
+    response = await fetch(`${M_PESA.baseUrl}/oauth/v1/generate?grant_type=client_credentials`, {
+      headers: { Authorization: `Basic ${credentials}` }
+    });
+  } catch (err) {
+    const info = errInfo(err);
+    throw new Error(`M-Pesa OAuth network failure: ${JSON.stringify(info)}`);
+  }
+
+  if (!response.ok) {
+    const text = await response.text();
+    throw new Error(`M-Pesa OAuth failed: ${response.status} ${text}`);
+  }
+
+  const data = await response.json();
+  if (!data.access_token) throw new Error('No M-Pesa access token returned');
+  return data.access_token;
+}
+
+async function initiateMpesaStk({ amountKes, phone, orderId }) {
+  const token = await getMpesaAccessToken();
+  const timestamp = mpesaTimestamp();
+  const password = Buffer.from(`${M_PESA.shortcode}${M_PESA.passkey}${timestamp}`).toString('base64');
+  const phoneNumber = normalizeKenyanPhone(phone);
+
+  const payload = {
+    BusinessShortCode: M_PESA.shortcode,
+    Password: password,
+    Timestamp: timestamp,
+    TransactionType: 'CustomerPayBillOnline',
+    Amount: Math.max(1, Math.round(Number(amountKes))),
+    PartyA: phoneNumber,
+    PartyB: M_PESA.shortcode,
+    PhoneNumber: phoneNumber,
+    CallBackURL: M_PESA.callbackUrl,
+    AccountReference: orderId,
+    TransactionDesc: 'Cowboys Group Holdings Checkout'
+  };
+
+  let response;
+  try {
+    response = await fetch(`${M_PESA.baseUrl}/mpesa/stkpush/v1/processrequest`, {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${token}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(payload)
+    });
+  } catch (err) {
+    const info = errInfo(err);
+    throw new Error(`M-Pesa STK network failure: ${JSON.stringify(info)}`);
+  }
+
+  const data = await response.json().catch(() => ({}));
+  if (!response.ok) {
+    throw new Error(`M-Pesa STK failed: ${response.status} ${JSON.stringify(data)}`);
+  }
+
+  if (data.ResponseCode !== '0') {
+    throw new Error(`M-Pesa STK rejected: ${JSON.stringify(data)}`);
+  }
+
+  return data;
+}
+
+async function handleApi(req, res, urlObj) {
+  if (req.method === 'GET' && urlObj.pathname === '/api/health') {
+    return sendJson(res, 200, { ok: true, now: new Date().toISOString() });
+  }
+
+  if (req.method === 'GET' && urlObj.pathname === '/api/content') {
+    try {
+      const content = await readContent();
+      return sendJson(res, 200, content);
+    } catch (err) {
+      return sendJson(res, 500, { error: 'Failed to read content', detail: err.message });
+    }
+  }
+
+  if (req.method === 'PUT' && urlObj.pathname === '/api/content') {
+    if (!isAuthed(req)) return sendJson(res, 401, { error: 'Unauthorized' });
+
+    try {
+      const raw = await readBody(req);
+      const next = JSON.parse(raw);
+      await writeContent(next);
+      return sendJson(res, 200, { ok: true });
+    } catch (err) {
+      return sendJson(res, 400, { error: 'Invalid content payload', detail: err.message });
+    }
+  }
+
+  if (req.method === 'GET' && urlObj.pathname === '/api/payments/config') {
+    return sendJson(res, 200, {
+      mpesa_enabled: isMpesaConfigured(),
+      methods: paymentMethods(),
+      manual: {
+        enabled: true,
+        till_number: MANUAL_PAYMENT.tillNumber,
+        payee_name: MANUAL_PAYMENT.payeeName
+      }
+    });
+  }
+
+  if (req.method === 'POST' && urlObj.pathname === '/api/payments/checkout') {
+    try {
+      const raw = await readBody(req);
+      const payload = JSON.parse(raw);
+
+      const method = String(payload.method || 'manual').toLowerCase();
+      const amountKes = Number(payload.amount_kes || 0);
+      const phone = normalizeKenyanPhone(payload.phone || '');
+      const items = (Array.isArray(payload.items) ? payload.items : []).map(sanitizeItem);
+      const orderId = `order-${Date.now()}`;
+      const lanes = [...new Set(items.map((item) => laneFromKind(item.kind)))];
+
+      if (!Number.isFinite(amountKes) || amountKes < 1) {
+        return sendJson(res, 400, { error: 'Amount must be at least KES 1.' });
+      }
+      if (!items.length) {
+        return sendJson(res, 400, { error: 'At least one item is required.' });
+      }
+      if (lanes.length > 1) {
+        return sendJson(res, 400, {
+          error: 'Do not mix product types in one order. Checkout apparel, tickets, and livestock separately.'
+        });
+      }
+      if (!phone || !/^254\d{9}$/.test(phone)) {
+        return sendJson(res, 400, { error: 'Use a valid Kenyan phone format like 254712345678.' });
+      }
+      if (!paymentMethods().includes(method)) {
+        return sendJson(res, 400, { error: 'Invalid payment method.' });
+      }
+      if (method === 'mpesa' && !isMpesaConfigured()) {
+        return sendJson(res, 503, { error: 'M-Pesa is not configured on server.' });
+      }
+
+      const payments = await readPayments();
+      if (applyExpiryToAllOrders(payments)) {
+        await writePayments(payments);
+      }
+      const order = {
+        id: orderId,
+        method,
+        status: method === 'manual' ? 'awaiting_manual_confirmation' : 'pending',
+        amount_kes: Math.round(amountKes),
+        phone,
+        items,
+        lane: lanes[0],
+        created_at: new Date().toISOString(),
+        mpesa_checkout_request_id: null,
+        mpesa_merchant_request_id: null,
+        result_code: null,
+        result_desc: null,
+        paid_at: null,
+        manual_transaction_code: null,
+        tickets: []
+      };
+      order.tickets = buildTicketsFromItems(order.id, order.items, order.status);
+
+      payments.orders.unshift(order);
+      await writePayments(payments);
+
+      if (method === 'manual') {
+        const till = MANUAL_PAYMENT.tillNumber || 'your till number';
+        order.result_desc = `Manual payment selected. Send KES ${order.amount_kes} to Till ${till}, then share M-Pesa transaction code with support for confirmation.`;
+        await writePayments(payments);
+        return sendJson(res, 200, {
+          ok: true,
+          order_id: orderId,
+          status: order.status,
+          message: order.result_desc,
+          manual: {
+            till_number: MANUAL_PAYMENT.tillNumber,
+            payee_name: MANUAL_PAYMENT.payeeName
+          }
+        });
+      }
+
+      const stk = await initiateMpesaStk({ amountKes, phone, orderId });
+
+      order.mpesa_checkout_request_id = stk.CheckoutRequestID || null;
+      order.mpesa_merchant_request_id = stk.MerchantRequestID || null;
+      order.result_desc = stk.CustomerMessage || stk.ResponseDescription || 'STK sent';
+      await writePayments(payments);
+
+      return sendJson(res, 200, {
+        ok: true,
+        order_id: orderId,
+        status: order.status,
+        message: order.result_desc
+      });
+    } catch (err) {
+      return sendJson(res, 500, { error: 'Checkout initiation failed', detail: err.message });
+    }
+  }
+
+  if (req.method === 'GET' && urlObj.pathname === '/api/payments/status') {
+    const orderId = String(urlObj.searchParams.get('order_id') || '').trim();
+    if (!orderId) return sendJson(res, 400, { error: 'order_id is required' });
+
+    const payments = await readPayments();
+    if (applyExpiryToAllOrders(payments)) {
+      await writePayments(payments);
+    }
+    const order = payments.orders.find((x) => x.id === orderId);
+    if (!order) return sendJson(res, 404, { error: 'Order not found' });
+
+    return sendJson(res, 200, {
+      ok: true,
+      order_id: order.id,
+      method: order.method,
+      lane: order.lane || null,
+      status: order.status,
+      amount_kes: order.amount_kes,
+      result_desc: order.result_desc,
+      paid_at: order.paid_at
+    });
+  }
+
+  if (req.method === 'GET' && urlObj.pathname === '/api/payments/receipt') {
+    const orderId = String(urlObj.searchParams.get('order_id') || '').trim();
+    if (!orderId) return sendJson(res, 400, { error: 'order_id is required' });
+
+    const payments = await readPayments();
+    if (applyExpiryToAllOrders(payments)) {
+      await writePayments(payments);
+    }
+    const order = payments.orders.find((x) => x.id === orderId);
+    if (!order) return sendJson(res, 404, { error: 'Order not found' });
+    if (order.status !== 'paid') {
+      return sendJson(res, 409, { error: 'Payment not yet confirmed. Receipt is available after payment confirmation.' });
+    }
+
+    return sendJson(res, 200, { ok: true, receipt: orderToReceipt(order) });
+  }
+
+  if (req.method === 'POST' && urlObj.pathname === '/api/payments/confirm-manual') {
+    if (!isAuthed(req)) return sendJson(res, 401, { error: 'Unauthorized' });
+    try {
+      const raw = await readBody(req);
+      const payload = JSON.parse(raw || '{}');
+      const orderId = String(payload.order_id || '').trim();
+      const transactionCode = String(payload.transaction_code || '').trim().toUpperCase();
+      if (!orderId) return sendJson(res, 400, { error: 'order_id is required.' });
+      if (!transactionCode) return sendJson(res, 400, { error: 'transaction_code is required.' });
+
+      const payments = await readPayments();
+      if (applyExpiryToAllOrders(payments)) {
+        await writePayments(payments);
+      }
+      const order = payments.orders.find((x) => x.id === orderId);
+      if (!order) return sendJson(res, 404, { error: 'Order not found.' });
+      if (order.method !== 'manual') return sendJson(res, 400, { error: 'Order is not manual payment.' });
+      if (order.status === 'paid') return sendJson(res, 409, { error: 'Order is already marked paid.' });
+      if (order.status === 'expired') return sendJson(res, 409, { error: 'Order has expired and cannot be confirmed.' });
+      if (order.status === 'failed') return sendJson(res, 409, { error: 'Order is failed and cannot be confirmed.' });
+
+      order.status = 'paid';
+      order.paid_at = new Date().toISOString();
+      order.manual_transaction_code = transactionCode;
+      order.result_desc = `Manual payment confirmed. Transaction ${transactionCode}.`;
+      if (Array.isArray(order.tickets)) {
+        order.tickets = order.tickets.map((t) => ({ ...t, status: 'issued' }));
+      }
+      await writePayments(payments);
+
+      return sendJson(res, 200, { ok: true, order_id: order.id, status: order.status });
+    } catch (err) {
+      return sendJson(res, 400, { error: 'Invalid confirmation payload', detail: err.message });
+    }
+  }
+
+  if (req.method === 'GET' && urlObj.pathname === '/api/payments/orders') {
+    if (!isAuthed(req)) return sendJson(res, 401, { error: 'Unauthorized' });
+    const laneFilter = String(urlObj.searchParams.get('lane') || '').trim();
+    const statusFilter = String(urlObj.searchParams.get('status') || '').trim();
+    const limit = Math.max(1, Math.min(200, Number(urlObj.searchParams.get('limit') || 50)));
+
+    const payments = await readPayments();
+    if (applyExpiryToAllOrders(payments)) {
+      await writePayments(payments);
+    }
+
+    let orders = Array.isArray(payments.orders) ? payments.orders.slice() : [];
+    if (laneFilter) orders = orders.filter((x) => String(x.lane || '') === laneFilter);
+    if (statusFilter) orders = orders.filter((x) => String(x.status || '') === statusFilter);
+    orders = orders.slice(0, limit);
+
+    return sendJson(res, 200, {
+      ok: true,
+      count: orders.length,
+      orders: orders.map((o) => ({
+        id: o.id,
+        lane: o.lane || null,
+        method: o.method,
+        status: o.status,
+        amount_kes: o.amount_kes,
+        phone: o.phone,
+        created_at: o.created_at,
+        paid_at: o.paid_at,
+        result_desc: o.result_desc,
+        transaction_code: o.manual_transaction_code || null
+      }))
+    });
+  }
+
+  if (req.method === 'POST' && urlObj.pathname === '/api/payments/mpesa/callback') {
+    try {
+      const raw = await readBody(req);
+      const payload = JSON.parse(raw || '{}');
+      const callback = payload?.Body?.stkCallback || {};
+
+      const checkoutRequestId = callback.CheckoutRequestID;
+      const resultCode = Number(callback.ResultCode);
+      const resultDesc = String(callback.ResultDesc || '');
+      if (!checkoutRequestId) {
+        return sendJson(res, 200, { ResultCode: 0, ResultDesc: 'Accepted' });
+      }
+
+      const payments = await readPayments();
+      const order = payments.orders.find((x) => x.mpesa_checkout_request_id === checkoutRequestId);
+      if (!order) {
+        return sendJson(res, 200, { ResultCode: 0, ResultDesc: 'Accepted' });
+      }
+      if (order.method !== 'mpesa') {
+        return sendJson(res, 200, { ResultCode: 0, ResultDesc: 'Accepted' });
+      }
+      if (order.status === 'paid' && resultCode === 0) {
+        return sendJson(res, 200, { ResultCode: 0, ResultDesc: 'Accepted' });
+      }
+      if (applyAutoExpiry(order)) {
+        await writePayments(payments);
+        return sendJson(res, 200, { ResultCode: 0, ResultDesc: 'Accepted' });
+      }
+
+      order.result_code = resultCode;
+      order.result_desc = resultDesc;
+      order.callback_received_at = new Date().toISOString();
+
+      if (resultCode === 0) {
+        const metadata = callback.CallbackMetadata?.Item || [];
+        const amountValue = Number(getMetadataValue(metadata, 'Amount'));
+        const phoneValue = normalizeKenyanPhone(getMetadataValue(metadata, 'PhoneNumber') || '');
+        const mpesaCode = String(getMetadataValue(metadata, 'MpesaReceiptNumber') || '').trim().toUpperCase();
+        const amountMatches = Number.isFinite(amountValue) && Number(amountValue) === Number(order.amount_kes);
+        const phoneMatches = !phoneValue || phoneValue === order.phone;
+
+        if (!amountMatches || !phoneMatches) {
+          order.status = 'flagged';
+          order.result_desc = 'Payment callback mismatch detected. Order flagged for review.';
+        } else {
+          order.status = 'paid';
+          order.paid_at = new Date().toISOString();
+          order.manual_transaction_code = mpesaCode || order.manual_transaction_code || null;
+          if (Array.isArray(order.tickets)) {
+            order.tickets = order.tickets.map((t) => ({ ...t, status: 'issued' }));
+          }
+        }
+      } else {
+        order.status = 'failed';
+      }
+      await writePayments(payments);
+
+      return sendJson(res, 200, { ResultCode: 0, ResultDesc: 'Accepted' });
+    } catch (err) {
+      return sendJson(res, 400, { ResultCode: 1, ResultDesc: `Callback parse failed: ${err.message}` });
+    }
+  }
+
+  if (req.method === 'POST' && urlObj.pathname === '/api/media') {
+    if (!isAuthed(req)) return sendJson(res, 401, { error: 'Unauthorized' });
+
+    try {
+      const raw = await readBody(req);
+      const payload = JSON.parse(raw);
+      const fileName = String(payload.filename || '').trim();
+      const base64Data = String(payload.base64 || '').trim();
+      const folder = String(payload.folder || 'outfits').trim();
+
+      if (!fileName || !base64Data) {
+        return sendJson(res, 400, { error: 'filename and base64 are required' });
+      }
+
+      const targetFolder = safeJoin(path.join(ROOT, 'assets'), folder);
+      if (!targetFolder) return sendJson(res, 400, { error: 'Invalid folder path' });
+
+      await fsp.mkdir(targetFolder, { recursive: true });
+
+      const safeName = fileName.replace(/[^a-zA-Z0-9._-]/g, '_');
+      const fullPath = safeJoin(targetFolder, safeName);
+      if (!fullPath) return sendJson(res, 400, { error: 'Invalid file name' });
+
+      const noPrefix = base64Data.includes(',') ? base64Data.split(',').pop() : base64Data;
+      const buffer = Buffer.from(noPrefix, 'base64');
+      await fsp.writeFile(fullPath, buffer);
+
+      const rel = path.relative(ROOT, fullPath).replaceAll(path.sep, '/');
+      return sendJson(res, 200, { ok: true, path: rel });
+    } catch (err) {
+      return sendJson(res, 400, { error: 'Invalid media payload', detail: err.message });
+    }
+  }
+
+  return false;
+}
+
+function serveFile(res, filePath) {
+  const ext = path.extname(filePath).toLowerCase();
+  const contentType = MIME_TYPES[ext] || 'application/octet-stream';
+  const stream = fs.createReadStream(filePath);
+
+  stream.on('open', () => {
+    res.writeHead(200, { 'Content-Type': contentType });
+  });
+
+  stream.on('error', () => {
+    res.writeHead(404, { 'Content-Type': 'text/plain; charset=utf-8' });
+    res.end('Not found');
+  });
+
+  stream.pipe(res);
+}
+
+const server = http.createServer(async (req, res) => {
+  const urlObj = new URL(req.url || '/', `http://${req.headers.host}`);
+
+  if (urlObj.pathname.startsWith('/api/')) {
+    const handled = await handleApi(req, res, urlObj);
+    if (handled !== false) return;
+  }
+
+  const requestPath = urlObj.pathname === '/' ? '/index.html' : urlObj.pathname;
+  const target = safeJoin(ROOT, requestPath);
+
+  if (!target) {
+    res.writeHead(400, { 'Content-Type': 'text/plain; charset=utf-8' });
+    res.end('Bad request');
+    return;
+  }
+
+  try {
+    const stat = await fsp.stat(target);
+    if (stat.isDirectory()) {
+      return serveFile(res, path.join(target, 'index.html'));
+    }
+    return serveFile(res, target);
+  } catch {
+    res.writeHead(404, { 'Content-Type': 'text/plain; charset=utf-8' });
+    res.end('Not found');
+  }
+});
+
+server.listen(PORT, HOST, async () => {
+  await fsp.mkdir(path.join(ROOT, 'data'), { recursive: true });
+  try {
+    await fsp.access(PAYMENTS_PATH);
+  } catch {
+    await writePayments({ orders: [] });
+  }
+
+  console.log(`Server running at http://${HOST}:${PORT}`);
+  console.log('Set ADMIN_KEY and M-PESA env vars before production use.');
+});

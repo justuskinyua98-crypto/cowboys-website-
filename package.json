@@ -1,0 +1,9 @@
+{
+  "name": "cowboys-group-holdings-site",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Cowboys Group Holdings website with lightweight backend",
+  "scripts": {
+    "start": "node server.js"
+  }
+}
