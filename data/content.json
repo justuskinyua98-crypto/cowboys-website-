@@ -39,24 +39,24 @@
   "team": [
     {
       "id": "team-1",
-      "name": "Leadership Desk",
-      "role": "Holding Company Coordination",
-      "photo": "assets/placeholders/team.svg",
-      "bio": "Coordinating ventures, partnerships, and community programs across the ecosystem."
+      "name": "Justus Kinyua",
+      "role": "Chief Executive Officer (CEO)",
+      "photo": "assets/team/justus-kinyua.jpeg",
+      "bio": "Leading Cowboys Group Holdings strategy, partnerships, and growth."
     },
     {
       "id": "team-2",
-      "name": "Events & Experience Team",
-      "role": "Events, Tickets, Artist Bookings",
-      "photo": "assets/placeholders/team.svg",
-      "bio": "Running western-themed events, festivals, and family experiences with clear operations."
+      "name": "Teddy Otieno",
+      "role": "Chief Financial Officer (CFO)",
+      "photo": "assets/team/teddy-otieno.jpg",
+      "bio": "Overseeing financial planning, controls, and sustainable business performance."
     },
     {
       "id": "team-3",
-      "name": "Commerce & Marketplace Team",
-      "role": "Apparel, Livestock, Decor",
-      "photo": "assets/placeholders/team.svg",
-      "bio": "Managing stock quality, product listings, and customer order fulfillment."
+      "name": "Aaron Sang",
+      "role": "Chief Marketing Officer (CMO)",
+      "photo": "assets/team/aaron-sang.jpg",
+      "bio": "Driving brand, campaigns, and audience growth across all company ventures."
     }
   ],
   "videos": [

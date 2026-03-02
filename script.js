@@ -503,7 +503,7 @@ function renderTeam() {
     const row = document.createElement("div");
     row.className = "team-row";
     row.innerHTML = `
-      ${p.photo ? `<img class="outfit-image" src="${p.photo}" alt="${p.name}" loading="lazy" onerror="this.src='${PLACEHOLDER_IMAGE}'">` : ""}
+      ${p.photo ? `<img class="team-photo" src="${p.photo}" alt="${p.name}" loading="lazy" onerror="this.src='${PLACEHOLDER_IMAGE}'">` : ""}
       <strong>${p.name}</strong><br>${p.role || ""}<br>${p.bio || ""}
       <div class="outfit-actions top-space">
         <button class="delete-outfit delete-team-item" type="button" data-id="${p.id}">Remove</button>

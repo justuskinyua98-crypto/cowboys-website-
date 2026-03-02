@@ -538,6 +538,22 @@ h3 {
   background: #fffef9;
 }
 
+.team-row {
+  display: grid;
+  gap: 0.6rem;
+}
+
+.team-photo {
+  display: block;
+  width: 100%;
+  max-width: 280px;
+  aspect-ratio: 3 / 4;
+  object-fit: cover;
+  object-position: top center;
+  border-radius: 10px;
+  background: linear-gradient(145deg, #f2e0bf, #ebd0a3);
+}
+
 .social-link {
   font-weight: 800;
   text-decoration: none;
@@ -670,6 +686,17 @@ textarea {
 
 a {
   color: var(--rust);
+}
+
+@media (min-width: 981px) {
+  .team-row {
+    grid-template-columns: 220px 1fr;
+    align-items: start;
+  }
+
+  .team-photo {
+    max-width: 220px;
+  }
 }
 
 @media (max-width: 980px) {
