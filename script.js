@@ -156,6 +156,20 @@ function adminKey() {
   return (el.adminKey?.value || el.adminKeyFoundation?.value || "").trim();
 }
 
+function setAdminKeyEverywhere(value) {
+  const key = String(value || "").trim();
+  if (el.adminKey) el.adminKey.value = key;
+  if (el.adminKeyFoundation) el.adminKeyFoundation.value = key;
+  return key;
+}
+
+function ensureAdminKey(actionLabel = "continue") {
+  const current = adminKey();
+  if (current) return current;
+  const entered = window.prompt(`Enter admin key to ${actionLabel}:`) || "";
+  return setAdminKeyEverywhere(entered);
+}
+
 function notify(msg) {
   alert(msg);
 }
@@ -169,7 +183,7 @@ function adminOnly(html) {
 }
 
 function requireAdminForEdit(actionLabel = "edit content") {
-  if (isAdminMode()) return true;
+  if (adminKey()) return true;
   toast(`Enter admin key to ${actionLabel}.`, "warn");
   return false;
 }
@@ -1058,7 +1072,11 @@ async function loadDonationAdminList() {
 }
 
 async function confirmDonationFromAdminForm() {
-  if (!requireAdminForEdit("confirm donation")) return;
+  const key = ensureAdminKey("confirm donation");
+  if (!key) {
+    toast("Enter admin key to confirm donation.", "warn");
+    return;
+  }
   const donationId = String(el.donationConfirmId?.value || "").trim();
   const referenceCode = String(el.donationConfirmRef?.value || "").trim();
   if (!donationId || !referenceCode) {
@@ -1070,7 +1088,7 @@ async function confirmDonationFromAdminForm() {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        "x-admin-key": adminKey()
+        "x-admin-key": key
       },
       body: JSON.stringify({
         donation_id: donationId,
@@ -1091,7 +1109,11 @@ async function confirmDonationFromAdminForm() {
 }
 
 async function confirmDonationById(donationId) {
-  if (!requireAdminForEdit("confirm donation")) return;
+  const key = ensureAdminKey("confirm donation");
+  if (!key) {
+    toast("Enter admin key to confirm donation.", "warn");
+    return;
+  }
   const referenceCode = String(window.prompt("Enter M-Pesa/Bank reference code:") || "").trim();
   if (!referenceCode) {
     toast("Reference code is required.", "warn");
@@ -1102,7 +1124,7 @@ async function confirmDonationById(donationId) {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        "x-admin-key": adminKey()
+        "x-admin-key": key
       },
       body: JSON.stringify({
         donation_id: donationId,
