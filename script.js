@@ -68,6 +68,12 @@ const state = {
   lastDonationReceipt: null
 };
 
+const isLowPowerDevice = (() => {
+  const cores = Number(navigator.hardwareConcurrency || 0);
+  const mem = Number(navigator.deviceMemory || 0);
+  return (cores > 0 && cores <= 4) || (mem > 0 && mem <= 4);
+})();
+
 const el = {
   year: document.getElementById("year"),
   navToggle: document.querySelector(".menu-toggle"),
@@ -172,6 +178,14 @@ function formatKes(value) {
 
 function uid(prefix) {
   return `${prefix}-${Date.now()}-${Math.floor(Math.random() * 1e6)}`;
+}
+
+function debounce(fn, delay = 160) {
+  let timer = null;
+  return (...args) => {
+    window.clearTimeout(timer);
+    timer = window.setTimeout(() => fn(...args), delay);
+  };
 }
 
 function adminKey() {
@@ -817,8 +831,16 @@ function renderVideos() {
   state.content.videos.forEach((v) => {
     const card = document.createElement("article");
     card.className = "video-card";
+    if (isLowPowerDevice) {
+      card.innerHTML = `
+        ${maybeImage(v.poster || PLACEHOLDER_IMAGE, v.title || "Video preview")}
+        <div class="video-body">${v.title || "Untitled Video"} <span class="fine">(Lite preview mode)</span></div>
+      `;
+      el.videoGallery.appendChild(card);
+      return;
+    }
     card.innerHTML = `
-      ${v.src ? `<video autoplay loop muted playsinline preload="metadata" controlslist="nodownload noplaybackrate nofullscreen" disablepictureinpicture ${v.poster ? `poster="${mediaSrc(v.poster)}"` : ""}><source src="${mediaSrc(v.src)}"></video>` : ""}
+      ${v.src ? `<video loop muted playsinline preload="none" controlslist="nodownload noplaybackrate nofullscreen" disablepictureinpicture data-src="${mediaSrc(v.src)}" ${v.poster ? `poster="${mediaSrc(v.poster)}"` : ""}></video>` : ""}
       <div class="video-body">${v.title || "Untitled Video"}</div>
     `;
     const video = card.querySelector("video");
@@ -834,7 +856,31 @@ function renderVideos() {
           video.volume = 0;
         }
       });
-      video.play().catch(() => {});
+      const sourceUrl = video.dataset.src;
+      const attachSource = () => {
+        if (!sourceUrl) return;
+        if (!video.querySelector("source")) {
+          const source = document.createElement("source");
+          source.src = sourceUrl;
+          video.appendChild(source);
+          video.load();
+        }
+      };
+      if ("IntersectionObserver" in window) {
+        const observer = new IntersectionObserver((entries) => {
+          entries.forEach((entry) => {
+            if (entry.isIntersecting) {
+              attachSource();
+              video.play().catch(() => {});
+            } else {
+              video.pause();
+            }
+          });
+        }, { threshold: 0.35 });
+        observer.observe(video);
+      } else {
+        attachSource();
+      }
     }
     el.videoGallery.appendChild(card);
   });
@@ -1748,9 +1794,10 @@ function bindForms() {
     e.preventDefault();
     saveTrackingSettings();
   });
-  el.globalSearchInput?.addEventListener("input", () => {
-    renderSearchResults(el.globalSearchInput.value);
-  });
+  const onSearchInput = debounce(() => {
+    renderSearchResults(el.globalSearchInput?.value || "");
+  }, 140);
+  el.globalSearchInput?.addEventListener("input", onSearchInput);
   el.globalSearchForm?.addEventListener("submit", (e) => {
     e.preventDefault();
     const query = String(el.globalSearchInput?.value || "").trim();
@@ -1944,6 +1991,9 @@ function setupRevealAnimations() {
 
 (async function boot() {
   if (el.year) el.year.textContent = String(new Date().getFullYear());
+  if (isLowPowerDevice) {
+    document.body.classList.add("lite-mode");
+  }
   setupNav();
   await loadContent();
   await loadPaymentConfig();

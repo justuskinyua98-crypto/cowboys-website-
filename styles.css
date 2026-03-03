@@ -41,6 +41,11 @@ body {
   margin-inline: auto;
 }
 
+.section {
+  content-visibility: auto;
+  contain-intrinsic-size: 1px 760px;
+}
+
 .social-strip {
   width: min(1120px, 92vw);
   margin: 0.6rem auto 0;
@@ -794,6 +799,25 @@ h3 {
 .outfit-card:hover {
   transform: translateY(-4px);
   box-shadow: 0 18px 34px rgba(18, 11, 7, 0.16);
+}
+
+body.lite-mode .reveal {
+  opacity: 1;
+  transform: none;
+  transition: none;
+}
+
+body.lite-mode .showcase-tile,
+body.lite-mode .product-card,
+body.lite-mode .video-card,
+body.lite-mode .outfit-card,
+body.lite-mode .btn {
+  animation: none !important;
+  transition: none !important;
+}
+
+body.lite-mode .showcase-tile img {
+  transform: none;
 }
 
 .product-card label,
