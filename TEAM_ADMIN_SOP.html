@@ -1,0 +1,96 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Team Admin SOP | Cowboys Group Holdings</title>
+    <style>
+      body { font-family: Arial, sans-serif; margin: 0; background: #f8fafc; color: #1f2937; }
+      .wrap { max-width: 980px; margin: 0 auto; padding: 20px; }
+      .card { background: #fff; border: 1px solid #d1d5db; border-radius: 12px; padding: 16px; margin-bottom: 14px; }
+      h1, h2, h3 { margin: 0 0 10px; }
+      p, li { line-height: 1.5; }
+      .muted { color: #475569; }
+      .warn { background: #fff7ed; border: 1px solid #fdba74; border-radius: 10px; padding: 10px; }
+      .ok { background: #ecfdf5; border: 1px solid #86efac; border-radius: 10px; padding: 10px; }
+      .steps li { margin-bottom: 8px; }
+      .btn { display: inline-block; text-decoration: none; background: #111827; color: #fff; border-radius: 8px; padding: 9px 12px; font-weight: 700; }
+      .top { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 12px; }
+      @media print { .top { display: none; } .card { page-break-inside: avoid; } }
+    </style>
+  </head>
+  <body>
+    <main class="wrap">
+      <div class="top">
+        <a class="btn" href="index.html">Back To Website</a>
+        <a class="btn" href="#" onclick="window.print();return false;">Print SOP</a>
+      </div>
+
+      <section class="card">
+        <h1>Team Admin SOP (Simple Operations)</h1>
+        <p class="muted">Use this page as the daily checklist for updates, donations, and publishing workflow.</p>
+        <div class="warn">
+          <strong>Safety Rule:</strong> Update through admin forms only. Do not edit code files unless approved by leadership.
+        </div>
+      </section>
+
+      <section class="card">
+        <h2>Daily Content Workflow (10-20 mins)</h2>
+        <ol class="steps">
+          <li>Open website and enter <strong>Admin Key</strong>.</li>
+          <li>Upload photos/videos in <strong>Media & Team → Upload File To Server</strong>.</li>
+          <li>Add new items in each manager:
+            <br />Outfits, Events, Livestock, Decor, Team, Social Links.
+          </li>
+          <li>Click matching <strong>Save ... To Backend</strong> button after each section.</li>
+          <li>Refresh page and confirm cards, prices, and images are correct.</li>
+        </ol>
+      </section>
+
+      <section class="card">
+        <h2>Donation SOP</h2>
+        <ol class="steps">
+          <li>Donor submits donation intent in Foundation section.</li>
+          <li>Admin opens <strong>Recent Donations (Admin)</strong>.</li>
+          <li>Copy donation ID and verify payment received (Till/Bank).</li>
+          <li>Click confirm and enter payment reference code.</li>
+          <li>Ask donor to download receipt from website.</li>
+          <li>Weekly: download donations CSV and keep finance record backup.</li>
+        </ol>
+        <div class="ok">
+          Never share donor private data publicly. Keep donation records secure.
+        </div>
+      </section>
+
+      <section class="card">
+        <h2>Fast Publishing Checklist</h2>
+        <ul>
+          <li>Photos clear and properly cropped</li>
+          <li>Event dates correct</li>
+          <li>Ticket and product prices verified</li>
+          <li>WhatsApp/contact links working</li>
+          <li>Search bar can find new items</li>
+        </ul>
+      </section>
+
+      <section class="card">
+        <h2>Weekly Growth Tasks</h2>
+        <ol class="steps">
+          <li>Export subscriber CSV.</li>
+          <li>Use Campaign Builder for outfit drop and event update email.</li>
+          <li>Post same campaign on social channels.</li>
+          <li>Review most requested items and restock priority.</li>
+        </ol>
+      </section>
+
+      <section class="card">
+        <h2>Escalation Rules</h2>
+        <ul>
+          <li>If payment confirmation fails: log ID + reference and notify admin lead.</li>
+          <li>If wrong image or price is published: correct immediately and resave to backend.</li>
+          <li>If site becomes slow/unreachable: restart server and notify technical lead.</li>
+        </ul>
+      </section>
+    </main>
+  </body>
+</html>
