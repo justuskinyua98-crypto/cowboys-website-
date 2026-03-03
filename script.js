@@ -159,7 +159,11 @@ const el = {
   trackingForm: document.getElementById("tracking-form"),
   ga4Id: document.getElementById("ga4-id"),
   metaPixelId: document.getElementById("meta-pixel-id"),
-  trackingStatus: document.getElementById("tracking-status")
+  trackingStatus: document.getElementById("tracking-status"),
+  quickCheckoutPanels: Array.from(document.querySelectorAll(".quick-checkout-panel")),
+  globalSearchForm: document.getElementById("global-search-form"),
+  globalSearchInput: document.getElementById("global-search-input"),
+  globalSearchResults: document.getElementById("global-search-results")
 };
 
 function formatKes(value) {
@@ -235,6 +239,12 @@ function mediaSrc(path) {
 
 function setPaymentStatus(msg) {
   if (el.paymentStatus) el.paymentStatus.textContent = msg;
+  if (Array.isArray(el.quickCheckoutPanels)) {
+    el.quickCheckoutPanels.forEach((panel) => {
+      const statusNode = panel.querySelector(".quick-payment-status");
+      if (statusNode) statusNode.textContent = msg;
+    });
+  }
 }
 
 function setPaymentHint(msg) {
@@ -299,6 +309,7 @@ function saveTrackingSettings() {
 function laneFromKind(kind) {
   if (kind === "ticket") return "Tickets";
   if (kind === "livestock") return "Livestock";
+  if (kind === "bbq") return "BBQ";
   return "Apparel";
 }
 
@@ -524,6 +535,7 @@ function renderCart() {
     el.cartItems.appendChild(emptyNode("Cart is empty."));
     el.cartTotal.textContent = "KES 0";
     el.cartCount.textContent = "0";
+    renderQuickCheckoutPanels();
     return;
   }
 
@@ -538,6 +550,148 @@ function renderCart() {
   });
   el.cartTotal.textContent = formatKes(total);
   el.cartCount.textContent = String(state.cart.length);
+  renderQuickCheckoutPanels();
+}
+
+function syncPaymentInputs(methodValue, phoneValue, sourcePanel = null) {
+  const method = String(methodValue || "manual");
+  const phone = String(phoneValue || "").trim();
+  if (el.paymentMethod) el.paymentMethod.value = method;
+  if (el.paymentPhone) el.paymentPhone.value = phone;
+  if (!Array.isArray(el.quickCheckoutPanels)) return;
+  el.quickCheckoutPanels.forEach((panel) => {
+    if (sourcePanel && panel === sourcePanel) return;
+    const methodNode = panel.querySelector(".quick-payment-method");
+    const phoneNode = panel.querySelector(".quick-payment-phone");
+    if (methodNode) methodNode.value = method;
+    if (phoneNode) phoneNode.value = phone;
+  });
+}
+
+function populateQuickPaymentMethods(methods = ["manual"]) {
+  if (!Array.isArray(el.quickCheckoutPanels)) return;
+  el.quickCheckoutPanels.forEach((panel) => {
+    const select = panel.querySelector(".quick-payment-method");
+    if (!select) return;
+    const current = String(select.value || "");
+    select.innerHTML = "";
+    methods.forEach((m) => {
+      const opt = document.createElement("option");
+      opt.value = m;
+      opt.textContent = m === "mpesa" ? "M-Pesa (STK Push)" : "Manual M-Pesa (Till)";
+      select.appendChild(opt);
+    });
+    select.value = methods.includes(current) ? current : methods[0];
+  });
+}
+
+function renderQuickCheckoutPanels() {
+  if (!Array.isArray(el.quickCheckoutPanels) || !el.quickCheckoutPanels.length) return;
+  const currentLane = cartLaneName();
+  const total = state.cart.reduce((sum, item) => sum + (Number(item.price || 0) * Math.max(1, Number(item.qty || 1))), 0);
+
+  el.quickCheckoutPanels.forEach((panel) => {
+    const laneTarget = String(panel.dataset.lane || "");
+    const countNode = panel.querySelector(".quick-cart-count");
+    const laneNode = panel.querySelector(".quick-cart-lane");
+    const itemsNode = panel.querySelector(".quick-cart-items");
+    const totalNode = panel.querySelector(".quick-cart-total");
+    const placeNode = panel.querySelector(".quick-place-order");
+    if (laneNode) laneNode.textContent = laneTarget;
+    if (!countNode || !itemsNode || !totalNode) return;
+
+    itemsNode.innerHTML = "";
+
+    if (!state.cart.length) {
+      countNode.textContent = "0";
+      totalNode.textContent = "KES 0";
+      itemsNode.appendChild(emptyNode(`${laneTarget} cart is empty.`));
+      if (placeNode) placeNode.disabled = false;
+      return;
+    }
+
+    if (currentLane !== laneTarget) {
+      countNode.textContent = String(state.cart.length);
+      totalNode.textContent = formatKes(total);
+      itemsNode.appendChild(emptyNode(`Cart currently contains ${currentLane}. Complete or clear it first.`));
+      if (placeNode) placeNode.disabled = true;
+      return;
+    }
+
+    state.cart.forEach((item) => {
+      const qty = Math.max(1, Number(item.qty || 1));
+      const itemTotal = Number(item.price || 0) * qty;
+      const li = document.createElement("li");
+      li.textContent = `${item.name} x${qty} - ${formatKes(itemTotal)}`;
+      itemsNode.appendChild(li);
+    });
+    countNode.textContent = String(state.cart.length);
+    totalNode.textContent = formatKes(total);
+    if (placeNode) placeNode.disabled = false;
+  });
+}
+
+function escapeHtml(value) {
+  return String(value || "")
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;")
+    .replaceAll("'", "&#39;");
+}
+
+function buildSearchIndex() {
+  const links = [];
+  links.push({ label: "Home", href: "#home", type: "Section" });
+  links.push({ label: "Shop / Outfits", href: "#apparel", type: "Section" });
+  links.push({ label: "Events", href: "#events", type: "Section" });
+  links.push({ label: "BBQ", href: "#bbq", type: "Section" });
+  links.push({ label: "Livestock", href: "#livestock", type: "Section" });
+  links.push({ label: "Foundation", href: "#foundation", type: "Section" });
+  links.push({ label: "Corporate Hub", href: "CORPORATE_HUB.html", type: "Page" });
+  links.push({ label: "Invest With Us", href: "INVEST_WITH_US.html", type: "Page" });
+  links.push({ label: "Partner With Us", href: "PARTNER_WITH_US.html", type: "Page" });
+
+  (state.content.outfits || []).forEach((x) => {
+    links.push({ label: x.name, href: "#apparel", type: "Outfit" });
+  });
+  (state.content.events || []).forEach((x) => {
+    links.push({ label: x.title, href: "#events", type: "Event" });
+  });
+  (state.content.livestock || []).forEach((x) => {
+    links.push({ label: x.name, href: "#livestock", type: "Livestock" });
+  });
+  (state.content.decor || []).forEach((x) => {
+    links.push({ label: x.name, href: "#decor", type: "Decor" });
+  });
+  (state.content.team || []).forEach((x) => {
+    links.push({ label: x.name, href: "#media", type: "Team" });
+  });
+  return links;
+}
+
+function renderSearchResults(query) {
+  if (!el.globalSearchResults) return;
+  const q = String(query || "").trim().toLowerCase();
+  if (!q) {
+    el.globalSearchResults.hidden = true;
+    el.globalSearchResults.innerHTML = "";
+    return;
+  }
+  const matches = buildSearchIndex()
+    .filter((x) => String(x.label || "").toLowerCase().includes(q))
+    .slice(0, 10);
+
+  if (!matches.length) {
+    el.globalSearchResults.hidden = false;
+    el.globalSearchResults.innerHTML = `<div class="gallery-empty">No results found.</div>`;
+    return;
+  }
+
+  el.globalSearchResults.hidden = false;
+  el.globalSearchResults.innerHTML = matches.map((m) => {
+    return `<a class="search-result-link" href="${m.href}">${escapeHtml(m.label)} <span class="fine">(${escapeHtml(m.type)})</span></a>`;
+  }).join("");
 }
 
 function renderOutfits() {
@@ -823,6 +977,7 @@ function renderAll() {
   renderSocials();
   renderCommunity();
   renderCart();
+  setupRevealAnimations();
 }
 
 async function loadContent() {
@@ -1002,6 +1157,8 @@ async function loadPaymentConfig() {
         opt.textContent = m === "mpesa" ? "M-Pesa (STK Push)" : "Manual M-Pesa (Till)";
         el.paymentMethod.appendChild(opt);
       });
+      populateQuickPaymentMethods(methods);
+      syncPaymentInputs(el.paymentMethod?.value || methods[0] || "manual", el.paymentPhone?.value || "");
     }
 
     const till = cfg?.manual?.till_number || "";
@@ -1385,6 +1542,12 @@ function bindForms() {
   el.checkoutBtn?.addEventListener("click", () => {
     startCheckout();
   });
+  el.paymentMethod?.addEventListener("change", () => {
+    syncPaymentInputs(el.paymentMethod?.value || "manual", el.paymentPhone?.value || "");
+  });
+  el.paymentPhone?.addEventListener("input", () => {
+    syncPaymentInputs(el.paymentMethod?.value || "manual", el.paymentPhone?.value || "");
+  });
   el.downloadReceiptBtn?.addEventListener("click", () => {
     handleDownloadReceipt();
   });
@@ -1585,6 +1748,57 @@ function bindForms() {
     e.preventDefault();
     saveTrackingSettings();
   });
+  el.globalSearchInput?.addEventListener("input", () => {
+    renderSearchResults(el.globalSearchInput.value);
+  });
+  el.globalSearchForm?.addEventListener("submit", (e) => {
+    e.preventDefault();
+    const query = String(el.globalSearchInput?.value || "").trim();
+    renderSearchResults(query);
+    const first = el.globalSearchResults?.querySelector("a.search-result-link");
+    if (first) first.click();
+  });
+  document.addEventListener("click", (e) => {
+    const node = e.target;
+    if (!(node instanceof Element)) return;
+    if (!node.closest(".global-search-form") && !node.closest("#global-search-results")) {
+      if (el.globalSearchResults) {
+        el.globalSearchResults.hidden = true;
+      }
+    }
+  });
+  if (Array.isArray(el.quickCheckoutPanels)) {
+    el.quickCheckoutPanels.forEach((panel) => {
+      const methodNode = panel.querySelector(".quick-payment-method");
+      const phoneNode = panel.querySelector(".quick-payment-phone");
+      const placeNode = panel.querySelector(".quick-place-order");
+      const clearNode = panel.querySelector(".quick-clear-cart");
+      const receiptNode = panel.querySelector(".quick-download-receipt");
+      const ticketsNode = panel.querySelector(".quick-download-tickets");
+
+      methodNode?.addEventListener("change", () => {
+        syncPaymentInputs(methodNode.value, phoneNode?.value || "", panel);
+      });
+      phoneNode?.addEventListener("input", () => {
+        syncPaymentInputs(methodNode?.value || "manual", phoneNode.value || "", panel);
+      });
+      placeNode?.addEventListener("click", () => {
+        syncPaymentInputs(methodNode?.value || "manual", phoneNode?.value || "", panel);
+        startCheckout();
+      });
+      clearNode?.addEventListener("click", () => {
+        state.cart = [];
+        renderCart();
+        setPaymentStatus("Cart cleared.");
+      });
+      receiptNode?.addEventListener("click", () => {
+        handleDownloadReceipt();
+      });
+      ticketsNode?.addEventListener("click", () => {
+        handleDownloadTickets();
+      });
+    });
+  }
 
   document.addEventListener("click", (e) => {
     const addCart = e.target.closest(".add-to-cart");
@@ -1592,7 +1806,8 @@ function bindForms() {
       const card = addCart.closest(".product-card");
       const name = addCart.dataset.name || card?.getAttribute("data-name") || "Item";
       const price = Number(addCart.dataset.price || card?.getAttribute("data-price") || 0);
-      addItemToCart({ name, price, qty: 1, kind: "product" });
+      const kind = addCart.dataset.kind || "product";
+      addItemToCart({ name, price, qty: 1, kind });
       return;
     }
 
@@ -1698,6 +1913,32 @@ function setupNav() {
       el.nav.classList.remove("open");
       el.navToggle.setAttribute("aria-expanded", "false");
     });
+  });
+}
+
+let revealObserver;
+function setupRevealAnimations() {
+  const nodes = document.querySelectorAll(".reveal");
+  if (!nodes.length) return;
+
+  if (!("IntersectionObserver" in window)) {
+    nodes.forEach((n) => n.classList.add("in-view"));
+    return;
+  }
+
+  if (!revealObserver) {
+    revealObserver = new IntersectionObserver((entries) => {
+      entries.forEach((entry) => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add("in-view");
+          revealObserver.unobserve(entry.target);
+        }
+      });
+    }, { threshold: 0.12, rootMargin: "0px 0px -5% 0px" });
+  }
+
+  nodes.forEach((node) => {
+    if (!node.classList.contains("in-view")) revealObserver.observe(node);
   });
 }
 

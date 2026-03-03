@@ -91,7 +91,12 @@
       <div class="social-strip-inner">
         <p class="social-strip-title">Connect With Us:</p>
         <div id="quick-social-links" class="quick-social-links"></div>
+        <form id="global-search-form" class="global-search-form" role="search">
+          <input id="global-search-input" type="search" placeholder="Search outfits, events, livestock, foundation..." />
+          <button class="btn btn-ghost" type="submit">Search</button>
+        </form>
       </div>
+      <div id="global-search-results" class="global-search-results" hidden></div>
     </section>
 
     <main id="home">
@@ -205,6 +210,33 @@
               </g>
             </svg>
           </div>
+        </div>
+      </section>
+
+      <section class="section reveal">
+        <div class="section-heading">
+          <p class="kicker">Visual Moments</p>
+          <h2>Real scenes from the Cowboys experience.</h2>
+        </div>
+        <div class="photo-showcase">
+          <article class="showcase-tile">
+            <img src="assets/team/justus-kinyua.jpeg" alt="Cowboys team portrait" loading="lazy" />
+          </article>
+          <article class="showcase-tile">
+            <img src="assets/events/event-nairobi-ranch-night.jpg" alt="Ranch night crowd scene" loading="lazy" />
+          </article>
+          <article class="showcase-tile">
+            <img src="assets/outfits/adults-ranch-jacket.jpg" alt="Cowboy outfit style" loading="lazy" />
+          </article>
+          <article class="showcase-tile">
+            <img src="assets/livestock/livestock-cattle-prime.jpg" alt="Livestock marketplace scene" loading="lazy" />
+          </article>
+          <article class="showcase-tile">
+            <img src="assets/events/event-classic-cars-showcase.jpg" alt="Classic cars showcase" loading="lazy" />
+          </article>
+          <article class="showcase-tile">
+            <img src="assets/events/event-western-family-sunday.jpg" alt="Family western event scene" loading="lazy" />
+          </article>
         </div>
       </section>
 
@@ -545,7 +577,28 @@
           </form>
         </div>
 
-        <div id="events-grid" class="card-grid three top-space">
+        <div class="lane-layout top-space">
+          <div id="events-grid" class="card-grid three">
+          </div>
+          <aside class="cart-panel quick-checkout-panel" data-lane="Tickets">
+            <h3>Ticket Cart <span class="quick-cart-count">0</span></h3>
+            <p class="fine"><strong>Checkout Lane:</strong> <span class="quick-cart-lane">Tickets</span></p>
+            <ul class="quick-cart-items cart-items"></ul>
+            <p class="cart-total">Total: <strong class="quick-cart-total">KES 0</strong></p>
+            <button class="btn btn-ghost quick-clear-cart" type="button">Clear Cart</button>
+            <label>Payment Method
+              <select class="quick-payment-method">
+                <option value="manual">Manual M-Pesa (Till)</option>
+              </select>
+            </label>
+            <label>Customer Phone (2547XXXXXXXX)
+              <input class="quick-payment-phone" type="text" placeholder="254712345678" />
+            </label>
+            <button class="btn btn-primary quick-place-order" type="button">Place Ticket Order</button>
+            <button class="btn btn-ghost quick-download-receipt" type="button">Download Receipt</button>
+            <button class="btn btn-ghost quick-download-tickets" type="button">Download Ticket(s)</button>
+            <p class="fine quick-payment-status">Ready.</p>
+          </aside>
         </div>
 
         <form class="inquiry-form" id="artist-inquiry">
@@ -594,6 +647,46 @@
             <button class="btn btn-primary" type="submit">Send BBQ Inquiry</button>
           </form>
         </div>
+        <div class="lane-layout top-space">
+          <div class="card-grid three">
+            <article class="product-card">
+              <h3>Steak Experience Plate</h3>
+              <p>KES 2,500 per person</p>
+              <p>Premium cowboy steak serving with sides.</p>
+              <button class="btn btn-primary add-to-cart" type="button" data-kind="bbq" data-name="Steak Experience Plate" data-price="2500">Add To Cart</button>
+            </article>
+            <article class="product-card">
+              <h3>BBQ Family Package</h3>
+              <p>KES 12,000 package</p>
+              <p>Group grill setup for family events and private spaces.</p>
+              <button class="btn btn-primary add-to-cart" type="button" data-kind="bbq" data-name="BBQ Family Package" data-price="12000">Add To Cart</button>
+            </article>
+            <article class="product-card">
+              <h3>Corporate Grill Package</h3>
+              <p>KES 35,000 package</p>
+              <p>Large-format service for corporate and partner events.</p>
+              <button class="btn btn-primary add-to-cart" type="button" data-kind="bbq" data-name="Corporate Grill Package" data-price="35000">Add To Cart</button>
+            </article>
+          </div>
+          <aside class="cart-panel quick-checkout-panel" data-lane="BBQ">
+            <h3>BBQ Cart <span class="quick-cart-count">0</span></h3>
+            <p class="fine"><strong>Checkout Lane:</strong> <span class="quick-cart-lane">BBQ</span></p>
+            <ul class="quick-cart-items cart-items"></ul>
+            <p class="cart-total">Total: <strong class="quick-cart-total">KES 0</strong></p>
+            <button class="btn btn-ghost quick-clear-cart" type="button">Clear Cart</button>
+            <label>Payment Method
+              <select class="quick-payment-method">
+                <option value="manual">Manual M-Pesa (Till)</option>
+              </select>
+            </label>
+            <label>Customer Phone (2547XXXXXXXX)
+              <input class="quick-payment-phone" type="text" placeholder="254712345678" />
+            </label>
+            <button class="btn btn-primary quick-place-order" type="button">Place BBQ Order</button>
+            <button class="btn btn-ghost quick-download-receipt" type="button">Download Receipt</button>
+            <p class="fine quick-payment-status">Ready.</p>
+          </aside>
+        </div>
       </section>
 
       <section id="livestock" class="section reveal">
@@ -633,7 +726,27 @@
           </form>
         </div>
 
-        <div id="livestock-grid" class="card-grid three top-space">
+        <div class="lane-layout top-space">
+          <div id="livestock-grid" class="card-grid three">
+          </div>
+          <aside class="cart-panel quick-checkout-panel" data-lane="Livestock">
+            <h3>Livestock Cart <span class="quick-cart-count">0</span></h3>
+            <p class="fine"><strong>Checkout Lane:</strong> <span class="quick-cart-lane">Livestock</span></p>
+            <ul class="quick-cart-items cart-items"></ul>
+            <p class="cart-total">Total: <strong class="quick-cart-total">KES 0</strong></p>
+            <button class="btn btn-ghost quick-clear-cart" type="button">Clear Cart</button>
+            <label>Payment Method
+              <select class="quick-payment-method">
+                <option value="manual">Manual M-Pesa (Till)</option>
+              </select>
+            </label>
+            <label>Customer Phone (2547XXXXXXXX)
+              <input class="quick-payment-phone" type="text" placeholder="254712345678" />
+            </label>
+            <button class="btn btn-primary quick-place-order" type="button">Place Livestock Order</button>
+            <button class="btn btn-ghost quick-download-receipt" type="button">Download Receipt</button>
+            <p class="fine quick-payment-status">Ready.</p>
+          </aside>
         </div>
       </section>
 
