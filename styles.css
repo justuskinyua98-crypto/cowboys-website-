@@ -41,6 +41,46 @@ body {
   margin-inline: auto;
 }
 
+.social-strip {
+  width: min(1120px, 92vw);
+  margin: 0.6rem auto 0;
+}
+
+.social-strip-inner {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+  flex-wrap: wrap;
+  padding: 0.65rem 0.8rem;
+  background: rgba(255, 249, 236, 0.9);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  box-shadow: 0 8px 22px rgba(18, 11, 7, 0.08);
+}
+
+.social-strip-title {
+  font-weight: 800;
+  color: var(--oak);
+}
+
+.quick-social-links {
+  display: flex;
+  gap: 0.45rem;
+  flex-wrap: wrap;
+}
+
+.quick-social-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.3rem 0.65rem;
+  border-radius: 999px;
+  border: 1px solid rgba(169, 83, 45, 0.25);
+  text-decoration: none;
+  font-weight: 800;
+  background: #fffef9;
+}
+
 .site-header {
   display: flex;
   align-items: center;
@@ -559,6 +599,27 @@ h3 {
   text-decoration: none;
 }
 
+.whatsapp-chat-float {
+  position: fixed;
+  right: 1rem;
+  bottom: 1rem;
+  z-index: 1300;
+  text-decoration: none;
+  font-weight: 800;
+  color: #fff;
+  background: #128c7e;
+  border: 1px solid rgba(10, 86, 76, 0.75);
+  border-radius: 999px;
+  padding: 0.68rem 0.95rem;
+  box-shadow: 0 12px 25px rgba(7, 54, 47, 0.26);
+}
+
+.whatsapp-chat-float:hover,
+.whatsapp-chat-float:focus-visible {
+  background: #0f7a6e;
+  outline: none;
+}
+
 .delete-outfit {
   border: 1px solid rgba(169, 83, 45, 0.35);
   background: transparent;
@@ -743,6 +804,10 @@ a {
 
   .menu-toggle {
     display: inline-flex;
+  }
+
+  .social-strip {
+    margin-top: 0.35rem;
   }
 
   .main-nav {

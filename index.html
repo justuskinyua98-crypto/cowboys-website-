@@ -76,6 +76,7 @@
         <a href="#journey">Journey</a>
         <a href="#apparel">Shop</a>
         <a href="#events">Events</a>
+        <a href="#bbq">BBQ</a>
         <a href="#media">Media</a>
         <a href="#foundation">Foundation</a>
         <a href="DARAJA_READINESS_CHECKLIST.html">Daraja Checklist</a>
@@ -85,6 +86,12 @@
         <a href="#contact">Contact</a>
       </nav>
     </header>
+    <section class="social-strip">
+      <div class="social-strip-inner">
+        <p class="social-strip-title">Connect With Us:</p>
+        <div id="quick-social-links" class="quick-social-links"></div>
+      </div>
+    </section>
 
     <main id="home">
       <section class="hero section reveal">
@@ -263,6 +270,12 @@
             <h3>Foundation Mission</h3>
             <p>Mission, vision, and donor-trust partnership model.</p>
             <a class="btn btn-ghost" href="#foundation">Open Step</a>
+          </article>
+          <article class="product-card">
+            <p class="stock in-stock">Featured</p>
+            <h3>Cowboy Steak & BBQ</h3>
+            <p>Book grills, live steak experiences, and group barbecue sessions.</p>
+            <a class="btn btn-ghost" href="#bbq">Open BBQ</a>
           </article>
         </div>
       </section>
@@ -509,6 +522,44 @@
           <label>Message <textarea rows="4" placeholder="Who do you want to hire and for what date?"></textarea></label>
           <button class="btn btn-primary" type="submit">Send Artist Inquiry</button>
         </form>
+      </section>
+
+      <section id="bbq" class="section reveal">
+        <div class="section-heading">
+          <p class="kicker">Cowboy Steak & BBQ</p>
+          <h2>Signature grill experiences for events, private groups, and ranch nights.</h2>
+        </div>
+        <div class="split">
+          <article class="product-card">
+            <h3>What We Offer</h3>
+            <p>We serve themed cowboy-style barbecue and steak sessions with a polished setup.</p>
+            <div class="pillars top-space">
+              <span>Live Grill Station</span>
+              <span>Cowboy Steak Platters</span>
+              <span>Group Booking Packages</span>
+              <span>Event Catering Add-on</span>
+            </div>
+            <p class="fine top-space">Add this as a standalone event or bundle it with your tickets and decor package.</p>
+          </article>
+          <form id="bbq-inquiry" class="inquiry-form">
+            <h3>Book BBQ / Steak Experience</h3>
+            <label>Name <input type="text" required /></label>
+            <label>Phone (2547XXXXXXXX) <input type="text" placeholder="254712345678" required /></label>
+            <label>Event Date <input type="date" required /></label>
+            <label>Guests <input type="number" min="1" step="1" placeholder="50" required /></label>
+            <label>Package Type
+              <select required>
+                <option value="">Select package</option>
+                <option>Steak Experience</option>
+                <option>BBQ Family Package</option>
+                <option>Corporate Grill Package</option>
+                <option>Custom Event Package</option>
+              </select>
+            </label>
+            <label>Message <textarea rows="4" placeholder="Tell us venue and setup needs."></textarea></label>
+            <button class="btn btn-primary" type="submit">Send BBQ Inquiry</button>
+          </form>
+        </div>
       </section>
 
       <section id="livestock" class="section reveal">
@@ -895,6 +946,11 @@
             <p><a href="tel:+254793791623">+254 793 791 623</a></p>
           </article>
         </div>
+        <article class="product-card top-space">
+          <h3>Official Social Pages</h3>
+          <p>Follow our verified pages for outfit drops, events, and live updates.</p>
+          <div id="contact-social-links" class="gallery-grid top-space"></div>
+        </article>
         <div class="split top-space">
           <article class="product-card">
             <h3>Get Event Updates</h3>
@@ -928,6 +984,9 @@
     <footer class="site-footer">
       <p>© <span id="year"></span> Cowboys Group Holdings. Kenya United: faith-led, inclusive, culture-strong.</p>
     </footer>
+    <a id="whatsapp-chat-float" class="whatsapp-chat-float" href="#" target="_blank" rel="noreferrer noopener" hidden>
+      Chat on WhatsApp
+    </a>
 
     <script src="script.js"></script>
   </body>

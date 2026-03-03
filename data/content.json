@@ -6,34 +6,10 @@
   },
   "socials": [
     {
-      "id": "social-teddy-ig",
+      "id": "social-justus-ig",
       "platform": "Instagram",
-      "handle": "Teddy Otieno",
-      "url": "https://www.instagram.com/teddy0tieno?igsh=MXV2cDVyNW9vbzJucQ=="
-    },
-    {
-      "id": "social-teddy-tt",
-      "platform": "TikTok",
-      "handle": "Teddy Otieno",
-      "url": "https://www.tiktok.com/@teddy0tieno"
-    },
-    {
-      "id": "social-aaron-ig",
-      "platform": "Instagram",
-      "handle": "Aaron Sang",
-      "url": "https://www.instagram.com/aaron_sang_?igsh=MW5qYWRzd2dremh5OQ=="
-    },
-    {
-      "id": "social-aaron-tt",
-      "platform": "TikTok",
-      "handle": "Aaron Sang",
-      "url": "https://www.tiktok.com/@aaronksang?_r=1&_t=ZS-94KfzZFkM7h"
-    },
-    {
-      "id": "social-justus-fb",
-      "platform": "Facebook",
       "handle": "Justus Kinyua",
-      "url": "https://www.facebook.com/share/1KoyUwx134/"
+      "url": "https://www.instagram.com/gymie.fitness?igsh=MWo1bHBiOHk5Mm1zOQ=="
     },
     {
       "id": "social-justus-tt",
@@ -42,10 +18,16 @@
       "url": "https://vm.tiktok.com/ZS9eoF6s5E3L6-mSwNl/"
     },
     {
-      "id": "social-justus-ig",
-      "platform": "Instagram",
+      "id": "social-justus-fb",
+      "platform": "Facebook",
       "handle": "Justus Kinyua",
-      "url": "https://www.instagram.com/gymie.fitness?igsh=MWo1bHBiOHk5Mm1zOQ=="
+      "url": "https://www.facebook.com/share/1KoyUwx134/"
+    },
+    {
+      "id": "social-justus-wa",
+      "platform": "WhatsApp",
+      "handle": "+254 793 791 623",
+      "url": "https://wa.me/254793791623"
     }
   ],
   "team": [

@@ -3,11 +3,10 @@ const OUTFIT_KEY = "cgh_outfits_v1";
 
 const defaultContent = {
   socials: [
-    { id: "social-1", platform: "Instagram", url: "https://instagram.com/", handle: "@cowboysgroup" },
-    { id: "social-2", platform: "TikTok", url: "https://tiktok.com/@", handle: "@cowboysgroup" },
-    { id: "social-3", platform: "Facebook", url: "https://facebook.com/", handle: "Cowboys Group Holdings" },
-    { id: "social-4", platform: "YouTube", url: "https://youtube.com/@", handle: "@cowboysgroup" },
-    { id: "social-5", platform: "WhatsApp", url: "https://wa.me/254793791623", handle: "+254 793 791 623" }
+    { id: "social-justus-ig", platform: "Instagram", url: "https://www.instagram.com/gymie.fitness?igsh=MWo1bHBiOHk5Mm1zOQ==", handle: "Justus Kinyua" },
+    { id: "social-justus-tt", platform: "TikTok", url: "https://vm.tiktok.com/ZS9eoF6s5E3L6-mSwNl/", handle: "Justus Kinyua" },
+    { id: "social-justus-fb", platform: "Facebook", url: "https://www.facebook.com/share/1KoyUwx134/", handle: "Justus Kinyua" },
+    { id: "social-justus-wa", platform: "WhatsApp", url: "https://wa.me/254793791623", handle: "+254 793 791 623" }
   ],
   team: [
     { id: "team-1", name: "Leadership Desk", role: "Holding Company Coordination", photo: PLACEHOLDER_IMAGE, bio: "Coordinating ventures, partnerships, and community programs across the ecosystem." },
@@ -101,6 +100,9 @@ const el = {
   videoGallery: document.getElementById("video-gallery"),
   teamGrid: document.getElementById("team-grid"),
   socialsGrid: document.getElementById("social-links"),
+  quickSocialLinks: document.getElementById("quick-social-links"),
+  contactSocialLinks: document.getElementById("contact-social-links"),
+  whatsappChatFloat: document.getElementById("whatsapp-chat-float"),
   descriptionsGrid: document.getElementById("description-grid"),
   partnersGrid: document.getElementById("partners-grid"),
   reviewsGrid: document.getElementById("reviews-grid"),
@@ -126,6 +128,7 @@ const el = {
   uploadForm: document.getElementById("media-upload-form"),
   uploadResult: document.getElementById("upload-result"),
   artistInquiry: document.getElementById("artist-inquiry"),
+  bbqInquiry: document.getElementById("bbq-inquiry"),
   donorForm: document.getElementById("partner-form")
   ,
   donationForm: document.getElementById("donation-form"),
@@ -608,9 +611,24 @@ function renderVideos() {
     const card = document.createElement("article");
     card.className = "video-card";
     card.innerHTML = `
-      ${v.src ? `<video controls muted playsinline preload="none" ${v.poster ? `poster="${mediaSrc(v.poster)}"` : ""}><source src="${mediaSrc(v.src)}"></video>` : ""}
+      ${v.src ? `<video autoplay loop muted playsinline preload="metadata" controlslist="nodownload noplaybackrate nofullscreen" disablepictureinpicture ${v.poster ? `poster="${mediaSrc(v.poster)}"` : ""}><source src="${mediaSrc(v.src)}"></video>` : ""}
       <div class="video-body">${v.title || "Untitled Video"}</div>
     `;
+    const video = card.querySelector("video");
+    if (video) {
+      // Force silent playback at runtime even if browser restores prior media state.
+      video.muted = true;
+      video.defaultMuted = true;
+      video.volume = 0;
+      video.controls = false;
+      video.addEventListener("volumechange", () => {
+        if (!video.muted || video.volume !== 0) {
+          video.muted = true;
+          video.volume = 0;
+        }
+      });
+      video.play().catch(() => {});
+    }
     el.videoGallery.appendChild(card);
   });
 }
@@ -639,6 +657,7 @@ function renderSocials() {
   el.socialsGrid.innerHTML = "";
   if (!state.content.socials.length) {
     el.socialsGrid.appendChild(emptyNode("No social links yet."));
+    renderGlobalSocialLinks();
     return;
   }
   state.content.socials.forEach((s) => {
@@ -650,6 +669,51 @@ function renderSocials() {
     `;
     el.socialsGrid.appendChild(row);
   });
+  renderGlobalSocialLinks();
+}
+
+function renderGlobalSocialLinks() {
+  const quick = el.quickSocialLinks;
+  const contact = el.contactSocialLinks;
+  if (quick) quick.innerHTML = "";
+  if (contact) contact.innerHTML = "";
+
+  const rows = Array.isArray(state.content.socials) ? state.content.socials.filter((s) => s && s.url) : [];
+  if (!rows.length) {
+    if (quick) quick.innerHTML = `<span class="fine">Social links will appear here after setup.</span>`;
+    if (contact) contact.appendChild(emptyNode("No social links yet."));
+    if (el.whatsappChatFloat) el.whatsappChatFloat.hidden = true;
+    return;
+  }
+
+  rows.forEach((s) => {
+    const label = `${s.platform}${s.handle ? ` • ${s.handle}` : ""}`;
+    if (quick) {
+      const a = document.createElement("a");
+      a.className = "quick-social-pill";
+      a.href = s.url;
+      a.target = "_blank";
+      a.rel = "noreferrer noopener";
+      a.textContent = s.platform;
+      quick.appendChild(a);
+    }
+    if (contact) {
+      const row = document.createElement("div");
+      row.className = "social-row";
+      row.innerHTML = `<a class="social-link" href="${s.url}" target="_blank" rel="noreferrer noopener">${label}</a>`;
+      contact.appendChild(row);
+    }
+  });
+
+  const whatsapp = rows.find((s) => /whatsapp/i.test(String(s.platform || "")) || /wa\.me/i.test(String(s.url || "")));
+  if (el.whatsappChatFloat) {
+    if (whatsapp && whatsapp.url) {
+      el.whatsappChatFloat.href = whatsapp.url;
+      el.whatsappChatFloat.hidden = false;
+    } else {
+      el.whatsappChatFloat.hidden = true;
+    }
+  }
 }
 
 function renderCommunity() {
@@ -1426,6 +1490,12 @@ function bindForms() {
     e.preventDefault();
     notify("Artist inquiry submitted. Options and rates will be shared.");
     el.artistInquiry.reset();
+  });
+
+  el.bbqInquiry?.addEventListener("submit", (e) => {
+    e.preventDefault();
+    notify("BBQ inquiry received. Team will confirm package options and pricing.");
+    el.bbqInquiry.reset();
   });
 
   el.donorForm?.addEventListener("submit", (e) => {
