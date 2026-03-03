@@ -1015,7 +1015,8 @@ function renderTeam() {
   });
 }
 
-function jumpToSearchHref(href) {
+function jumpToSearchHref(href, options = {}) {
+  const instant = Boolean(options.instant);
   const targetHref = String(href || "");
   if (!targetHref.startsWith("#")) {
     window.location.href = targetHref;
@@ -1027,7 +1028,7 @@ function jumpToSearchHref(href) {
     window.location.hash = targetHref;
     return;
   }
-  node.scrollIntoView({ behavior: "smooth", block: "start" });
+  node.scrollIntoView({ behavior: instant ? "auto" : "smooth", block: "start" });
   node.classList.remove("search-hit");
   window.setTimeout(() => node.classList.add("search-hit"), 80);
   window.setTimeout(() => node.classList.remove("search-hit"), 1800);
@@ -2218,7 +2219,7 @@ function setupNav() {
       const href = String(a.getAttribute("href") || "");
       if (href.startsWith("#")) {
         e.preventDefault();
-        jumpToSearchHref(href);
+        jumpToSearchHref(href, { instant: true });
       }
       closeNav();
     });
