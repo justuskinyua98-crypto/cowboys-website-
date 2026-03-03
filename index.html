@@ -1117,6 +1117,36 @@
           <p>Follow our verified pages for outfit drops, events, and live updates.</p>
           <div id="contact-social-links" class="gallery-grid top-space"></div>
         </article>
+        <article class="product-card top-space">
+          <h3>Reviews, Requests & Comments</h3>
+          <p>Share your experience, request support, or leave a comment for the team.</p>
+          <form id="public-feedback-form" class="inquiry-form">
+            <label>Name
+              <input id="feedback-name" type="text" required />
+            </label>
+            <label>Email (Optional)
+              <input id="feedback-email" type="email" />
+            </label>
+            <label>Phone (Optional)
+              <input id="feedback-phone" type="text" placeholder="2547XXXXXXXX" />
+            </label>
+            <label>Type
+              <select id="feedback-category" required>
+                <option value="review">Review</option>
+                <option value="request">Request</option>
+                <option value="comment">Comment</option>
+              </select>
+            </label>
+            <label>Rating (for review)
+              <input id="feedback-rating" type="number" min="1" max="5" step="1" value="5" />
+            </label>
+            <label>Message
+              <textarea id="feedback-message" rows="4" placeholder="Write your feedback here..." required></textarea>
+            </label>
+            <button class="btn btn-primary" type="submit">Send Feedback</button>
+          </form>
+          <p id="feedback-status" class="fine">Ready.</p>
+        </article>
         <div class="split top-space">
           <article class="product-card">
             <h3>Get Event Updates</h3>

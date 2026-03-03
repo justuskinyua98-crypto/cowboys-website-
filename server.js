@@ -11,6 +11,7 @@ const CONTENT_PATH = path.join(ROOT, 'data', 'content.json');
 const PAYMENTS_PATH = path.join(ROOT, 'data', 'payments.json');
 const DONATIONS_PATH = path.join(ROOT, 'data', 'donations.json');
 const SUBSCRIBERS_PATH = path.join(ROOT, 'data', 'subscribers.json');
+const FEEDBACK_PATH = path.join(ROOT, 'data', 'feedback.json');
 const ADMIN_KEY = process.env.ADMIN_KEY || 'change-me-admin-key';
 const PORT = Number(process.env.PORT || 8000);
 const HOST = process.env.HOST || '127.0.0.1';
@@ -56,7 +57,9 @@ const RATE_LIMIT_CONFIG = {
   donationSubmit: { windowMs: 60_000, max: 30 },
   donationAdmin: { windowMs: 60_000, max: 60 },
   subscribeSubmit: { windowMs: 60_000, max: 40 },
-  subscribeAdmin: { windowMs: 60_000, max: 60 }
+  subscribeAdmin: { windowMs: 60_000, max: 60 },
+  feedbackSubmit: { windowMs: 60_000, max: 30 },
+  feedbackAdmin: { windowMs: 60_000, max: 60 }
 };
 const RATE_LIMIT_STORE = new Map();
 
@@ -188,6 +191,21 @@ async function writeSubscribers(payload) {
   await fsp.writeFile(SUBSCRIBERS_PATH, JSON.stringify(payload, null, 2), 'utf8');
 }
 
+async function readFeedback() {
+  try {
+    const raw = await fsp.readFile(FEEDBACK_PATH, 'utf8');
+    const parsed = JSON.parse(raw);
+    if (!Array.isArray(parsed.feedback)) return { feedback: [] };
+    return parsed;
+  } catch {
+    return { feedback: [] };
+  }
+}
+
+async function writeFeedback(payload) {
+  await fsp.writeFile(FEEDBACK_PATH, JSON.stringify(payload, null, 2), 'utf8');
+}
+
 function isAuthed(req) {
   return req.headers['x-admin-key'] === ADMIN_KEY;
 }
@@ -237,6 +255,10 @@ function sanitizeEmail(value) {
 
 function sanitizePhone(value) {
   return normalizeKenyanPhone(String(value || '').trim()).slice(0, 20);
+}
+
+function makeFeedbackId() {
+  return `fb-${Date.now()}-${Math.floor(Math.random() * 1e6)}`;
 }
 
 function makeDonationReference(id) {
@@ -639,6 +661,65 @@ async function handleApi(req, res, urlObj) {
     } catch (err) {
       return sendJson(res, 400, { error: 'Invalid subscriber payload', detail: err.message });
     }
+  }
+
+  if (req.method === 'POST' && urlObj.pathname === '/api/feedback') {
+    const rate = hitRateLimit(req, 'feedback-submit', RATE_LIMIT_CONFIG.feedbackSubmit);
+    if (rate.limited) {
+      res.setHeader('Retry-After', String(rate.retryAfterSec));
+      return sendJson(res, 429, { error: 'Too many feedback attempts. Please retry shortly.' });
+    }
+    try {
+      const raw = await readBody(req);
+      const payload = parseJson(raw || '{}', {});
+      const name = String(payload.name || '').trim().slice(0, 120);
+      const email = sanitizeEmail(payload.email);
+      const phone = sanitizePhone(payload.phone);
+      const category = String(payload.category || 'comment').trim().toLowerCase().slice(0, 40);
+      const message = String(payload.message || '').trim().slice(0, 2000);
+      const rating = payload.rating == null ? null : Math.max(1, Math.min(5, Number(payload.rating)));
+
+      if (!name) return sendJson(res, 400, { error: 'Name is required.' });
+      if (!message) return sendJson(res, 400, { error: 'Message is required.' });
+      if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+        return sendJson(res, 400, { error: 'Email format is invalid.' });
+      }
+
+      const rows = await readFeedback();
+      const record = {
+        id: makeFeedbackId(),
+        name,
+        email: email || null,
+        phone: phone || null,
+        category: ['review', 'request', 'comment'].includes(category) ? category : 'comment',
+        rating: Number.isFinite(rating) ? rating : null,
+        message,
+        status: 'new',
+        source: 'website',
+        created_at: new Date().toISOString()
+      };
+      rows.feedback.unshift(record);
+      await writeFeedback(rows);
+      return sendJson(res, 200, { ok: true, feedback_id: record.id });
+    } catch (err) {
+      return sendJson(res, 400, { error: 'Invalid feedback payload', detail: err.message });
+    }
+  }
+
+  if (req.method === 'GET' && urlObj.pathname === '/api/feedback') {
+    const rate = hitRateLimit(req, 'feedback-admin', RATE_LIMIT_CONFIG.feedbackAdmin);
+    if (rate.limited) {
+      res.setHeader('Retry-After', String(rate.retryAfterSec));
+      return sendJson(res, 429, { error: 'Too many feedback requests. Please retry shortly.' });
+    }
+    if (!isAuthed(req)) return sendJson(res, 401, { error: 'Unauthorized' });
+    const limit = Math.max(1, Math.min(300, Number(urlObj.searchParams.get('limit') || 100)));
+    const category = String(urlObj.searchParams.get('category') || '').trim().toLowerCase();
+    const rows = await readFeedback();
+    let list = Array.isArray(rows.feedback) ? rows.feedback.slice() : [];
+    if (category) list = list.filter((x) => String(x.category || '').toLowerCase() === category);
+    list = list.slice(0, limit);
+    return sendJson(res, 200, { ok: true, count: list.length, feedback: list });
   }
 
   if (req.method === 'POST' && urlObj.pathname === '/api/subscribers/unsubscribe') {
@@ -1298,6 +1379,11 @@ server.listen(PORT, HOST, async () => {
     await fsp.access(SUBSCRIBERS_PATH);
   } catch {
     await writeSubscribers({ subscribers: [] });
+  }
+  try {
+    await fsp.access(FEEDBACK_PATH);
+  } catch {
+    await writeFeedback({ feedback: [] });
   }
 
   console.log(`Server running at http://${HOST}:${PORT}`);

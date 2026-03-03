@@ -974,6 +974,16 @@ textarea {
   color: rgba(47, 42, 36, 0.78);
 }
 
+.fine.ok {
+  color: var(--ok);
+  font-weight: 700;
+}
+
+.fine.warn {
+  color: #b45309;
+  font-weight: 700;
+}
+
 .inquiry-form {
   display: grid;
   gap: 0.55rem;

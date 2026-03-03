@@ -165,6 +165,14 @@ const el = {
   subscriberEmail: document.getElementById("subscriber-email"),
   subscriberConsent: document.getElementById("subscriber-consent"),
   subscriberStatus: document.getElementById("subscriber-status"),
+  publicFeedbackForm: document.getElementById("public-feedback-form"),
+  feedbackName: document.getElementById("feedback-name"),
+  feedbackEmail: document.getElementById("feedback-email"),
+  feedbackPhone: document.getElementById("feedback-phone"),
+  feedbackCategory: document.getElementById("feedback-category"),
+  feedbackRating: document.getElementById("feedback-rating"),
+  feedbackMessage: document.getElementById("feedback-message"),
+  feedbackStatus: document.getElementById("feedback-status"),
   downloadSubscribersBtn: document.getElementById("download-subscribers-btn"),
   refreshSubscribersBtn: document.getElementById("refresh-subscribers-btn"),
   subscriberAdminList: document.getElementById("subscriber-admin-list"),
@@ -277,6 +285,14 @@ function setDonationStatus(msg) {
 
 function setSubscriberStatus(msg) {
   if (el.subscriberStatus) el.subscriberStatus.textContent = msg;
+}
+
+function setFeedbackStatus(msg, level = "info") {
+  if (!el.feedbackStatus) return;
+  el.feedbackStatus.textContent = msg;
+  el.feedbackStatus.classList.remove("ok", "warn");
+  if (level === "ok") el.feedbackStatus.classList.add("ok");
+  if (level === "warn") el.feedbackStatus.classList.add("warn");
 }
 
 function setTrackingStatus(msg) {
@@ -1692,6 +1708,43 @@ async function submitSubscriber() {
   }
 }
 
+async function submitPublicFeedback() {
+  const name = String(el.feedbackName?.value || "").trim();
+  const email = String(el.feedbackEmail?.value || "").trim();
+  const phone = String(el.feedbackPhone?.value || "").trim();
+  const category = String(el.feedbackCategory?.value || "comment").trim();
+  const message = String(el.feedbackMessage?.value || "").trim();
+  const rating = Number(el.feedbackRating?.value || 5);
+  if (!name || !message) {
+    setFeedbackStatus("Name and message are required.", "warn");
+    return;
+  }
+  setFeedbackStatus("Sending feedback...");
+  try {
+    const response = await fetch("/api/feedback", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        name,
+        email,
+        phone,
+        category,
+        rating: category === "review" ? rating : null,
+        message
+      })
+    });
+    const data = await response.json();
+    if (!response.ok) {
+      setFeedbackStatus(data.error || "Could not send feedback.", "warn");
+      return;
+    }
+    setFeedbackStatus(`Thanks. Feedback received (ID: ${data.feedback_id}).`, "ok");
+    el.publicFeedbackForm?.reset();
+  } catch {
+    setFeedbackStatus("Feedback request failed. Retry shortly.", "warn");
+  }
+}
+
 function renderSubscriberAdminList(rows = []) {
   if (!el.subscriberAdminList) return;
   el.subscriberAdminList.innerHTML = "";
@@ -1973,6 +2026,10 @@ function bindForms() {
     e.preventDefault();
     submitSubscriber();
   });
+  el.publicFeedbackForm?.addEventListener("submit", (e) => {
+    e.preventDefault();
+    submitPublicFeedback();
+  });
   el.downloadSubscribersBtn?.addEventListener("click", () => {
     downloadSubscribersCsv();
   });
@@ -2157,7 +2214,12 @@ function setupNav() {
   });
 
   el.nav.querySelectorAll("a").forEach((a) => {
-    a.addEventListener("click", () => {
+    a.addEventListener("click", (e) => {
+      const href = String(a.getAttribute("href") || "");
+      if (href.startsWith("#")) {
+        e.preventDefault();
+        jumpToSearchHref(href);
+      }
       closeNav();
     });
   });
