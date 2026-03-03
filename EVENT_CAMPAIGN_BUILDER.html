@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Event Campaign Builder | Cowboys Group Holdings</title>
+    <title>Campaign Builder | Cowboys Group Holdings</title>
     <style>
       body { margin: 0; font-family: Arial, sans-serif; background: #f8fafc; color: #111827; }
       .wrap { max-width: 1100px; margin: 0 auto; padding: 22px; }
@@ -12,7 +12,7 @@
       h1, h2, h3 { margin: 0 0 10px; }
       p { line-height: 1.45; }
       label { display: grid; gap: 6px; margin-bottom: 9px; font-weight: 700; }
-      input, textarea { border: 1px solid #cbd5e1; border-radius: 8px; padding: 10px; font: inherit; }
+      input, textarea, select { border: 1px solid #cbd5e1; border-radius: 8px; padding: 10px; font: inherit; }
       textarea { min-height: 90px; }
       .row { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 8px; }
       button { border: 0; border-radius: 8px; padding: 9px 12px; font-weight: 700; cursor: pointer; }
@@ -26,11 +26,18 @@
   </head>
   <body>
     <div class="wrap">
-      <h1>Event Campaign Builder</h1>
-      <p class="fine">Generate email-ready campaign copy for upcoming events and send through your mailing list tool.</p>
+      <h1>Campaign Builder</h1>
+      <p class="fine">Generate email-ready campaign copy for events or outfit drops and send through your mailing list tool.</p>
       <div class="grid">
         <section class="card">
           <h2>Campaign Inputs</h2>
+          <label>Campaign Type
+            <select id="campaign-type">
+              <option value="event">Event Campaign</option>
+              <option value="outfit">Outfit Drop Campaign</option>
+            </select>
+          </label>
+          <div id="event-fields">
           <label>Event Title
             <input id="event-title" type="text" placeholder="Nairobi Ranch Night Experience" />
           </label>
@@ -52,6 +59,30 @@
           <label>CTA Button Text
             <input id="event-cta" type="text" placeholder="Book Your Spot" />
           </label>
+          </div>
+          <div id="outfit-fields" hidden>
+            <label>Collection
+              <input id="outfit-collection" type="text" placeholder="Adults Collection" />
+            </label>
+            <label>Featured Items
+              <textarea id="outfit-items" placeholder="Cowboys Heritage Denim Shirt, Ranch Work Jacket"></textarea>
+            </label>
+            <label>Starting Price (KES)
+              <input id="outfit-price" type="number" min="0" step="1" placeholder="1800" />
+            </label>
+            <label>Drop Date
+              <input id="outfit-drop-date" type="text" placeholder="This Friday" />
+            </label>
+            <label>Shop Link
+              <input id="outfit-link" type="text" placeholder="https://cowboysgroupholdings.co.ke/#shop" />
+            </label>
+            <label>Highlights
+              <textarea id="outfit-highlights" placeholder="Limited stock, fresh western designs, family-friendly options."></textarea>
+            </label>
+            <label>CTA Button Text
+              <input id="outfit-cta" type="text" placeholder="Shop New Outfits" />
+            </label>
+          </div>
           <div class="row">
             <button id="generate-btn" class="btn" type="button">Generate Campaign</button>
             <button id="reset-btn" class="ghost" type="button">Reset</button>
@@ -99,7 +130,14 @@
       const byId = (id) => document.getElementById(id);
       const fmtKes = (v) => `KES ${Number(v || 0).toLocaleString("en-KE")}`;
 
+      function toggleFields() {
+        const type = byId("campaign-type").value;
+        byId("event-fields").hidden = type !== "event";
+        byId("outfit-fields").hidden = type !== "outfit";
+      }
+
       function defaultValues() {
+        byId("campaign-type").value = "event";
         byId("event-title").value = "Nairobi Ranch Night Experience";
         byId("event-date").value = "18 Dec 2026";
         byId("event-venue").value = "Karen, Nairobi";
@@ -107,47 +145,105 @@
         byId("event-link").value = "https://cowboysgroupholdings.co.ke/#events";
         byId("event-highlights").value = "Live band, DJ, dance crew, and family-friendly western culture experience.";
         byId("event-cta").value = "Book Your Spot";
+        byId("outfit-collection").value = "Adults Collection";
+        byId("outfit-items").value = "Cowboys Heritage Denim Shirt, Ranch Work Jacket, Bull Horn Signature Cap";
+        byId("outfit-price").value = "1800";
+        byId("outfit-drop-date").value = "This Friday";
+        byId("outfit-link").value = "https://cowboysgroupholdings.co.ke/#shop";
+        byId("outfit-highlights").value = "New stock is live with limited quantities. Shop early for best sizes and styles.";
+        byId("outfit-cta").value = "Shop New Outfits";
+        toggleFields();
       }
 
       function renderOutputs() {
-        const title = byId("event-title").value.trim();
-        const date = byId("event-date").value.trim();
-        const venue = byId("event-venue").value.trim();
-        const price = Number(byId("event-price").value || 0);
-        const link = byId("event-link").value.trim();
-        const highlights = byId("event-highlights").value.trim();
-        const cta = byId("event-cta").value.trim() || "Book Now";
+        const type = byId("campaign-type").value;
+        let subject = "";
+        let preview = "";
+        let plain = "";
+        let html = "";
 
-        const subject = `${title} | ${date} | Tickets ${fmtKes(price)}`;
-        const preview = `Join us at ${venue}. ${highlights.slice(0, 90)}`;
-        const plain = [
-          `Cowboys Group Holdings Event Update`,
-          ``,
-          `Event: ${title}`,
-          `Date: ${date}`,
-          `Venue: ${venue}`,
-          `Ticket: ${fmtKes(price)}`,
-          ``,
-          `Highlights:`,
-          `${highlights}`,
-          ``,
-          `${cta}: ${link}`,
-          ``,
-          `You are receiving this because you subscribed for updates.`,
-          `To unsubscribe, reply to this email with UNSUBSCRIBE.`
-        ].join("\\n");
+        if (type === "event") {
+          const title = byId("event-title").value.trim();
+          const date = byId("event-date").value.trim();
+          const venue = byId("event-venue").value.trim();
+          const price = Number(byId("event-price").value || 0);
+          const link = byId("event-link").value.trim();
+          const highlights = byId("event-highlights").value.trim();
+          const cta = byId("event-cta").value.trim() || "Book Now";
 
-        const html = [
-          `<div style="font-family:Arial,sans-serif;line-height:1.5;color:#111827;">`,
-          `<h2 style="margin:0 0 8px;">${title}</h2>`,
-          `<p style="margin:0 0 6px;"><strong>Date:</strong> ${date}</p>`,
-          `<p style="margin:0 0 6px;"><strong>Venue:</strong> ${venue}</p>`,
-          `<p style="margin:0 0 10px;"><strong>Ticket:</strong> ${fmtKes(price)}</p>`,
-          `<p style="margin:0 0 12px;">${highlights}</p>`,
-          `<p style="margin:0;"><a href="${link}" style="display:inline-block;padding:10px 14px;background:#111827;color:#fff;text-decoration:none;border-radius:8px;">${cta}</a></p>`,
-          `<p style="margin-top:14px;font-size:12px;color:#475569;">You are receiving this because you subscribed for updates. Reply with UNSUBSCRIBE to opt out.</p>`,
-          `</div>`
-        ].join("");
+          subject = `${title} | ${date} | Tickets ${fmtKes(price)}`;
+          preview = `Join us at ${venue}. ${highlights.slice(0, 90)}`;
+          plain = [
+            `Cowboys Group Holdings Event Update`,
+            ``,
+            `Event: ${title}`,
+            `Date: ${date}`,
+            `Venue: ${venue}`,
+            `Ticket: ${fmtKes(price)}`,
+            ``,
+            `Highlights:`,
+            `${highlights}`,
+            ``,
+            `${cta}: ${link}`,
+            ``,
+            `You are receiving this because you subscribed for updates.`,
+            `To unsubscribe, reply to this email with UNSUBSCRIBE.`
+          ].join("\\n");
+
+          html = [
+            `<div style="font-family:Arial,sans-serif;line-height:1.5;color:#111827;">`,
+            `<h2 style="margin:0 0 8px;">${title}</h2>`,
+            `<p style="margin:0 0 6px;"><strong>Date:</strong> ${date}</p>`,
+            `<p style="margin:0 0 6px;"><strong>Venue:</strong> ${venue}</p>`,
+            `<p style="margin:0 0 10px;"><strong>Ticket:</strong> ${fmtKes(price)}</p>`,
+            `<p style="margin:0 0 12px;">${highlights}</p>`,
+            `<p style="margin:0;"><a href="${link}" style="display:inline-block;padding:10px 14px;background:#111827;color:#fff;text-decoration:none;border-radius:8px;">${cta}</a></p>`,
+            `<p style="margin-top:14px;font-size:12px;color:#475569;">You are receiving this because you subscribed for updates. Reply with UNSUBSCRIBE to opt out.</p>`,
+            `</div>`
+          ].join("");
+        } else {
+          const collection = byId("outfit-collection").value.trim();
+          const items = byId("outfit-items").value.trim();
+          const startPrice = Number(byId("outfit-price").value || 0);
+          const dropDate = byId("outfit-drop-date").value.trim();
+          const link = byId("outfit-link").value.trim();
+          const highlights = byId("outfit-highlights").value.trim();
+          const cta = byId("outfit-cta").value.trim() || "Shop Now";
+
+          subject = `New Outfit Drop | ${collection} | From ${fmtKes(startPrice)}`;
+          preview = `Fresh stock is now available. ${items.slice(0, 90)}`;
+          plain = [
+            `Cowboys Group Holdings Outfit Drop`,
+            ``,
+            `Collection: ${collection}`,
+            `Drop Date: ${dropDate}`,
+            `Starting Price: ${fmtKes(startPrice)}`,
+            ``,
+            `Featured Items:`,
+            `${items}`,
+            ``,
+            `Why check now:`,
+            `${highlights}`,
+            ``,
+            `${cta}: ${link}`,
+            ``,
+            `You are receiving this because you subscribed for updates.`,
+            `To unsubscribe, reply to this email with UNSUBSCRIBE.`
+          ].join("\\n");
+
+          html = [
+            `<div style="font-family:Arial,sans-serif;line-height:1.5;color:#111827;">`,
+            `<h2 style="margin:0 0 8px;">New Outfit Drop</h2>`,
+            `<p style="margin:0 0 6px;"><strong>Collection:</strong> ${collection}</p>`,
+            `<p style="margin:0 0 6px;"><strong>Drop Date:</strong> ${dropDate}</p>`,
+            `<p style="margin:0 0 10px;"><strong>Starting Price:</strong> ${fmtKes(startPrice)}</p>`,
+            `<p style="margin:0 0 8px;"><strong>Featured Items:</strong> ${items}</p>`,
+            `<p style="margin:0 0 12px;">${highlights}</p>`,
+            `<p style="margin:0;"><a href="${link}" style="display:inline-block;padding:10px 14px;background:#111827;color:#fff;text-decoration:none;border-radius:8px;">${cta}</a></p>`,
+            `<p style="margin-top:14px;font-size:12px;color:#475569;">You are receiving this because you subscribed for updates. Reply with UNSUBSCRIBE to opt out.</p>`,
+            `</div>`
+          ].join("");
+        }
 
         byId("subject-out").textContent = subject;
         byId("preview-out").textContent = preview;
@@ -176,6 +272,10 @@
       }
 
       byId("generate-btn").addEventListener("click", renderOutputs);
+      byId("campaign-type").addEventListener("change", () => {
+        toggleFields();
+        renderOutputs();
+      });
       byId("reset-btn").addEventListener("click", () => {
         defaultValues();
         renderOutputs();
@@ -184,10 +284,12 @@
         btn.addEventListener("click", () => copyFrom(btn.dataset.copy));
       });
       byId("download-txt-btn").addEventListener("click", () => {
-        downloadFile("event-campaign.txt", byId("plain-out").textContent || "", "text/plain;charset=utf-8");
+        const name = byId("campaign-type").value === "outfit" ? "outfit-campaign.txt" : "event-campaign.txt";
+        downloadFile(name, byId("plain-out").textContent || "", "text/plain;charset=utf-8");
       });
       byId("download-html-btn").addEventListener("click", () => {
-        downloadFile("event-campaign.html", byId("html-out").textContent || "", "text/html;charset=utf-8");
+        const name = byId("campaign-type").value === "outfit" ? "outfit-campaign.html" : "event-campaign.html";
+        downloadFile(name, byId("html-out").textContent || "", "text/html;charset=utf-8");
       });
 
       defaultValues();
