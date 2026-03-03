@@ -130,6 +130,8 @@ body {
 .main-nav {
   display: flex;
   gap: 0.8rem;
+  flex-wrap: wrap;
+  justify-content: flex-end;
 }
 
 .main-nav a {

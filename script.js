@@ -1,5 +1,7 @@
 const PLACEHOLDER_IMAGE = "assets/logo-mark.svg";
 const OUTFIT_KEY = "cgh_outfits_v1";
+const GA4_KEY = "cgh_ga4_id";
+const META_PIXEL_KEY = "cgh_meta_pixel_id";
 
 const defaultContent = {
   socials: [
@@ -153,7 +155,11 @@ const el = {
   subscriberStatus: document.getElementById("subscriber-status"),
   downloadSubscribersBtn: document.getElementById("download-subscribers-btn"),
   refreshSubscribersBtn: document.getElementById("refresh-subscribers-btn"),
-  subscriberAdminList: document.getElementById("subscriber-admin-list")
+  subscriberAdminList: document.getElementById("subscriber-admin-list"),
+  trackingForm: document.getElementById("tracking-form"),
+  ga4Id: document.getElementById("ga4-id"),
+  metaPixelId: document.getElementById("meta-pixel-id"),
+  trackingStatus: document.getElementById("tracking-status")
 };
 
 function formatKes(value) {
@@ -241,6 +247,53 @@ function setDonationStatus(msg) {
 
 function setSubscriberStatus(msg) {
   if (el.subscriberStatus) el.subscriberStatus.textContent = msg;
+}
+
+function setTrackingStatus(msg) {
+  if (el.trackingStatus) el.trackingStatus.textContent = msg;
+}
+
+function injectGa4(measurementId) {
+  if (!measurementId || document.getElementById("ga4-loader")) return;
+  const src = document.createElement("script");
+  src.id = "ga4-loader";
+  src.async = true;
+  src.src = `https://www.googletagmanager.com/gtag/js?id=${encodeURIComponent(measurementId)}`;
+  document.head.appendChild(src);
+
+  const inline = document.createElement("script");
+  inline.id = "ga4-inline";
+  inline.textContent = `window.dataLayer = window.dataLayer || []; function gtag(){dataLayer.push(arguments);} gtag('js', new Date()); gtag('config', '${measurementId}');`;
+  document.head.appendChild(inline);
+}
+
+function injectMetaPixel(pixelId) {
+  if (!pixelId || document.getElementById("meta-pixel-inline")) return;
+  const script = document.createElement("script");
+  script.id = "meta-pixel-inline";
+  script.textContent = `!function(f,b,e,v,n,t,s){if(f.fbq)return;n=f.fbq=function(){n.callMethod?n.callMethod.apply(n,arguments):n.queue.push(arguments)};if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';n.queue=[];t=b.createElement(e);t.async=!0;t.src=v;s=b.getElementsByTagName(e)[0];s.parentNode.insertBefore(t,s)}(window, document,'script','https://connect.facebook.net/en_US/fbevents.js');fbq('init', '${pixelId}');fbq('track', 'PageView');`;
+  document.head.appendChild(script);
+}
+
+function loadTrackingSettings() {
+  const ga4 = String(localStorage.getItem(GA4_KEY) || "").trim();
+  const pixel = String(localStorage.getItem(META_PIXEL_KEY) || "").trim();
+  if (el.ga4Id) el.ga4Id.value = ga4;
+  if (el.metaPixelId) el.metaPixelId.value = pixel;
+  if (ga4) injectGa4(ga4);
+  if (pixel) injectMetaPixel(pixel);
+  setTrackingStatus(ga4 || pixel ? "Tracking IDs loaded." : "Tracking not configured yet.");
+}
+
+function saveTrackingSettings() {
+  const ga4 = String(el.ga4Id?.value || "").trim();
+  const pixel = String(el.metaPixelId?.value || "").trim();
+  if (ga4) localStorage.setItem(GA4_KEY, ga4); else localStorage.removeItem(GA4_KEY);
+  if (pixel) localStorage.setItem(META_PIXEL_KEY, pixel); else localStorage.removeItem(META_PIXEL_KEY);
+  if (ga4) injectGa4(ga4);
+  if (pixel) injectMetaPixel(pixel);
+  setTrackingStatus("Tracking IDs saved.");
+  toast("Tracking configuration saved.", "ok");
 }
 
 function laneFromKind(kind) {
@@ -1528,6 +1581,10 @@ function bindForms() {
   el.refreshSubscribersBtn?.addEventListener("click", () => {
     loadSubscriberAdminList();
   });
+  el.trackingForm?.addEventListener("submit", (e) => {
+    e.preventDefault();
+    saveTrackingSettings();
+  });
 
   document.addEventListener("click", (e) => {
     const addCart = e.target.closest(".add-to-cart");
@@ -1651,6 +1708,7 @@ function setupNav() {
   await loadPaymentConfig();
   await loadDonationConfig();
   bindForms();
+  loadTrackingSettings();
   renderAll();
   await loadDonationAdminList();
   await loadSubscriberAdminList();
