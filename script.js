@@ -97,6 +97,12 @@ const el = {
   confirmTxCode: document.getElementById("confirm-tx-code"),
   confirmAdminKey: document.getElementById("confirm-admin-key"),
   confirmPaymentBtn: document.getElementById("confirm-payment-btn"),
+  ticketVerifyCode: document.getElementById("ticket-verify-code"),
+  ticketVerifyGate: document.getElementById("ticket-verify-gate"),
+  ticketVerifyAdminKey: document.getElementById("ticket-verify-admin-key"),
+  ticketCheckBtn: document.getElementById("ticket-check-btn"),
+  ticketRedeemBtn: document.getElementById("ticket-redeem-btn"),
+  ticketVerifyStatus: document.getElementById("ticket-verify-status"),
   galleries: {
     adults: document.getElementById("gallery-adults"),
     kids: document.getElementById("gallery-kids"),
@@ -410,8 +416,12 @@ function buildReceiptHtml(receipt) {
       <td>${formatKes(item.total || item.price || 0)}</td>
     </tr>
   `).join("");
+  const baseUrl = window.location.origin;
   const tickets = (receipt.tickets || []).length
-    ? `<h3>Ticket Codes</h3><ul>${receipt.tickets.map((t) => `<li>${t.event_name} - ${t.code} (${t.status})</li>`).join("")}</ul>`
+    ? `<h3>Ticket Codes</h3><ul>${receipt.tickets.map((t) => {
+      const verifyUrl = `${baseUrl}/?ticket_code=${encodeURIComponent(t.code)}#home`;
+      return `<li>${t.event_name} - ${t.code} (${t.status})<br><small>Verify URL: ${verifyUrl}</small></li>`;
+    }).join("")}</ul>`
     : "<p>No tickets in this order.</p>";
 
   return `<!doctype html>
@@ -449,6 +459,14 @@ function buildReceiptHtml(receipt) {
 </html>`;
 }
 
+function setTicketVerifyStatus(msg, level = "info") {
+  if (!el.ticketVerifyStatus) return;
+  el.ticketVerifyStatus.textContent = msg;
+  el.ticketVerifyStatus.classList.remove("ok", "warn");
+  if (level === "ok") el.ticketVerifyStatus.classList.add("ok");
+  if (level === "warn") el.ticketVerifyStatus.classList.add("warn");
+}
+
 async function fetchReceipt(orderId) {
   const response = await fetch(`/api/payments/receipt?order_id=${encodeURIComponent(orderId)}`);
   const data = await response.json();
@@ -476,17 +494,81 @@ async function handleDownloadTickets() {
     const receipt = state.lastReceipt || await fetchReceipt(orderId);
     const tickets = Array.isArray(receipt.tickets) ? receipt.tickets : [];
     if (!tickets.length) return notify("This order has no tickets.");
-    const body = [
-      `Cowboys Group Holdings Ticket Pack`,
-      `Order: ${receipt.order_id}`,
-      `Receipt: ${receipt.receipt_number}`,
-      `Status: ${receipt.status}`,
-      "",
-      ...tickets.map((t) => `${t.event_name} | Code: ${t.code} | Status: ${t.status}`)
-    ].join("\n");
-    downloadTextFile(`tickets-${safeFilePart(receipt.order_id)}.txt`, body);
+    const baseUrl = window.location.origin;
+    const cards = tickets.map((t) => {
+      const verifyUrl = `${baseUrl}/?ticket_code=${encodeURIComponent(t.code)}#home`;
+      return `
+        <div class="ticket-card">
+          <h3>${t.event_name || "Event Ticket"}</h3>
+          <p><strong>Ticket Code:</strong> ${t.code}</p>
+          <p><strong>Status:</strong> ${t.status}</p>
+          <p><strong>Verification URL:</strong> ${verifyUrl}</p>
+          <p class="fine">At entry gate, use "Gate: Verify / Redeem Ticket" and paste this code.</p>
+        </div>
+      `;
+    }).join("");
+
+    const html = `<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Ticket Pack ${receipt.receipt_number}</title>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 24px; color: #222; }
+    .ticket-card { border: 1px solid #ddd; border-radius: 10px; padding: 12px; margin-bottom: 12px; }
+    .fine { color: #666; font-size: 12px; }
+  </style>
+</head>
+<body>
+  <h1>Cowboys Group Holdings Ticket Pack</h1>
+  <p><strong>Order:</strong> ${receipt.order_id}</p>
+  <p><strong>Receipt:</strong> ${receipt.receipt_number}</p>
+  <p><strong>Status:</strong> ${receipt.status}</p>
+  ${cards}
+</body>
+</html>`;
+
+    downloadTextFile(`tickets-${safeFilePart(receipt.order_id)}.html`, html, "text/html;charset=utf-8");
   } catch (err) {
     notify(err?.message || "Could not download tickets right now.");
+  }
+}
+
+async function verifyTicket(action = "check") {
+  const code = String(el.ticketVerifyCode?.value || "").trim().toUpperCase();
+  const gate = String(el.ticketVerifyGate?.value || "Main Gate").trim();
+  const adminKeyValue = String(el.ticketVerifyAdminKey?.value || el.confirmAdminKey?.value || "").trim();
+  if (!code) {
+    setTicketVerifyStatus("Enter ticket code first.", "warn");
+    return;
+  }
+  if (!adminKeyValue) {
+    setTicketVerifyStatus("Enter admin key.", "warn");
+    return;
+  }
+  setTicketVerifyStatus(action === "redeem" ? "Redeeming ticket..." : "Checking ticket...");
+  try {
+    const response = await fetch("/api/tickets/verify", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "x-admin-key": adminKeyValue
+      },
+      body: JSON.stringify({ code, action, gate })
+    });
+    const data = await response.json();
+    if (!response.ok) {
+      setTicketVerifyStatus(data.message || data.error || "Ticket verification failed.", "warn");
+      return;
+    }
+    const summary = `${data.event_name || "Ticket"} | ${data.code} | ${data.status}`;
+    if (action === "redeem") {
+      setTicketVerifyStatus(`Entry approved: ${summary}`, "ok");
+    } else {
+      setTicketVerifyStatus(`Ticket valid: ${summary}`, "ok");
+    }
+  } catch {
+    setTicketVerifyStatus("Verification failed. Check server and retry.", "warn");
   }
 }
 
@@ -1709,6 +1791,12 @@ function bindForms() {
   el.confirmPaymentBtn?.addEventListener("click", () => {
     confirmManualPaymentFromAdminForm();
   });
+  el.ticketCheckBtn?.addEventListener("click", () => {
+    verifyTicket("check");
+  });
+  el.ticketRedeemBtn?.addEventListener("click", () => {
+    verifyTicket("redeem");
+  });
 
   el.outfitForm?.addEventListener("submit", (e) => {
     e.preventDefault();
@@ -2105,6 +2193,8 @@ function setupRevealAnimations() {
   setupNav();
   setupMediaViewer();
   prefetchInternalPages();
+  const presetTicket = String(new URL(window.location.href).searchParams.get("ticket_code") || "").trim();
+  if (presetTicket && el.ticketVerifyCode) el.ticketVerifyCode.value = presetTicket;
   await loadContent();
   await loadPaymentConfig();
   await loadDonationConfig();

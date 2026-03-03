@@ -4,6 +4,7 @@ const http = require('http');
 const path = require('path');
 const { URL } = require('url');
 const dns = require('dns');
+const crypto = require('crypto');
 
 const ROOT = process.cwd();
 const CONTENT_PATH = path.join(ROOT, 'data', 'content.json');
@@ -324,24 +325,63 @@ function laneFromKind(kind) {
   return 'apparel';
 }
 
-function makeTicketCode(orderId, index) {
-  const base = String(orderId || '').replace(/^order-/, '').slice(-6);
-  const rnd = Math.random().toString(36).slice(2, 6).toUpperCase();
-  return `CGH-TKT-${base}-${index + 1}-${rnd}`;
+function buildTicketCode(existingCodes) {
+  let code = '';
+  do {
+    const day = new Date().toISOString().slice(0, 10).replaceAll('-', '');
+    const randA = crypto.randomBytes(6).toString('hex').toUpperCase();
+    const randB = crypto.randomBytes(4).toString('hex').toUpperCase();
+    code = `CGH-TKT-${day}-${randA}-${randB}`;
+  } while (existingCodes.has(code));
+  existingCodes.add(code);
+  return code;
 }
 
-function buildTicketsFromItems(orderId, items, status) {
+function collectExistingTicketCodes(payments) {
+  const set = new Set();
+  for (const order of payments?.orders || []) {
+    for (const ticket of order?.tickets || []) {
+      if (ticket?.code) set.add(String(ticket.code).toUpperCase());
+    }
+  }
+  return set;
+}
+
+function buildTicketsFromItems(orderId, items, status, existingCodes) {
   const tickets = [];
-  items.forEach((item, index) => {
+  let serial = 1;
+  items.forEach((item) => {
     if (item.kind !== 'ticket') return;
-    tickets.push({
-      id: `${orderId}-ticket-${index + 1}`,
-      code: makeTicketCode(orderId, index),
-      event_name: item.name,
-      status: status === 'paid' ? 'issued' : 'pending_payment'
-    });
+    const qty = Math.max(1, Number(item.qty || 1));
+    for (let i = 0; i < qty; i += 1) {
+      tickets.push({
+        id: `${orderId}-ticket-${serial}`,
+        code: buildTicketCode(existingCodes),
+        event_name: item.name,
+        status: status === 'paid' ? 'issued' : 'pending_payment',
+        issued_at: status === 'paid' ? new Date().toISOString() : null,
+        redeemed_at: null,
+        redeemed_by: null
+      });
+      serial += 1;
+    }
   });
   return tickets;
+}
+
+function findTicketByCode(payments, code) {
+  const target = String(code || '').trim().toUpperCase();
+  if (!target) return null;
+  for (const order of payments?.orders || []) {
+    const tickets = Array.isArray(order?.tickets) ? order.tickets : [];
+    for (let i = 0; i < tickets.length; i += 1) {
+      const ticket = tickets[i];
+      if (String(ticket?.code || '').toUpperCase() === target) {
+        return { order, ticket, ticketIndex: i };
+      }
+    }
+  }
+  return null;
 }
 
 function makeReceiptNumber(order) {
@@ -808,6 +848,7 @@ async function handleApi(req, res, urlObj) {
       if (applyExpiryToAllOrders(payments)) {
         await writePayments(payments);
       }
+      const existingCodes = collectExistingTicketCodes(payments);
       const order = {
         id: orderId,
         method,
@@ -825,7 +866,7 @@ async function handleApi(req, res, urlObj) {
         manual_transaction_code: null,
         tickets: []
       };
-      order.tickets = buildTicketsFromItems(order.id, order.items, order.status);
+      order.tickets = buildTicketsFromItems(order.id, order.items, order.status, existingCodes);
 
       payments.orders.unshift(order);
       await writePayments(payments);
@@ -936,7 +977,7 @@ async function handleApi(req, res, urlObj) {
       order.manual_transaction_code = transactionCode;
       order.result_desc = `Manual payment confirmed. Transaction ${transactionCode}.`;
       if (Array.isArray(order.tickets)) {
-        order.tickets = order.tickets.map((t) => ({ ...t, status: 'issued' }));
+        order.tickets = order.tickets.map((t) => ({ ...t, status: 'issued', issued_at: new Date().toISOString() }));
       }
       await writePayments(payments);
 
@@ -978,6 +1019,107 @@ async function handleApi(req, res, urlObj) {
         transaction_code: o.manual_transaction_code || null
       }))
     });
+  }
+
+  if (req.method === 'POST' && urlObj.pathname === '/api/tickets/verify') {
+    const rate = hitRateLimit(req, 'ticket-verify', RATE_LIMIT_CONFIG.confirmManual);
+    if (rate.limited) {
+      res.setHeader('Retry-After', String(rate.retryAfterSec));
+      return sendJson(res, 429, { error: 'Too many verification attempts. Please retry shortly.' });
+    }
+    if (!isAuthed(req)) return sendJson(res, 401, { error: 'Unauthorized' });
+
+    try {
+      const raw = await readBody(req);
+      const payload = parseJson(raw || '{}', {});
+      const code = String(payload.code || '').trim().toUpperCase();
+      const action = String(payload.action || 'check').trim().toLowerCase();
+      const gate = String(payload.gate || 'entry').trim().slice(0, 64);
+      if (!code) return sendJson(res, 400, { error: 'Ticket code is required.' });
+      if (!['check', 'redeem'].includes(action)) return sendJson(res, 400, { error: 'action must be check or redeem.' });
+
+      const payments = await readPayments();
+      if (applyExpiryToAllOrders(payments)) {
+        await writePayments(payments);
+      }
+      const found = findTicketByCode(payments, code);
+      if (!found) return sendJson(res, 404, { ok: false, valid: false, error: 'Ticket not found.' });
+
+      const { order, ticket, ticketIndex } = found;
+      if (order.status !== 'paid') {
+        return sendJson(res, 409, {
+          ok: false,
+          valid: false,
+          code,
+          status: ticket.status,
+          event_name: ticket.event_name,
+          order_id: order.id,
+          message: 'Ticket exists but payment is not confirmed.'
+        });
+      }
+
+      if (action === 'check') {
+        return sendJson(res, 200, {
+          ok: true,
+          valid: ticket.status === 'issued' || ticket.status === 'redeemed',
+          code,
+          status: ticket.status,
+          event_name: ticket.event_name,
+          order_id: order.id,
+          redeemed_at: ticket.redeemed_at || null,
+          redeemed_by: ticket.redeemed_by || null
+        });
+      }
+
+      if (ticket.status === 'redeemed') {
+        return sendJson(res, 409, {
+          ok: false,
+          valid: false,
+          code,
+          status: ticket.status,
+          event_name: ticket.event_name,
+          order_id: order.id,
+          redeemed_at: ticket.redeemed_at || null,
+          redeemed_by: ticket.redeemed_by || null,
+          message: 'Ticket already used at entry.'
+        });
+      }
+
+      if (ticket.status !== 'issued') {
+        return sendJson(res, 409, {
+          ok: false,
+          valid: false,
+          code,
+          status: ticket.status,
+          event_name: ticket.event_name,
+          order_id: order.id,
+          message: 'Ticket is not ready for redemption.'
+        });
+      }
+
+      const now = new Date().toISOString();
+      order.tickets[ticketIndex] = {
+        ...ticket,
+        status: 'redeemed',
+        redeemed_at: now,
+        redeemed_by: gate
+      };
+      await writePayments(payments);
+
+      return sendJson(res, 200, {
+        ok: true,
+        valid: true,
+        redeemed: true,
+        code,
+        status: 'redeemed',
+        event_name: ticket.event_name,
+        order_id: order.id,
+        redeemed_at: now,
+        redeemed_by: gate
+      });
+    } catch (err) {
+      return sendJson(res, 400, { error: 'Invalid ticket verification payload', detail: err.message });
+    }
   }
 
   if (req.method === 'POST' && urlObj.pathname === '/api/payments/mpesa/callback') {
@@ -1029,7 +1171,7 @@ async function handleApi(req, res, urlObj) {
           order.paid_at = new Date().toISOString();
           order.manual_transaction_code = mpesaCode || order.manual_transaction_code || null;
           if (Array.isArray(order.tickets)) {
-            order.tickets = order.tickets.map((t) => ({ ...t, status: 'issued' }));
+            order.tickets = order.tickets.map((t) => ({ ...t, status: 'issued', issued_at: new Date().toISOString() }));
           }
         }
       } else {

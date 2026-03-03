@@ -537,6 +537,22 @@
               <input id="confirm-admin-key" type="password" placeholder="same ADMIN_KEY used on server" />
             </label>
             <button id="confirm-payment-btn" class="btn btn-primary" type="button">Confirm Payment</button>
+            <hr />
+            <h4>Gate: Verify / Redeem Ticket</h4>
+            <label>Ticket Code
+              <input id="ticket-verify-code" type="text" placeholder="CGH-TKT-..." />
+            </label>
+            <label>Gate Name
+              <input id="ticket-verify-gate" type="text" placeholder="Main Gate" />
+            </label>
+            <label>Admin Key
+              <input id="ticket-verify-admin-key" type="password" placeholder="same ADMIN_KEY used on server" />
+            </label>
+            <div class="admin-actions">
+              <button id="ticket-check-btn" class="btn btn-ghost" type="button">Check Ticket</button>
+              <button id="ticket-redeem-btn" class="btn btn-primary" type="button">Redeem Entry</button>
+            </div>
+            <p id="ticket-verify-status" class="fine">Ready.</p>
             <p class="fine">Affiliate-ready: partner links and referral codes can be connected in backend phase.</p>
           </aside>
         </div>
