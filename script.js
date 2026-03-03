@@ -665,21 +665,28 @@ function buildSearchIndex() {
   links.push({ label: "Corporate Hub", href: "CORPORATE_HUB.html", type: "Page" });
   links.push({ label: "Invest With Us", href: "INVEST_WITH_US.html", type: "Page" });
   links.push({ label: "Partner With Us", href: "PARTNER_WITH_US.html", type: "Page" });
+  links.push({ label: "Team SOP Guide", href: "TEAM_ADMIN_SOP.html", type: "Page" });
+  links.push({ label: "Donor Guide", href: "DONOR_GUIDE.html", type: "Page" });
 
   (state.content.outfits || []).forEach((x) => {
-    links.push({ label: x.name, href: "#apparel", type: "Outfit" });
+    const id = x.id ? `outfit-${x.id}` : "apparel";
+    links.push({ label: x.name, href: `#${id}`, type: "Outfit" });
   });
   (state.content.events || []).forEach((x) => {
-    links.push({ label: x.title, href: "#events", type: "Event" });
+    const id = x.id ? `event-${x.id}` : "events";
+    links.push({ label: x.title, href: `#${id}`, type: "Event" });
   });
   (state.content.livestock || []).forEach((x) => {
-    links.push({ label: x.name, href: "#livestock", type: "Livestock" });
+    const id = x.id ? `livestock-${x.id}` : "livestock";
+    links.push({ label: x.name, href: `#${id}`, type: "Livestock" });
   });
   (state.content.decor || []).forEach((x) => {
-    links.push({ label: x.name, href: "#decor", type: "Decor" });
+    const id = x.id ? `decor-${x.id}` : "decor";
+    links.push({ label: x.name, href: `#${id}`, type: "Decor" });
   });
   (state.content.team || []).forEach((x) => {
-    links.push({ label: x.name, href: "#media", type: "Team" });
+    const id = x.id ? `team-${x.id}` : "media";
+    links.push({ label: x.name, href: `#${id}`, type: "Team" });
   });
   return links;
 }
@@ -722,7 +729,8 @@ function renderOutfits() {
 
     items.forEach((item) => {
       const card = document.createElement("article");
-      card.className = "outfit-card";
+      card.className = "outfit-card search-target";
+      if (item.id) card.id = `outfit-${item.id}`;
       card.innerHTML = `
         ${maybeImage(item.image, item.name)}
         <div class="outfit-body">
@@ -750,7 +758,8 @@ function renderEvents() {
   state.content.events.forEach((item) => {
     const dateLabel = item.date ? new Date(item.date).toLocaleDateString("en-KE", { year: "numeric", month: "short", day: "numeric" }) : "TBA";
     const card = document.createElement("article");
-    card.className = "product-card";
+    card.className = "product-card search-target";
+    if (item.id) card.id = `event-${item.id}`;
     card.innerHTML = `
       ${maybeImage(item.poster, item.title)}
       <h3>${item.title}</h3>
@@ -778,7 +787,8 @@ function renderLivestock() {
   state.content.livestock.forEach((item) => {
     const total = Number(item.weight_kg || 0) * Number(item.rate_per_kg_kes || 0);
     const card = document.createElement("article");
-    card.className = "product-card";
+    card.className = "product-card search-target";
+    if (item.id) card.id = `livestock-${item.id}`;
     card.innerHTML = `
       ${maybeImage(item.image, item.name)}
       <h3>${item.name}</h3>
@@ -805,7 +815,8 @@ function renderDecor() {
 
   state.content.decor.forEach((item) => {
     const card = document.createElement("article");
-    card.className = "product-card";
+    card.className = "product-card search-target";
+    if (item.id) card.id = `decor-${item.id}`;
     card.innerHTML = `
       ${maybeImage(item.image, item.name)}
       <h3>${item.name}</h3>
@@ -895,7 +906,8 @@ function renderTeam() {
   }
   state.content.team.forEach((p) => {
     const row = document.createElement("div");
-    row.className = "team-row";
+    row.className = "team-row search-target";
+    if (p.id) row.id = `team-${p.id}`;
     row.innerHTML = `
       ${p.photo ? `<img class="team-photo expandable-media" src="${mediaSrc(p.photo)}" alt="${p.name}" loading="lazy" onerror="this.onerror=null;this.src='${mediaSrc(PLACEHOLDER_IMAGE)}'">` : ""}
       <strong>${p.name}</strong><br>${p.role || ""}<br>${p.bio || ""}
@@ -903,6 +915,50 @@ function renderTeam() {
     `;
     el.teamGrid.appendChild(row);
   });
+}
+
+function jumpToSearchHref(href) {
+  const targetHref = String(href || "");
+  if (!targetHref.startsWith("#")) {
+    window.location.href = targetHref;
+    return;
+  }
+  const id = targetHref.slice(1);
+  const node = document.getElementById(id);
+  if (!node) {
+    window.location.hash = targetHref;
+    return;
+  }
+  node.scrollIntoView({ behavior: "smooth", block: "start" });
+  node.classList.remove("search-hit");
+  window.setTimeout(() => node.classList.add("search-hit"), 80);
+  window.setTimeout(() => node.classList.remove("search-hit"), 1800);
+  history.replaceState(null, "", targetHref);
+}
+
+function prefetchInternalPages() {
+  const pages = [
+    "CORPORATE_HUB.html",
+    "INVEST_WITH_US.html",
+    "PARTNER_WITH_US.html",
+    "TEAM_ADMIN_SOP.html",
+    "DONOR_GUIDE.html",
+    "EVENT_CAMPAIGN_BUILDER.html"
+  ];
+  const run = () => {
+    pages.forEach((href) => {
+      if (document.querySelector(`link[rel="prefetch"][href="${href}"]`)) return;
+      const link = document.createElement("link");
+      link.rel = "prefetch";
+      link.href = href;
+      document.head.appendChild(link);
+    });
+  };
+  if ("requestIdleCallback" in window) {
+    window.requestIdleCallback(run, { timeout: 1200 });
+  } else {
+    window.setTimeout(run, 350);
+  }
 }
 
 function setupMediaViewer() {
@@ -1848,7 +1904,14 @@ function bindForms() {
     const query = String(el.globalSearchInput?.value || "").trim();
     renderSearchResults(query);
     const first = el.globalSearchResults?.querySelector("a.search-result-link");
-    if (first) first.click();
+    if (first) jumpToSearchHref(first.getAttribute("href"));
+  });
+  el.globalSearchResults?.addEventListener("click", (e) => {
+    const anchor = e.target.closest("a.search-result-link");
+    if (!anchor) return;
+    e.preventDefault();
+    jumpToSearchHref(anchor.getAttribute("href"));
+    if (el.globalSearchResults) el.globalSearchResults.hidden = true;
   });
   document.addEventListener("click", (e) => {
     const node = e.target;
@@ -2041,6 +2104,7 @@ function setupRevealAnimations() {
   }
   setupNav();
   setupMediaViewer();
+  prefetchInternalPages();
   await loadContent();
   await loadPaymentConfig();
   await loadDonationConfig();
