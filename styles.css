@@ -632,6 +632,7 @@ h3 {
   width: 100%;
   aspect-ratio: 4 / 3;
   object-fit: cover;
+  object-position: center 22%;
   transform: scale(1.02);
   transition: transform 0.45s ease;
 }
@@ -726,10 +727,62 @@ h3 {
   width: 100%;
   max-width: 280px;
   aspect-ratio: 3 / 4;
-  object-fit: cover;
-  object-position: top center;
+  object-fit: contain;
+  object-position: center top;
   border-radius: 10px;
   background: linear-gradient(145deg, #f2e0bf, #ebd0a3);
+}
+
+.team-photo,
+.showcase-tile img,
+.outfit-image {
+  cursor: zoom-in;
+}
+
+.media-lightbox {
+  position: fixed;
+  inset: 0;
+  z-index: 2100;
+  background: rgba(12, 8, 5, 0.9);
+  display: grid;
+  place-items: center;
+  padding: 1rem;
+}
+
+.media-lightbox[hidden] {
+  display: none;
+}
+
+.media-lightbox-content {
+  width: min(1040px, 96vw);
+  max-height: 92vh;
+  display: grid;
+  gap: 0.6rem;
+  justify-items: center;
+}
+
+.media-lightbox-image {
+  max-width: 100%;
+  max-height: 82vh;
+  border-radius: 12px;
+  box-shadow: 0 20px 46px rgba(0, 0, 0, 0.42);
+  object-fit: contain;
+}
+
+.media-lightbox-caption {
+  color: #f8eee1;
+  font-weight: 700;
+  text-align: center;
+}
+
+.media-lightbox-close {
+  border: 1px solid rgba(255, 255, 255, 0.35);
+  background: rgba(255, 255, 255, 0.12);
+  color: #fff;
+  border-radius: 999px;
+  padding: 0.44rem 0.82rem;
+  cursor: pointer;
+  font-weight: 800;
 }
 
 .social-link {

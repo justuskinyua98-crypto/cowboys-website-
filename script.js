@@ -537,7 +537,7 @@ function emptyNode(message) {
 
 function maybeImage(path, alt = "") {
   if (!path) return "";
-  return `<img class="outfit-image" src="${mediaSrc(path)}" alt="${alt}" loading="lazy" onerror="this.onerror=null;this.src='${mediaSrc(PLACEHOLDER_IMAGE)}'">`;
+  return `<img class="outfit-image expandable-media" src="${mediaSrc(path)}" alt="${alt}" loading="lazy" onerror="this.onerror=null;this.src='${mediaSrc(PLACEHOLDER_IMAGE)}'">`;
 }
 
 function renderCart() {
@@ -897,11 +897,56 @@ function renderTeam() {
     const row = document.createElement("div");
     row.className = "team-row";
     row.innerHTML = `
-      ${p.photo ? `<img class="team-photo" src="${mediaSrc(p.photo)}" alt="${p.name}" loading="lazy" onerror="this.onerror=null;this.src='${mediaSrc(PLACEHOLDER_IMAGE)}'">` : ""}
+      ${p.photo ? `<img class="team-photo expandable-media" src="${mediaSrc(p.photo)}" alt="${p.name}" loading="lazy" onerror="this.onerror=null;this.src='${mediaSrc(PLACEHOLDER_IMAGE)}'">` : ""}
       <strong>${p.name}</strong><br>${p.role || ""}<br>${p.bio || ""}
       ${adminOnly(`<div class="outfit-actions top-space"><button class="delete-outfit delete-team-item" type="button" data-id="${p.id}">Remove</button></div>`)}
     `;
     el.teamGrid.appendChild(row);
+  });
+}
+
+function setupMediaViewer() {
+  const modal = document.createElement("div");
+  modal.className = "media-lightbox";
+  modal.hidden = true;
+  modal.innerHTML = `
+    <div class="media-lightbox-content" role="dialog" aria-modal="true" aria-label="Expanded photo viewer">
+      <button class="media-lightbox-close" type="button">Close</button>
+      <img class="media-lightbox-image" src="" alt="">
+      <div class="media-lightbox-caption"></div>
+    </div>
+  `;
+  document.body.appendChild(modal);
+
+  const closeBtn = modal.querySelector(".media-lightbox-close");
+  const image = modal.querySelector(".media-lightbox-image");
+  const caption = modal.querySelector(".media-lightbox-caption");
+
+  const closeViewer = () => {
+    modal.hidden = true;
+    image.src = "";
+    image.alt = "";
+    caption.textContent = "";
+  };
+
+  const openViewer = (src, altText) => {
+    image.src = src;
+    image.alt = altText || "Expanded photo";
+    caption.textContent = altText || "";
+    modal.hidden = false;
+  };
+
+  closeBtn?.addEventListener("click", closeViewer);
+  modal.addEventListener("click", (e) => {
+    if (e.target === modal) closeViewer();
+  });
+  document.addEventListener("keydown", (e) => {
+    if (e.key === "Escape" && !modal.hidden) closeViewer();
+  });
+  document.addEventListener("click", (e) => {
+    const img = e.target.closest(".expandable-media, .showcase-tile img");
+    if (!img) return;
+    openViewer(img.currentSrc || img.src, img.alt || "");
   });
 }
 
@@ -1995,6 +2040,7 @@ function setupRevealAnimations() {
     document.body.classList.add("lite-mode");
   }
   setupNav();
+  setupMediaViewer();
   await loadContent();
   await loadPaymentConfig();
   await loadDonationConfig();
