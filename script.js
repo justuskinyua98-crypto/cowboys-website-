@@ -2145,6 +2145,11 @@ function bindForms() {
 
 function setupNav() {
   if (!el.navToggle || !el.nav) return;
+  const closeNav = () => {
+    el.nav.classList.remove("open");
+    el.navToggle.setAttribute("aria-expanded", "false");
+  };
+
   el.navToggle.addEventListener("click", () => {
     const isExpanded = el.navToggle.getAttribute("aria-expanded") === "true";
     el.navToggle.setAttribute("aria-expanded", String(!isExpanded));
@@ -2153,10 +2158,17 @@ function setupNav() {
 
   el.nav.querySelectorAll("a").forEach((a) => {
     a.addEventListener("click", () => {
-      el.nav.classList.remove("open");
-      el.navToggle.setAttribute("aria-expanded", "false");
+      closeNav();
     });
   });
+
+  // On mobile, auto-close the opened menu once user starts scrolling or swiping.
+  const closeOnMove = () => {
+    if (el.nav.classList.contains("open")) closeNav();
+  };
+  window.addEventListener("scroll", closeOnMove, { passive: true });
+  window.addEventListener("wheel", closeOnMove, { passive: true });
+  window.addEventListener("touchmove", closeOnMove, { passive: true });
 }
 
 let revealObserver;

@@ -657,16 +657,17 @@ h3 {
 .showcase-tile img {
   display: block;
   width: 100%;
-  aspect-ratio: 4 / 3;
-  object-fit: cover;
-  object-position: center 22%;
-  transform: scale(1.02);
+  max-height: 440px;
+  object-fit: contain;
+  object-position: center top;
+  background: linear-gradient(145deg, #f2e0bf, #ebd0a3);
+  transform: none;
   transition: transform 0.45s ease;
 }
 
 .showcase-tile:hover img,
 .showcase-tile:focus-within img {
-  transform: scale(1.08);
+  transform: none;
 }
 
 @keyframes tile-float {
@@ -686,7 +687,8 @@ h3 {
   display: block;
   width: 100%;
   aspect-ratio: 4 / 3;
-  object-fit: cover;
+  object-fit: contain;
+  object-position: center top;
   background: linear-gradient(145deg, #f2e0bf, #ebd0a3);
 }
 
