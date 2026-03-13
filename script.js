@@ -2234,6 +2234,83 @@ function setupNav() {
   window.addEventListener("touchmove", closeOnMove, { passive: true });
 }
 
+function setupHeroSlider() {
+  const slider = document.querySelector(".hero-slider");
+  if (!slider) return;
+  const slides = Array.from(slider.querySelectorAll(".hero-slide"));
+  if (slides.length <= 1) return;
+
+  const dots = Array.from(document.querySelectorAll(".hero-dot"));
+  const controls = Array.from(document.querySelectorAll(".hero-nav"));
+  let index = 0;
+  let timer = null;
+  const prefersReduced = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+  const setActive = (nextIndex) => {
+    index = (nextIndex + slides.length) % slides.length;
+    slides.forEach((slide, i) => {
+      const active = i === index;
+      slide.classList.toggle("is-active", active);
+      slide.setAttribute("aria-hidden", String(!active));
+    });
+    dots.forEach((dot, i) => dot.classList.toggle("is-active", i === index));
+  };
+
+  const next = () => setActive(index + 1);
+  const prev = () => setActive(index - 1);
+
+  controls.forEach((btn) => {
+    btn.addEventListener("click", () => {
+      const dir = btn.dataset.dir;
+      if (dir === "prev") prev();
+      if (dir === "next") next();
+      restartAuto();
+    });
+  });
+
+  dots.forEach((dot) => {
+    dot.addEventListener("click", () => {
+      const target = Number(dot.dataset.index || 0);
+      if (Number.isFinite(target)) setActive(target);
+      restartAuto();
+    });
+  });
+
+  const stopAuto = () => {
+    if (timer) window.clearInterval(timer);
+    timer = null;
+  };
+
+  const restartAuto = () => {
+    stopAuto();
+    startAuto();
+  };
+
+  const startAuto = () => {
+    if (prefersReduced || isLowPowerDevice) return;
+    if (timer) return;
+    timer = window.setInterval(next, 5000);
+  };
+
+  slider.addEventListener("mouseenter", stopAuto);
+  slider.addEventListener("mouseleave", startAuto);
+  slider.addEventListener("focusin", stopAuto);
+  slider.addEventListener("focusout", startAuto);
+
+  setActive(0);
+  startAuto();
+}
+
+function setupHeaderCompact() {
+  const header = document.querySelector(".site-header");
+  if (!header) return;
+  const toggle = () => {
+    header.classList.toggle("compact", window.scrollY > 120);
+  };
+  toggle();
+  window.addEventListener("scroll", toggle, { passive: true });
+}
+
 let revealObserver;
 function setupRevealAnimations() {
   const nodes = document.querySelectorAll(".reveal");
@@ -2266,6 +2343,8 @@ function setupRevealAnimations() {
     document.body.classList.add("lite-mode");
   }
   setupNav();
+  setupHeaderCompact();
+  setupHeroSlider();
   setupMediaViewer();
   prefetchInternalPages();
   const presetTicket = String(new URL(window.location.href).searchParams.get("ticket_code") || "").trim();

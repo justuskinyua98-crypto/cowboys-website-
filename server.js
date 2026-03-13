@@ -7,11 +7,12 @@ const dns = require('dns');
 const crypto = require('crypto');
 
 const ROOT = process.cwd();
-const CONTENT_PATH = path.join(ROOT, 'data', 'content.json');
-const PAYMENTS_PATH = path.join(ROOT, 'data', 'payments.json');
-const DONATIONS_PATH = path.join(ROOT, 'data', 'donations.json');
-const SUBSCRIBERS_PATH = path.join(ROOT, 'data', 'subscribers.json');
-const FEEDBACK_PATH = path.join(ROOT, 'data', 'feedback.json');
+const DATA_DIR = process.env.DATA_DIR || path.join(ROOT, 'data');
+const CONTENT_PATH = path.join(DATA_DIR, 'content.json');
+const PAYMENTS_PATH = path.join(DATA_DIR, 'payments.json');
+const DONATIONS_PATH = path.join(DATA_DIR, 'donations.json');
+const SUBSCRIBERS_PATH = path.join(DATA_DIR, 'subscribers.json');
+const FEEDBACK_PATH = path.join(DATA_DIR, 'feedback.json');
 const ADMIN_KEY = process.env.ADMIN_KEY || 'change-me-admin-key';
 const PORT = Number(process.env.PORT || 8000);
 const HOST = process.env.HOST || '127.0.0.1';
@@ -1364,7 +1365,7 @@ const server = http.createServer(async (req, res) => {
 });
 
 server.listen(PORT, HOST, async () => {
-  await fsp.mkdir(path.join(ROOT, 'data'), { recursive: true });
+  await fsp.mkdir(DATA_DIR, { recursive: true });
   try {
     await fsp.access(PAYMENTS_PATH);
   } catch {

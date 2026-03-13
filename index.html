@@ -35,7 +35,7 @@
       rel="stylesheet"
     />
     <link rel="icon" type="image/svg+xml" href="assets/logo-mark.svg" />
-    <link rel="stylesheet" href="styles.css?v=20260303b" />
+    <link rel="stylesheet" href="styles.css?v=20260311d" />
     <script type="application/ld+json">
       {
         "@context": "https://schema.org",
@@ -103,7 +103,56 @@
 
     <main id="home">
       <section class="hero section reveal">
-        <div class="hero-copy">
+        <div class="hero-media">
+          <div class="hero-slider" aria-label="Featured Cowboys experiences">
+            <article class="hero-slide is-active">
+              <img src="assets/events/event-nairobi-ranch-night.jpg" alt="Crowd dancing during Nairobi Ranch Night experience" style="object-position: 50% 40%;" />
+              <div class="hero-slide-overlay">
+                <p class="kicker">Live Events</p>
+                <h3>Ranch Night energy in Nairobi</h3>
+                <p>Western culture, live music, and unforgettable nights built for families and fans.</p>
+              </div>
+            </article>
+            <article class="hero-slide">
+              <img src="assets/outfits/adults-heritage-denim.jpg" alt="Close-up of heritage denim apparel" style="object-position: 50% 30%;" />
+              <div class="hero-slide-overlay">
+                <p class="kicker">Apparel</p>
+                <h3>Heritage looks, modern comfort</h3>
+                <p>Street-ready western fashion for adults, kids, and collectors across Kenya.</p>
+              </div>
+            </article>
+            <article class="hero-slide">
+              <img src="assets/livestock/livestock-cattle-prime.jpg" alt="Prime cattle available for livestock buyers" style="object-position: 55% 35%;" />
+              <div class="hero-slide-overlay">
+                <p class="kicker">Livestock</p>
+                <h3>Premium cattle and goats, ready for delivery</h3>
+                <p>Trusted ranch sourcing for festive demand, markets, and large institutional buyers.</p>
+              </div>
+            </article>
+            <article class="hero-slide">
+              <img src="assets/events/event-western-family-sunday.jpg" alt="Families enjoying western-themed event" style="object-position: 50% 35%;" />
+              <div class="hero-slide-overlay">
+                <p class="kicker">Family Culture</p>
+                <h3>Kid-safe experiences and community joy</h3>
+                <p>Rodeo fun, family day-outs, and youth-friendly spaces that stay safe and joyful.</p>
+              </div>
+            </article>
+          </div>
+
+          <div class="hero-slider-controls" aria-label="Hero slider controls">
+            <button class="hero-nav" type="button" data-dir="prev" aria-label="Previous slide">Prev</button>
+            <div class="hero-dots" role="tablist" aria-label="Choose a slide">
+              <button class="hero-dot is-active" type="button" data-index="0" aria-label="Slide 1"></button>
+              <button class="hero-dot" type="button" data-index="1" aria-label="Slide 2"></button>
+              <button class="hero-dot" type="button" data-index="2" aria-label="Slide 3"></button>
+              <button class="hero-dot" type="button" data-index="3" aria-label="Slide 4"></button>
+            </div>
+            <button class="hero-nav" type="button" data-dir="next" aria-label="Next slide">Next</button>
+          </div>
+
+        </div>
+
+        <div class="hero-copy hero-copy-below">
           <p class="kicker">Kenya-Born Holding Company</p>
           <h1>Culture-driven businesses that people can feel in real life.</h1>
           <p>
@@ -116,17 +165,8 @@
             <a class="btn btn-ghost" href="CORPORATE_HUB.html">Open Corporate Hub</a>
           </div>
         </div>
-
-        <aside class="hero-card" aria-label="What makes us different">
-          <h2>What Makes Us Different</h2>
-          <ul>
-            <li>One holding company, multiple focused business units</li>
-            <li>Revenue + culture + community impact working together</li>
-            <li>Built for partnerships, joint ventures, and expansion</li>
-            <li>Friendly brand for kids, youth, adults, and families</li>
-          </ul>
-        </aside>
       </section>
+
 
       <section class="section reveal">
         <div class="ranch-feature">
@@ -1189,6 +1229,21 @@
           <p id="tracking-status" class="fine">Tracking not configured yet.</p>
         </article>
       </section>
+      <section class="section reveal" id="difference">
+        <div class="section-heading">
+          <p class="kicker">Why We Are Different</p>
+          <h2>One ecosystem, many Kenyan-led ventures working together.</h2>
+        </div>
+        <div class="hero-card" aria-label="What makes us different">
+          <h2>What Makes Us Different</h2>
+          <ul>
+            <li>One holding company, multiple focused business units</li>
+            <li>Revenue + culture + community impact working together</li>
+            <li>Built for partnerships, joint ventures, and expansion</li>
+            <li>Friendly brand for kids, youth, adults, and families</li>
+          </ul>
+        </div>
+      </section>
     </main>
 
     <footer class="site-footer">
@@ -1221,6 +1276,6 @@
       Chat on WhatsApp
     </a>
 
-    <script src="script.js?v=20260303b"></script>
+    <script src="script.js?v=20260311d"></script>
   </body>
 </html>
